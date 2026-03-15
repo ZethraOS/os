@@ -104,7 +104,6 @@ impl Default for GestureRecognizer {
 }
 
 impl GestureRecognizer {
-
     pub fn process(&mut self, event: &InputEvent) -> Option<Gesture> {
         match event {
             InputEvent::Touch {

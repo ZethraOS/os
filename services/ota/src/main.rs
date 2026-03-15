@@ -324,7 +324,6 @@ impl Default for PostUpdateMonitor {
 }
 
 impl PostUpdateMonitor {
-
     pub async fn monitor_and_rollback_if_needed(&self) -> Result<()> {
         let mut ticker = interval(Duration::from_secs(60));
         let start = std::time::Instant::now();

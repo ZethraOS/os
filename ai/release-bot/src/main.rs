@@ -479,7 +479,6 @@ impl Default for ReleaseBot {
 }
 
 impl ReleaseBot {
-
     /// Poll CI for successful builds ready to release
     async fn poll_ready_builds(&self) -> Result<Vec<CiBuild>> {
         let resp = self
@@ -613,8 +612,9 @@ impl ReleaseBot {
                         continue;
                     }
                     if (build.risk_level == "Critical" || build.risk_level == "High")
-                        && channel.name != "dev" {
-                            continue;
+                        && channel.name != "dev"
+                    {
+                        continue;
                     }
 
                     match self.release_build(&build, channel).await {

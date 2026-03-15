@@ -191,16 +191,17 @@ impl Default for StepDetector {
 }
 
 impl StepDetector {
-
     pub fn process(&mut self, accel: &Vec3, timestamp_ms: u64) -> Option<u64> {
         let mag = accel.magnitude();
         // Peak detection: rising above threshold after being below it
-        if self.last_mag < self.threshold && mag >= self.threshold
-            && timestamp_ms - self.last_step_ms > self.min_step_interval_ms {
-                self.step_count += 1;
-                self.last_step_ms = timestamp_ms;
-                self.last_mag = mag;
-                return Some(self.step_count);
+        if self.last_mag < self.threshold
+            && mag >= self.threshold
+            && timestamp_ms - self.last_step_ms > self.min_step_interval_ms
+        {
+            self.step_count += 1;
+            self.last_step_ms = timestamp_ms;
+            self.last_mag = mag;
+            return Some(self.step_count);
         }
         self.last_mag = mag;
         None

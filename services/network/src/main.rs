@@ -252,7 +252,6 @@ impl Default for NetworkDaemon {
 }
 
 impl NetworkDaemon {
-
     pub async fn handle(&mut self, cmd: NetworkCommand) -> NetworkEvent {
         match cmd {
             NetworkCommand::GetStatus => NetworkEvent::StatusChanged {

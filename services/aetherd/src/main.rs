@@ -90,7 +90,6 @@ impl Default for Supervisor {
 }
 
 impl Supervisor {
-
     pub fn load_units(&mut self, units_dir: &Path) -> Result<()> {
         let pattern = units_dir.join("*.unit.toml");
         for entry in glob::glob(pattern.to_str().unwrap())
