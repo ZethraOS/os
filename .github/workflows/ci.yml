@@ -70,6 +70,12 @@ jobs:
       - name: Cross-compile for ARM64
         run: cargo build --release --target ${{ env.TARGET_ARCH }}
 
+      - name: Upload userspace binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: aether-bins
+          path: target/${{ env.TARGET_ARCH }}/release/aetherd
+
   # ── 2. Kernel build ──────────────────────────────────────────────────────
   kernel-build:
     name: Kernel — aarch64 build
@@ -109,20 +115,28 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install QEMU
-        run: sudo apt-get install -y qemu-system-aarch64
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-system-aarch64
 
       - name: Download kernel image
         uses: actions/download-artifact@v4
         with:
           name: kernel-image
 
+      - name: Download userspace binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: aether-bins
+          path: bin-dist
+
       - name: Build minimal initramfs
         run: |
           mkdir initramfs
           cd initramfs
           mkdir -p {bin,sbin,etc,proc,sys,run,dev}
-          # Copy aetherd binary (cross-compiled)
-          cp ../target/${{ env.TARGET_ARCH }}/release/aetherd sbin/
+          # Copy aetherd binary (downloaded from artifact)
+          cp ../bin-dist/aetherd sbin/
           # Minimal init script
           cat > init << 'EOF'
           #!/bin/sh
