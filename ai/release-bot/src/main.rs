@@ -253,14 +253,14 @@ Keep it brief, honest, and human. Avoid marketing language."#,
 
 pub struct OtaBuilder {
     repo_path: PathBuf,
-    signing_key: Vec<u8>,
+    _signing_key: Vec<u8>,
 }
 
 impl OtaBuilder {
     pub fn new(repo_path: &str, signing_key: Vec<u8>) -> Self {
         Self {
             repo_path: PathBuf::from(repo_path),
-            signing_key,
+            _signing_key: signing_key,
         }
     }
 
@@ -470,6 +470,15 @@ impl ReleaseBot {
             client: Client::new(),
         }
     }
+}
+
+impl Default for ReleaseBot {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ReleaseBot {
 
     /// Poll CI for successful builds ready to release
     async fn poll_ready_builds(&self) -> Result<Vec<CiBuild>> {
@@ -545,6 +554,7 @@ impl ReleaseBot {
     }
 
     /// Monitor error rates and roll back if they spike
+    #[allow(dead_code)]
     async fn watch_rollout(&self, version: &str, channel: &str) {
         let mut ticker = interval(Duration::from_secs(300)); // check every 5 min
         let mut checks = 0u32;
@@ -602,10 +612,9 @@ impl ReleaseBot {
                     if build.confidence < channel.min_confidence {
                         continue;
                     }
-                    if build.risk_level == "Critical" || build.risk_level == "High" {
-                        if channel.name != "dev" {
+                    if (build.risk_level == "Critical" || build.risk_level == "High")
+                        && channel.name != "dev" {
                             continue;
-                        }
                     }
 
                     match self.release_build(&build, channel).await {

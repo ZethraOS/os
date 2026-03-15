@@ -243,6 +243,15 @@ impl NetworkDaemon {
             event_tx,
         }
     }
+}
+
+impl Default for NetworkDaemon {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl NetworkDaemon {
 
     pub async fn handle(&mut self, cmd: NetworkCommand) -> NetworkEvent {
         match cmd {

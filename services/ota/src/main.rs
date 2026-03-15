@@ -115,7 +115,7 @@ impl DownloadProgress {
 // ─── Signature verifier ────────────────────────────────────────────────────
 
 pub struct SignatureVerifier {
-    public_key_bytes: [u8; 32],
+    _public_key_bytes: [u8; 32],
 }
 
 impl SignatureVerifier {
@@ -126,7 +126,7 @@ impl SignatureVerifier {
         let mut key = [0u8; 32];
         key.copy_from_slice(&bytes[..32]);
         Ok(Self {
-            public_key_bytes: key,
+            _public_key_bytes: key,
         })
     }
 
@@ -315,6 +315,15 @@ impl PostUpdateMonitor {
             monitoring_window_secs: 3600, // watch for 1 hour
         }
     }
+}
+
+impl Default for PostUpdateMonitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl PostUpdateMonitor {
 
     pub async fn monitor_and_rollback_if_needed(&self) -> Result<()> {
         let mut ticker = interval(Duration::from_secs(60));

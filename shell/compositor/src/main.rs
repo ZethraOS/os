@@ -95,6 +95,15 @@ impl GestureRecognizer {
             touch_history: Vec::new(),
         }
     }
+}
+
+impl Default for GestureRecognizer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GestureRecognizer {
 
     pub fn process(&mut self, event: &InputEvent) -> Option<Gesture> {
         match event {

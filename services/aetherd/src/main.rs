@@ -81,6 +81,15 @@ impl Supervisor {
             event_rx,
         }
     }
+}
+
+impl Default for Supervisor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Supervisor {
 
     pub fn load_units(&mut self, units_dir: &Path) -> Result<()> {
         let pattern = units_dir.join("*.unit.toml");
