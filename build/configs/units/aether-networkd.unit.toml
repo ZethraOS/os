@@ -1,0 +1,8 @@
+# aether-networkd.unit.toml
+name        = "aether-networkd"
+description = "AetherOS Network Manager (Wi-Fi, BT, mobile data)"
+after       = ["aetherd-base"]
+exec_start  = "/usr/lib/aether/networkd/aether-networkd"
+restart     = "on_failure"
+restart_delay_ms = 1000
+watchdog_sec = 30

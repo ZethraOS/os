@@ -1,0 +1,17 @@
+[package]
+name    = "aether-network"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "aether-networkd"
+path = "src/main.rs"
+
+[dependencies]
+tokio.workspace      = true
+serde.workspace      = true
+serde_json.workspace = true
+anyhow.workspace     = true
+tracing.workspace    = true
+tracing-subscriber.workspace = true

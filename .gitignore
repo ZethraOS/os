@@ -1,0 +1,10 @@
+/target/
+/patches/staged/
+/patches/tests/
+**/*.patch
+Cargo.lock
+.env
+*.key
+*.pem
+.DS_Store
+/tmp/

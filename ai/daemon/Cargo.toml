@@ -1,0 +1,20 @@
+[package]
+name    = "aether-ai-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "aether-ai-daemon"
+path = "src/main.rs"
+
+[dependencies]
+tokio.workspace      = true
+serde.workspace      = true
+serde_json.workspace = true
+anyhow.workspace     = true
+tracing.workspace    = true
+tracing-subscriber.workspace = true
+chrono.workspace     = true
+uuid.workspace       = true
+reqwest              = { version = "=0.11.23", features = ["json", "rustls-tls"], default-features = false }

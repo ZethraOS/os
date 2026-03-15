@@ -1,0 +1,20 @@
+[package]
+name    = "aether-telephony"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "aether-telephonyd"
+path = "src/main.rs"
+
+[dependencies]
+tokio.workspace      = true
+serde.workspace      = true
+serde_json.workspace = true
+anyhow.workspace     = true
+tracing.workspace    = true
+tracing-subscriber.workspace = true
+chrono.workspace     = true
+uuid.workspace       = true
+async-trait          = "0.1"

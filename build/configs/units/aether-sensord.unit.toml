@@ -1,0 +1,7 @@
+name        = "aether-sensord"
+description = "AetherOS Sensor Aggregation Daemon"
+after       = ["aetherd-base"]
+exec_start  = "/usr/lib/aether/sensord/aether-sensord"
+restart     = "on_failure"
+restart_delay_ms = 500
+watchdog_sec = 15
