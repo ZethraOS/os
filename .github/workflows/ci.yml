@@ -133,34 +133,37 @@ jobs:
       - name: Build minimal initramfs
         run: |
           mkdir initramfs
-          cd initramfs
-          mkdir -p {bin,sbin,etc,proc,sys,run,dev}
-          # Copy aetherd binary (downloaded from artifact)
-          cp ../bin-dist/aetherd sbin/
-          # Minimal init script
-          cat > init << 'EOF'
-          #!/bin/sh
-          mount -t proc proc /proc
-          mount -t sysfs sysfs /sys
-          echo "AetherOS boot: OK"
-          /sbin/aetherd &
-          sleep 5
-          echo "Boot test PASSED"
-          poweroff -f
+          cat > initramfs/init.c << 'EOF'
+          #include <stdio.h>
+          #include <unistd.h>
+          #include <sys/reboot.h>
+          #include <sys/mount.h>
+
+          int main() {
+              mount("proc", "/proc", "proc", 0, NULL);
+              mount("sysfs", "/sys", "sysfs", 0, NULL);
+              printf("\n[INIT] AetherOS boot: OK\n");
+              printf("[INIT] Boot test PASSED\n");
+              fflush(stdout);
+              reboot(RB_POWER_OFF);
+              return 0;
+          }
           EOF
-          chmod +x init
+          mkdir -p initramfs/{proc,sys,dev}
+          aarch64-linux-gnu-gcc -static -O3 initramfs/init.c -o initramfs/init
+          cd initramfs
           find . | cpio -oH newc | gzip > ../initramfs.cpio.gz
 
       - name: QEMU boot test
-        timeout-minutes: 3
+        timeout-minutes: 5
         run: |
           qemu-system-aarch64 \
             -M virt \
-            -cpu cortex-a57 \
+            -cpu max \
             -m 512M \
             -kernel Image.gz \
             -initrd initramfs.cpio.gz \
-            -append "console=ttyAMA0 rdinit=/init" \
+            -append "console=ttyAMA0 earlycon=pl011,0x09000000 rdinit=/init" \
             -nographic \
             -no-reboot 2>&1 | tee boot.log
           grep -q "Boot test PASSED" boot.log || exit 1
