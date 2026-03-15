@@ -30,7 +30,11 @@ pub struct Unit {
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
-pub enum RestartPolicy { Always, OnFailure, Never }
+pub enum RestartPolicy {
+    Always,
+    OnFailure,
+    Never,
+}
 
 // ─── Service state ────────────────────────────────────────────────────────────
 
@@ -85,15 +89,18 @@ impl Supervisor {
             .flatten()
         {
             let contents = std::fs::read_to_string(&entry)?;
-            let unit: Unit = toml::from_str(&contents)
-                .with_context(|| format!("parsing unit {:?}", entry))?;
+            let unit: Unit =
+                toml::from_str(&contents).with_context(|| format!("parsing unit {:?}", entry))?;
             info!(name = %unit.name, "loaded unit");
-            self.statuses.insert(unit.name.clone(), ServiceStatus {
-                name: unit.name.clone(),
-                state: ServiceState::Pending,
-                restarts: 0,
-                started_at: None,
-            });
+            self.statuses.insert(
+                unit.name.clone(),
+                ServiceStatus {
+                    name: unit.name.clone(),
+                    state: ServiceState::Pending,
+                    restarts: 0,
+                    started_at: None,
+                },
+            );
             self.units.insert(unit.name.clone(), unit);
         }
         Ok(())
@@ -102,16 +109,27 @@ impl Supervisor {
     fn boot_order(&self) -> Vec<String> {
         let mut visited: std::collections::HashSet<String> = Default::default();
         let mut order: Vec<String> = Vec::new();
-        fn visit(name: &str, units: &HashMap<String, Unit>, visited: &mut std::collections::HashSet<String>, order: &mut Vec<String>) {
-            if visited.contains(name) { return; }
+        fn visit(
+            name: &str,
+            units: &HashMap<String, Unit>,
+            visited: &mut std::collections::HashSet<String>,
+            order: &mut Vec<String>,
+        ) {
+            if visited.contains(name) {
+                return;
+            }
             visited.insert(name.to_string());
             if let Some(unit) = units.get(name) {
-                for dep in &unit.after { visit(dep, units, visited, order); }
+                for dep in &unit.after {
+                    visit(dep, units, visited, order);
+                }
             }
             order.push(name.to_string());
         }
         let names: Vec<String> = self.units.keys().cloned().collect();
-        for name in &names { visit(name, &self.units, &mut visited, &mut order); }
+        for name in &names {
+            visit(name, &self.units, &mut visited, &mut order);
+        }
         order
     }
 
@@ -146,7 +164,12 @@ impl Supervisor {
             if policy != RestartPolicy::Never {
                 sleep(Duration::from_millis(restart_delay)).await;
             }
-            let _ = tx.send(SupervisorEvent::ServiceExited { name: service_name, exit_code }).await;
+            let _ = tx
+                .send(SupervisorEvent::ServiceExited {
+                    name: service_name,
+                    exit_code,
+                })
+                .await;
         });
         Ok(())
     }
@@ -155,10 +178,20 @@ impl Supervisor {
         let should_restart = if let Some(status) = self.statuses.get_mut(name) {
             status.restarts += 1;
             let r = status.restarts;
-            let policy = self.units.get(name).map(|u| u.restart.clone()).unwrap_or(RestartPolicy::Never);
-            status.state = ServiceState::Failed { exit_code, restarts: r };
-            policy == RestartPolicy::Always || (policy == RestartPolicy::OnFailure && exit_code != 0)
-        } else { false };
+            let policy = self
+                .units
+                .get(name)
+                .map(|u| u.restart.clone())
+                .unwrap_or(RestartPolicy::Never);
+            status.state = ServiceState::Failed {
+                exit_code,
+                restarts: r,
+            };
+            policy == RestartPolicy::Always
+                || (policy == RestartPolicy::OnFailure && exit_code != 0)
+        } else {
+            false
+        };
         if should_restart {
             if let Err(e) = self.spawn_service(name).await {
                 error!(name, error = %e, "restart failed");
@@ -179,15 +212,17 @@ impl Supervisor {
         info!("aetherd: PID {}", std::process::id());
 
         let units_dir = PathBuf::from(
-            std::env::var("AETHER_UNITS_DIR")
-                .unwrap_or_else(|_| "build/configs/units".to_string())
+            std::env::var("AETHER_UNITS_DIR").unwrap_or_else(|_| "build/configs/units".to_string()),
         );
 
         if units_dir.exists() {
             self.load_units(&units_dir)?;
             info!("loaded {} units", self.units.len());
         } else {
-            warn!("units dir {:?} not found — running dry (no services to start)", units_dir);
+            warn!(
+                "units dir {:?} not found — running dry (no services to start)",
+                units_dir
+            );
         }
 
         for name in self.boot_order() {
@@ -225,9 +260,7 @@ impl Supervisor {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "aetherd=info".to_string())
-        )
+        .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "aetherd=info".to_string()))
         .init();
     info!("AetherOS init system starting");
     let mut supervisor = Supervisor::new();

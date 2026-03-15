@@ -32,20 +32,24 @@ pub struct UpdateManifest {
     pub channel: UpdateChannel,
     pub build_id: String,
     pub released_at: DateTime<Utc>,
-    pub required: bool,         // security patches may be required
-    pub rollout_percent: u8,    // 0–100 for gradual rollout
+    pub required: bool,          // security patches may be required
+    pub rollout_percent: u8,     // 0–100 for gradual rollout
     pub min_battery_percent: u8, // don't update below this
     pub payload_url: String,
     pub payload_size_bytes: u64,
     pub payload_sha256: String,
-    pub signature_b64: String,  // ed25519 over manifest JSON
+    pub signature_b64: String, // ed25519 over manifest JSON
     pub changelog: String,
     pub security_patch_level: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
-pub enum UpdateChannel { Dev, Beta, Stable }
+pub enum UpdateChannel {
+    Dev,
+    Beta,
+    Stable,
+}
 
 // ─── Local device state ────────────────────────────────────────────────────
 
@@ -59,19 +63,28 @@ pub struct DeviceUpdateState {
     pub download_progress: Option<DownloadProgress>,
     pub auto_download: bool,
     pub auto_install_wifi_only: bool,
-    pub install_hour_start: u8,   // only install between these hours (night update)
+    pub install_hour_start: u8, // only install between these hours (night update)
     pub install_hour_end: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum Slot { A, B }
+pub enum Slot {
+    A,
+    B,
+}
 
 impl Slot {
     pub fn inactive(&self) -> Self {
-        match self { Slot::A => Slot::B, Slot::B => Slot::A }
+        match self {
+            Slot::A => Slot::B,
+            Slot::B => Slot::A,
+        }
     }
     pub fn block_device(&self) -> &str {
-        match self { Slot::A => "/dev/block/by-name/system_a", Slot::B => "/dev/block/by-name/system_b" }
+        match self {
+            Slot::A => "/dev/block/by-name/system_a",
+            Slot::B => "/dev/block/by-name/system_b",
+        }
     }
 }
 
@@ -85,12 +98,16 @@ pub struct DownloadProgress {
 
 impl DownloadProgress {
     pub fn percent(&self) -> f32 {
-        if self.total_bytes == 0 { return 0.0; }
+        if self.total_bytes == 0 {
+            return 0.0;
+        }
         (self.bytes_downloaded as f32 / self.total_bytes as f32) * 100.0
     }
 
     pub fn eta_secs(&self) -> u64 {
-        if self.speed_bytes_sec == 0 { return u64::MAX; }
+        if self.speed_bytes_sec == 0 {
+            return u64::MAX;
+        }
         (self.total_bytes - self.bytes_downloaded) / self.speed_bytes_sec
     }
 }
@@ -108,7 +125,9 @@ impl SignatureVerifier {
         let bytes = hex::decode(public_key_hex)?;
         let mut key = [0u8; 32];
         key.copy_from_slice(&bytes[..32]);
-        Ok(Self { public_key_bytes: key })
+        Ok(Self {
+            public_key_bytes: key,
+        })
     }
 
     pub fn verify(&self, manifest_json: &str, signature_b64: &str) -> bool {
@@ -119,7 +138,10 @@ impl SignatureVerifier {
         //         let sig = ed25519_dalek::Signature::from_bytes(&sig_bytes).unwrap();
         //         pk.verify(manifest_json.as_bytes(), &sig)
         //     }).is_ok()
-        info!("signature verification (stub) for {} bytes", manifest_json.len());
+        info!(
+            "signature verification (stub) for {} bytes",
+            manifest_json.len()
+        );
         !signature_b64.is_empty() // stub
     }
 }
@@ -176,8 +198,11 @@ impl Downloader {
         }
 
         let mut file = OpenOptions::new()
-            .create(true).append(bytes_done > 0).write(true)
-            .open(&partial).await?;
+            .create(true)
+            .append(bytes_done > 0)
+            .write(true)
+            .open(&partial)
+            .await?;
 
         let mut downloaded = bytes_done;
         let started_at = Utc::now();
@@ -204,7 +229,11 @@ impl Downloader {
         let hash = self.sha256_file(&partial).await?;
         if hash != manifest.payload_sha256 {
             fs::remove_file(&partial).await.ok();
-            anyhow::bail!("payload hash mismatch: expected {} got {}", manifest.payload_sha256, hash);
+            anyhow::bail!(
+                "payload hash mismatch: expected {} got {}",
+                manifest.payload_sha256,
+                hash
+            );
         }
 
         fs::rename(&partial, &dest).await?;
@@ -219,7 +248,9 @@ impl Downloader {
         let mut buf = vec![0u8; 65536];
         loop {
             let n = file.read(&mut buf).await?;
-            if n == 0 { break; }
+            if n == 0 {
+                break;
+            }
             hasher.update(&buf[..n]);
         }
         Ok(format!("{:x}", hasher.finalize()))
@@ -258,7 +289,10 @@ impl PartitionWriter {
     }
 
     async fn set_active_slot_next_boot(&self, slot: &Slot) -> Result<()> {
-        let slot_char = match slot { Slot::A => "a", Slot::B => "b" };
+        let slot_char = match slot {
+            Slot::A => "a",
+            Slot::B => "b",
+        };
         // Write to bootloader control block
         let bcb_path = "/dev/block/by-name/misc";
         info!(slot = slot_char, bcb = bcb_path, "setting boot slot");
@@ -277,7 +311,7 @@ pub struct PostUpdateMonitor {
 impl PostUpdateMonitor {
     pub fn new() -> Self {
         Self {
-            error_rate_threshold: 0.05,  // >5% crash rate triggers rollback
+            error_rate_threshold: 0.05,   // >5% crash rate triggers rollback
             monitoring_window_secs: 3600, // watch for 1 hour
         }
     }
@@ -347,7 +381,8 @@ impl OtaDaemon {
         let state = DeviceUpdateState {
             current_version: std::fs::read_to_string("/etc/aether/version")
                 .unwrap_or_else(|_| "0.1.0".to_string())
-                .trim().to_string(),
+                .trim()
+                .to_string(),
             current_slot: Slot::A,
             channel: UpdateChannel::Dev,
             last_check: None,
@@ -371,9 +406,7 @@ impl OtaDaemon {
     pub async fn check_for_updates(&mut self) -> Result<Option<UpdateManifest>> {
         let url = format!(
             "{}/api/v1/updates?version={}&channel={:?}&device=generic_arm64",
-            self.update_server,
-            self.state.current_version,
-            self.state.channel
+            self.update_server, self.state.current_version, self.state.channel
         );
 
         info!("checking for updates: {}", url);
@@ -389,7 +422,10 @@ impl OtaDaemon {
 
         // Verify signature before trusting anything
         let manifest_json = serde_json::to_string(&manifest)?;
-        if !self.verifier.verify(&manifest_json, &manifest.signature_b64) {
+        if !self
+            .verifier
+            .verify(&manifest_json, &manifest.signature_b64)
+        {
             anyhow::bail!("OTA manifest signature verification FAILED");
         }
 
@@ -408,18 +444,23 @@ impl OtaDaemon {
 
         // Download
         let state = &mut self.state;
-        let payload_path = self.downloader.download(&manifest, |p| {
-            state.download_progress = Some(p.clone());
-            info!(
-                "{:.1}% @ {:.1} MB/s — ETA {}s",
-                p.percent(),
-                p.speed_bytes_sec as f32 / 1_000_000.0,
-                p.eta_secs()
-            );
-        }).await?;
+        let payload_path = self
+            .downloader
+            .download(&manifest, |p| {
+                state.download_progress = Some(p.clone());
+                info!(
+                    "{:.1}% @ {:.1} MB/s — ETA {}s",
+                    p.percent(),
+                    p.speed_bytes_sec as f32 / 1_000_000.0,
+                    p.eta_secs()
+                );
+            })
+            .await?;
 
         // Apply to inactive slot
-        self.partition_writer.apply_to_slot(&payload_path, &target_slot).await?;
+        self.partition_writer
+            .apply_to_slot(&payload_path, &target_slot)
+            .await?;
 
         // Clean up download
         fs::remove_file(&payload_path).await.ok();
@@ -431,7 +472,8 @@ impl OtaDaemon {
 
         // Start monitoring after reboot
         // (This spawns as a separate oneshot service post-reboot)
-        self.write_post_reboot_monitor_flag(&manifest.version).await?;
+        self.write_post_reboot_monitor_flag(&manifest.version)
+            .await?;
 
         Ok(())
     }
@@ -445,12 +487,16 @@ impl OtaDaemon {
         fs::write(
             "/data/ota/post_reboot_monitor.json",
             serde_json::to_string_pretty(&flag)?,
-        ).await?;
+        )
+        .await?;
         Ok(())
     }
 
     pub async fn run(mut self) -> Result<()> {
-        info!("AetherOS OTA daemon starting (version {})", self.state.current_version);
+        info!(
+            "AetherOS OTA daemon starting (version {})",
+            self.state.current_version
+        );
 
         // Check if we just rebooted after an update
         if Path::new("/data/ota/post_reboot_monitor.json").exists() {
@@ -459,7 +505,9 @@ impl OtaDaemon {
             tokio::spawn(async move {
                 let _ = monitor.monitor_and_rollback_if_needed().await;
             });
-            fs::remove_file("/data/ota/post_reboot_monitor.json").await.ok();
+            fs::remove_file("/data/ota/post_reboot_monitor.json")
+                .await
+                .ok();
         }
 
         let mut check_ticker = interval(Duration::from_secs(4 * 60 * 60)); // every 4h
@@ -492,8 +540,9 @@ async fn main() -> Result<()> {
         .with_env_filter("aether_otad=info,warn")
         .init();
 
-    let public_key = std::env::var("AETHER_OTA_PUBLIC_KEY")
-        .unwrap_or_else(|_| "0000000000000000000000000000000000000000000000000000000000000000".to_string());
+    let public_key = std::env::var("AETHER_OTA_PUBLIC_KEY").unwrap_or_else(|_| {
+        "0000000000000000000000000000000000000000000000000000000000000000".to_string()
+    });
     let server = std::env::var("AETHER_OTA_SERVER")
         .unwrap_or_else(|_| "https://updates.aetheros.dev".to_string());
 

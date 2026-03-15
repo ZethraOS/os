@@ -26,7 +26,12 @@ pub struct WifiNetwork {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum WifiSecurity { Open, Wpa2Personal, Wpa3Personal, Enterprise }
+pub enum WifiSecurity {
+    Open,
+    Wpa2Personal,
+    Wpa3Personal,
+    Enterprise,
+}
 
 impl WifiNetwork {
     pub fn signal_bars(&self) -> u8 {
@@ -35,7 +40,7 @@ impl WifiNetwork {
             s if s >= -65 => 3,
             s if s >= -75 => 2,
             s if s >= -85 => 1,
-            _              => 0,
+            _ => 0,
         }
     }
 }
@@ -61,23 +66,47 @@ pub struct NetworkStatus {
 pub enum NetworkCommand {
     GetStatus,
     ScanWifi,
-    ConnectWifi { ssid: String, password: Option<String> },
+    ConnectWifi {
+        ssid: String,
+        password: Option<String>,
+    },
     DisconnectWifi,
-    SetWifiEnabled { enabled: bool },
-    SetMobileData { enabled: bool },
-    SetAirplaneMode { enabled: bool },
-    StartHotspot { ssid: String, password: String },
+    SetWifiEnabled {
+        enabled: bool,
+    },
+    SetMobileData {
+        enabled: bool,
+    },
+    SetAirplaneMode {
+        enabled: bool,
+    },
+    StartHotspot {
+        ssid: String,
+        password: String,
+    },
     StopHotspot,
-    ForgetNetwork { ssid: String },
+    ForgetNetwork {
+        ssid: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "event", rename_all = "snake_case")]
 pub enum NetworkEvent {
-    StatusChanged { status: NetworkStatus },
-    ScanResults { networks: Vec<WifiNetwork> },
-    ConnectResult { success: bool, ssid: String, error: Option<String> },
-    Error { message: String },
+    StatusChanged {
+        status: NetworkStatus,
+    },
+    ScanResults {
+        networks: Vec<WifiNetwork>,
+    },
+    ConnectResult {
+        success: bool,
+        ssid: String,
+        error: Option<String>,
+    },
+    Error {
+        message: String,
+    },
 }
 
 // ─── nl80211 backend (simplified — full impl uses neli or libnl) ───────────────
@@ -128,7 +157,8 @@ impl WifiBackend {
         // Production: write wpa_supplicant config or use iwd D-Bus API
         // then call SIOCGIFFLAGS/SIOCSIFFLAGS to bring interface up
         if let Some(psk) = password {
-            self.known_networks.insert(ssid.to_string(), psk.to_string());
+            self.known_networks
+                .insert(ssid.to_string(), psk.to_string());
         }
         info!(ssid, interface = %self.interface, "connecting to Wi-Fi");
         Ok(())
@@ -162,15 +192,24 @@ pub struct DohResolver {
 }
 
 impl DohResolver {
-    pub fn cloudflare() -> Self { Self { provider: "https://1.1.1.1/dns-query".into() } }
-    pub fn quad9() -> Self      { Self { provider: "https://9.9.9.9/dns-query".into() } }
+    pub fn cloudflare() -> Self {
+        Self {
+            provider: "https://1.1.1.1/dns-query".into(),
+        }
+    }
+    pub fn quad9() -> Self {
+        Self {
+            provider: "https://9.9.9.9/dns-query".into(),
+        }
+    }
 
     pub async fn write_resolv_conf(&self) -> Result<()> {
         // Write /etc/resolv.conf pointing to local dnsproxy
         tokio::fs::write(
             "/etc/resolv.conf",
-            "# AetherOS — DNS-over-HTTPS via local proxy\nnameserver 127.0.0.53\n"
-        ).await?;
+            "# AetherOS — DNS-over-HTTPS via local proxy\nnameserver 127.0.0.53\n",
+        )
+        .await?;
         Ok(())
     }
 }
@@ -207,15 +246,15 @@ impl NetworkDaemon {
 
     pub async fn handle(&mut self, cmd: NetworkCommand) -> NetworkEvent {
         match cmd {
-            NetworkCommand::GetStatus => {
-                NetworkEvent::StatusChanged { status: self.status.clone() }
-            }
-            NetworkCommand::ScanWifi => {
-                match self.wifi.scan().await {
-                    Ok(nets) => NetworkEvent::ScanResults { networks: nets },
-                    Err(e)   => NetworkEvent::Error { message: e.to_string() },
-                }
-            }
+            NetworkCommand::GetStatus => NetworkEvent::StatusChanged {
+                status: self.status.clone(),
+            },
+            NetworkCommand::ScanWifi => match self.wifi.scan().await {
+                Ok(nets) => NetworkEvent::ScanResults { networks: nets },
+                Err(e) => NetworkEvent::Error {
+                    message: e.to_string(),
+                },
+            },
             NetworkCommand::ConnectWifi { ssid, password } => {
                 match self.wifi.connect(&ssid, password.as_deref()).await {
                     Ok(_) => {
@@ -228,26 +267,40 @@ impl NetworkDaemon {
                             connected: true,
                             saved: true,
                         });
-                        NetworkEvent::ConnectResult { success: true, ssid, error: None }
+                        NetworkEvent::ConnectResult {
+                            success: true,
+                            ssid,
+                            error: None,
+                        }
                     }
                     Err(e) => NetworkEvent::ConnectResult {
-                        success: false, ssid, error: Some(e.to_string())
+                        success: false,
+                        ssid,
+                        error: Some(e.to_string()),
                     },
                 }
             }
             NetworkCommand::DisconnectWifi => {
                 let _ = self.wifi.disconnect().await;
                 self.status.wifi_connected = None;
-                NetworkEvent::StatusChanged { status: self.status.clone() }
+                NetworkEvent::StatusChanged {
+                    status: self.status.clone(),
+                }
             }
             NetworkCommand::SetWifiEnabled { enabled } => {
                 self.status.wifi_enabled = enabled;
-                if !enabled { self.status.wifi_connected = None; }
-                NetworkEvent::StatusChanged { status: self.status.clone() }
+                if !enabled {
+                    self.status.wifi_connected = None;
+                }
+                NetworkEvent::StatusChanged {
+                    status: self.status.clone(),
+                }
             }
             NetworkCommand::SetMobileData { enabled } => {
                 self.status.mobile_data_enabled = enabled;
-                NetworkEvent::StatusChanged { status: self.status.clone() }
+                NetworkEvent::StatusChanged {
+                    status: self.status.clone(),
+                }
             }
             NetworkCommand::SetAirplaneMode { enabled } => {
                 self.status.airplane_mode = enabled;
@@ -256,24 +309,34 @@ impl NetworkDaemon {
                     self.status.mobile_data_enabled = false;
                     self.status.wifi_connected = None;
                 }
-                NetworkEvent::StatusChanged { status: self.status.clone() }
+                NetworkEvent::StatusChanged {
+                    status: self.status.clone(),
+                }
             }
             NetworkCommand::StartHotspot { ssid, password } => {
                 match self.wifi.start_hotspot(&ssid, &password).await {
                     Ok(_) => {
                         self.status.hotspot_active = true;
-                        NetworkEvent::StatusChanged { status: self.status.clone() }
+                        NetworkEvent::StatusChanged {
+                            status: self.status.clone(),
+                        }
                     }
-                    Err(e) => NetworkEvent::Error { message: e.to_string() },
+                    Err(e) => NetworkEvent::Error {
+                        message: e.to_string(),
+                    },
                 }
             }
             NetworkCommand::StopHotspot => {
                 self.status.hotspot_active = false;
-                NetworkEvent::StatusChanged { status: self.status.clone() }
+                NetworkEvent::StatusChanged {
+                    status: self.status.clone(),
+                }
             }
             NetworkCommand::ForgetNetwork { ssid } => {
                 self.wifi.known_networks.remove(&ssid);
-                NetworkEvent::StatusChanged { status: self.status.clone() }
+                NetworkEvent::StatusChanged {
+                    status: self.status.clone(),
+                }
             }
         }
     }
@@ -302,7 +365,9 @@ impl NetworkDaemon {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt().with_env_filter("aether_network=info,warn").init();
+    tracing_subscriber::fmt()
+        .with_env_filter("aether_network=info,warn")
+        .init();
     info!("AetherOS network daemon starting");
     NetworkDaemon::new().run().await
 }

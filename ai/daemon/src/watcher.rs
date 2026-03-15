@@ -29,7 +29,7 @@ pub async fn watch_crashes(log_dir: String, tx: tokio::sync::mpsc::Sender<Issue>
                     let comp = content
                         .lines()
                         .find(|l| l.contains("module:") || l.contains("driver:"))
-                        .and_then(|l| l.split(':').last())
+                        .and_then(|l| l.split(':').next_back())
                         .unwrap_or("unknown")
                         .trim()
                         .to_string();
