@@ -27,6 +27,33 @@ This produces:
 ```
 fix: correct null pointer in aetherd service restart
 
+## Branch Strategy
+- `main` — production, tagged releases only (never commit directly)
+- `dev` — integration branch, all work starts here (default branch)
+- `staging` — pre-release testing, mirrors production
+- `feature/xxx` — branch from dev, PR back to dev
+- `bugfix/xxx` — non-critical bugs branch off dev
+- `hotfix/xxx` — critical prod bugs branch off main, PR to main + dev
+
+## Before Every PR
+Ensure your code meets the quality bar:
+```bash
+cargo fmt --all
+cargo clippy --all-targets -- -D warnings
+cargo test --all
+```
+
+## Code Standards
+- **Naming**: `PascalCase` for types/structs, `snake_case` for functions/files/modules, `SCREAMING_SNAKE` for constants.
+- **Modularity**: Any file exceeding 400 lines must be split into sub-modules.
+- **Visibility**: Minimize `pub` usage; only expose what is necessary for cross-module integration.
+
+## Commit Message Format
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+`type(scope): description`
+Types: `feat`, `fix`, `hotfix`, `perf`, `refactor`, `test`, `docs`, `chore`
+Example: `feat(sensord): add gyroscope fusion with complementary filter`
+
 Signed-off-by: Your Name <you@example.com>
 ```
 
