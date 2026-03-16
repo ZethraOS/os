@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AetherOS Kernel Config Security Checker
+ZethraOS Kernel Config Security Checker
 Used in CI to catch dangerous kernel configuration choices.
 """
 
@@ -58,12 +58,12 @@ def parse_config(path: str) -> dict:
                 config[m2.group(1)] = "__not_set__"
     return config
 
-def check(config_path: str) -> int:
+def audit_config(config_path):
     config = parse_config(config_path)
     errors = 0
     warnings = 0
 
-    print(f"\nAetherOS kernel config security audit: {config_path}\n{'─'*60}")
+    print(f"\nZethraOS kernel config security audit: {config_path}\n{'─'*60}")
 
     for rule in RULES:
         value = config.get(rule.option)

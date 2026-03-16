@@ -1,4 +1,4 @@
-// partition.rs — A/B partition manager for AetherOS OTA
+// partition.rs — A/B partition manager for ZethraOS OTA
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;

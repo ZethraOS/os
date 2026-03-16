@@ -1,10 +1,10 @@
-# /etc/aether/units/telephony.unit.toml
-# AetherOS Telephony Service unit file
+# /etc/zethra/units/telephony.unit.toml
+# ZethraOS Telephony Service unit file
 
-name        = "aether-telephony"
-description = "AetherOS telephony stack (calls, SMS, data)"
-after       = ["aetherd-base", "aether-modem-hal"]
-exec_start  = "/usr/lib/aether/telephony/aether-telephonyd --config /etc/aether/telephony.toml"
+name        = "zethra-telephony"
+description = "ZethraOS telephony stack (calls, SMS, data)"
+after       = ["zethrad-base", "zethra-modem-hal"]
+exec_start  = "/usr/lib/zethra/telephony/zethra-telephonyd --config /etc/zethra/telephony.toml"
 restart     = "on_failure"
 restart_delay_ms = 2000
 watchdog_sec = 30

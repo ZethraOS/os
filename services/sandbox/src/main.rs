@@ -1,4 +1,4 @@
-// main.rs — AetherOS Sandbox Orchestrator
+// main.rs — ZethraOS Sandbox Orchestrator
 // SPDX-License-Identifier: Apache-2.0
 
 mod ipc;
@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
         .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))
         .init();
 
-    info!("AetherOS Sandbox Service starting");
+    info!("ZethraOS Sandbox Service starting");
 
     let runtime = SandboxRuntime::new()?;
     let mut lifecycle = LifecycleManager::new();

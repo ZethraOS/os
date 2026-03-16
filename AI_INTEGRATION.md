@@ -1,6 +1,6 @@
-# AetherAI Integration & Robustness Report
+# ZethraAI Integration & Robustness Report
 
-This document summarizes the changes made to the AetherOS AI daemon and development scripts to support modern AI providers and ensure system stability.
+This document summarizes the changes made to the ZethraOS AI daemon and development scripts to support modern AI providers and ensure system stability.
 
 ## 1. Multi-Provider Support
 We have successfully expanded the AI daemon to support a diverse set of AI "brains."
@@ -37,5 +37,5 @@ The AI daemon has been upgraded from a simple log analyzer to a proactive OS "Im
 - Added a comprehensive guided setup for free AI providers.
 
 ## 6. Summary of Files Changed
-- [main.rs](file:///Users/nomad/workstation/work/code/OS/Mobile/aetheros/ai/daemon/src/main.rs): Core logic, provider detection, JSON repair, and permissive mapping.
-- [dev.sh](file:///Users/nomad/workstation/work/code/OS/Mobile/aetheros/dev.sh): Environment validation and provider guidance.
+- [analyzer.rs](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/ai/daemon/src/analyzer.rs): Core logic, provider detection, JSON repair, and permissive mapping.
+- [dev.sh](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/dev.sh): Environment validation and provider guidance.

@@ -1,0 +1,7 @@
+name        = "zethra-otad"
+description = "ZethraOS OTA Update Daemon"
+after       = ["zethrad-base", "zethra-networkd"]
+exec_start  = "/usr/lib/zethra/otad/zethra-otad"
+restart     = "on_failure"
+restart_delay_ms = 5000
+watchdog_sec = 120

@@ -1,4 +1,4 @@
-// runtime.rs — WASMtime runtime for AetherOS sandboxed apps
+// runtime.rs — WASMtime runtime for ZethraOS sandboxed apps
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};

@@ -1,11 +1,11 @@
 [package]
-name    = "aether-otad"
+name    = "zethra-otad"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-otad"
+name = "zethra-otad"
 path = "src/main.rs"
 
 [dependencies]

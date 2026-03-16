@@ -1,9 +1,9 @@
-// aether-sensord — AetherOS Sensor Aggregation Daemon
+// zethra-sensord — ZethraOS Sensor Aggregation Daemon
 // SPDX-License-Identifier: Apache-2.0
 //
 // Reads raw hardware sensor data via the SensorHal trait,
 // applies calibration, fusion algorithms, and delivers events
-// to subscribers (apps, compositor, AetherAI).
+// to subscribers (apps, compositor, ZethraAI).
 //
 // Sensor fusion provides:
 //   • Orientation (quaternion) from accel + gyro + magnetometer
@@ -311,7 +311,13 @@ impl SensorDaemon {
     }
 
     pub async fn run(mut self) -> Result<()> {
-        info!("AetherOS sensor daemon starting");
+        // zethra-sensord — ZethraOS Sensor Aggregation Daemon
+        // SPDX-License-Identifier: Apache-2.0
+        //
+        // Reads raw hardware sensor data via the SensorHal trait,
+        // applies calibration, fusion algorithms, and delivers events
+        // to subscribers (apps, compositor, ZethraAI).
+        info!("ZethraOS sensor daemon starting");
 
         // Simulate 100Hz sensor loop (real impl reads from kernel IIO)
         let mut ticker = interval(Duration::from_millis(10));
@@ -339,7 +345,7 @@ impl SensorDaemon {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter("aether_sensord=info")
+        .with_env_filter("zethra_sensord=info")
         .init();
 
     let (tx, _) = broadcast::channel(256);

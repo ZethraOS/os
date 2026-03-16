@@ -1,4 +1,4 @@
-// pdu.rs — GSM 7-bit and SMS PDU encoding for AetherOS Telephony
+// pdu.rs — GSM 7-bit and SMS PDU encoding for ZethraOS Telephony
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(dead_code, unused_parens)]

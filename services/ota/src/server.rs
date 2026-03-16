@@ -1,4 +1,4 @@
-// server.rs — Update server client for AetherOS OTA
+// server.rs — Update server client for ZethraOS OTA
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;

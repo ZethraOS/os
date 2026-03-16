@@ -1,15 +1,15 @@
-# AetherOS — Autonomous CI/CD Pipeline
-# This workflow is triggered both by human PRs and by the AetherAI daemon.
+# ZethraOS — Autonomous CI/CD Pipeline
+# This workflow is triggered both by human PRs and by the ZethraAI daemon.
 # On AI-generated patches with high confidence + passing tests, auto-merge fires.
 
-name: AetherOS Build & Self-Heal
+name: ZethraOS Build & Self-Heal
 
 on:
   push:
     branches: [main, dev]
   pull_request:
     branches: [main]
-  # AetherAI daemon triggers this via repository_dispatch
+  # ZethraAI daemon triggers this via repository_dispatch
   repository_dispatch:
     types: [ai-patch-ready, cve-fix-ready, performance-fix-ready]
   schedule:
@@ -73,12 +73,12 @@ jobs:
         run: |
           wget -q https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${{ env.KERNEL_VERSION }}.tar.xz
           tar xf linux-${{ env.KERNEL_VERSION }}.tar.xz
-          cp kernel/aether_defconfig linux-${{ env.KERNEL_VERSION }}/arch/arm64/configs/
+          cp kernel/zethra_defconfig linux-${{ env.KERNEL_VERSION }}/arch/arm64/configs/
 
       - name: Build kernel
         working-directory: linux-${{ env.KERNEL_VERSION }}
         run: |
-          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- aether_defconfig
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc) Image.gz modules dtbs
 
       - name: Upload kernel artifact
@@ -108,15 +108,15 @@ jobs:
           mkdir initramfs
           cd initramfs
           mkdir -p {bin,sbin,etc,proc,sys,run,dev}
-          # Copy aetherd binary (cross-compiled)
-          cp ../target/${{ env.TARGET_ARCH }}/release/aetherd sbin/
+          # Copy zethrad binary (cross-compiled)
+          cp ../target/${{ env.TARGET_ARCH }}/release/zethrad sbin/
           # Minimal init script
           cat > init << 'EOF'
           #!/bin/sh
           mount -t proc proc /proc
           mount -t sysfs sysfs /sys
-          echo "AetherOS boot: OK"
-          /sbin/aetherd &
+          echo "ZethraOS boot: OK"
+          /sbin/zethrad &
           sleep 5
           echo "Boot test PASSED"
           poweroff -f
@@ -151,7 +151,7 @@ jobs:
           cargo audit
 
       - name: Scan kernel config for dangerous options
-        run: python3 tools/ci/check_kernel_config.py kernel/aether_defconfig
+        run: python3 tools/ci/check_kernel_config.py kernel/zethra_defconfig
 
       - name: Check for hardcoded secrets
         uses: trufflesecurity/trufflehog@main
@@ -169,7 +169,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.AETHER_BOT_TOKEN }}
+          token: ${{ secrets.ZETHRA_BOT_TOKEN }}
 
       - name: Validate AI patch metadata
         run: |
@@ -190,8 +190,8 @@ jobs:
 
       - name: Apply patch
         run: |
-          git config user.name "AetherAI Bot"
-          git config user.email "ai-bot@aetheros.dev"
+          git config user.name "ZethraAI Bot"
+          git config user.email "ai-bot@zethraos.com"
           PATCH_FILE="${{ github.event.client_payload.patch_file }}"
           git apply "$PATCH_FILE"
           git add -A
@@ -200,7 +200,7 @@ jobs:
           Confidence: ${{ github.event.client_payload.confidence }}
           Root cause: ${{ github.event.client_payload.root_cause }}
 
-          Auto-merged by AetherAI daemon after passing all CI checks.
+          Auto-merged by ZethraAI daemon after passing all CI checks.
           Human review available at: patches/needs-review/"
           git push origin main
 
@@ -235,7 +235,7 @@ jobs:
       - name: Publish to OTA server
         run: |
           bash build/scripts/publish_ota.sh \
-            --package dist/aetheros-ota-*.zip \
+            --package dist/zethraos-ota-*.zip \
             --channel dev \
             --server "${{ secrets.OTA_SERVER_URL }}"
 
@@ -244,7 +244,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "AetherOS dev OTA published automatically. Issue: ${{ github.event.client_payload.issue_id }}. Commit: ${{ github.sha }}"
+              "text": "ZethraOS dev OTA published automatically. Issue: ${{ github.event.client_payload.issue_id }}. Commit: ${{ github.sha }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
