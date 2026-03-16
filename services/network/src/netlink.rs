@@ -1,3 +1,6 @@
+// netlink.rs — Netlink monitor for AetherOS Network
+// SPDX-License-Identifier: Apache-2.0
+
 use anyhow::Result;
 #[cfg(target_os = "linux")]
 use futures_util::stream::StreamExt;
@@ -20,10 +23,14 @@ impl NetlinkMonitor {
 
         while let Some((message, _metadata)) = messages.next().await {
             match message.payload {
-                netlink_packet_route::NetlinkPayload::RtmNewLink(_link) => {
+                rtnetlink::packet_core::NetlinkPayload::InnerMessage(
+                    rtnetlink::packet_route::RtnlMessage::NewLink(_link),
+                ) => {
                     info!("Network link state change detected");
                 }
-                netlink_packet_route::NetlinkPayload::RtmNewAddr(_addr) => {
+                rtnetlink::packet_core::NetlinkPayload::InnerMessage(
+                    rtnetlink::packet_route::RtnlMessage::NewAddress(_addr),
+                ) => {
                     info!("IP address change detected");
                 }
                 _ => {}
