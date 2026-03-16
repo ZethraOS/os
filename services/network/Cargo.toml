@@ -22,3 +22,5 @@ rand = "0.8"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 rtnetlink = "0.13"
+netlink-packet-core = "0.7"
+netlink-packet-route = "0.19"
