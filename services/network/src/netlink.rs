@@ -3,9 +3,9 @@ use anyhow::Result;
 use futures_util::stream::StreamExt;
 #[cfg(target_os = "linux")]
 use rtnetlink::new_connection;
-use tracing::warn;
 #[cfg(target_os = "linux")]
 use tracing::info;
+use tracing::warn;
 
 pub struct NetlinkMonitor;
 

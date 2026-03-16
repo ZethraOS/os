@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use tokio::net::UnixListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tracing::{info, error};
+use tokio::net::UnixListener;
+use tracing::{error, info};
 
 pub struct SandboxIPC {
     socket_path: String,
@@ -28,7 +28,10 @@ impl SandboxIPC {
                     tokio::spawn(async move {
                         let mut buf = [0u8; 1024];
                         if let Ok(n) = stream.read(&mut buf).await {
-                            info!("Received message from sandboxed app: {}", String::from_utf8_lossy(&buf[..n]));
+                            info!(
+                                "Received message from sandboxed app: {}",
+                                String::from_utf8_lossy(&buf[..n])
+                            );
                             // In real impl, would route this to relevant OS service based on message type
                             let _ = stream.write_all(b"{\"status\":\"ack\"}").await;
                         }

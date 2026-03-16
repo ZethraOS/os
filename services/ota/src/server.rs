@@ -30,8 +30,15 @@ impl UpdateServerClient {
         }
     }
 
-    pub async fn check_updates(&self, current_version: &str, channel: &str) -> Result<Option<UpdateManifest>> {
-        let url = format!("{}/api/v1/updates?version={}&channel={}", self.base_url, current_version, channel);
+    pub async fn check_updates(
+        &self,
+        current_version: &str,
+        channel: &str,
+    ) -> Result<Option<UpdateManifest>> {
+        let url = format!(
+            "{}/api/v1/updates?version={}&channel={}",
+            self.base_url, current_version, channel
+        );
         info!(url, "Polling update server");
 
         let resp = self.client.get(&url).send().await?;
@@ -40,7 +47,7 @@ impl UpdateServerClient {
         }
 
         let manifest: UpdateManifest = resp.json().await?;
-        
+
         // Respect rollout percentage
         if !self.is_in_rollout(manifest.rollout_percent) {
             info!("Update available but device is outside rollout percentage");
@@ -61,9 +68,13 @@ impl UpdateServerClient {
     }
 
     fn is_in_rollout(&self, percent: u8) -> bool {
-        if percent >= 100 { return true; }
-        if percent == 0 { return false; }
-        
+        if percent >= 100 {
+            return true;
+        }
+        if percent == 0 {
+            return false;
+        }
+
         // Simple deterministic check for demonstration
         // In reality, this would use a hardware ID hash
         (Utc::now().timestamp() % 100) < percent as i64

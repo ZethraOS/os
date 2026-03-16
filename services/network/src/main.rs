@@ -1,15 +1,15 @@
 // aether-networkd — AetherOS Network Manager
 // SPDX-License-Identifier: Apache-2.0
 
-mod wifi;
 mod dns;
 mod netlink;
+mod wifi;
 
-use anyhow::Result;
-use tracing::info;
-use crate::wifi::WifiManager;
 use crate::dns::DnsResolver;
 use crate::netlink::NetlinkMonitor;
+use crate::wifi::WifiManager;
+use anyhow::Result;
+use tracing::info;
 
 pub struct NetworkOrchestrator {
     wifi: WifiManager,
