@@ -5,6 +5,7 @@ use futures_util::stream::StreamExt;
 use rtnetlink::new_connection;
 #[cfg(target_os = "linux")]
 use tracing::info;
+#[cfg(not(target_os = "linux"))]
 use tracing::warn;
 
 pub struct NetlinkMonitor;
@@ -18,11 +19,11 @@ impl NetlinkMonitor {
         info!("Netlink monitor started (Linux)");
 
         while let Some((message, _metadata)) = messages.next().await {
-            match message {
-                rtnetlink::packet::NetlinkMessage::RtmNewLink(_link) => {
+            match message.payload {
+                netlink_packet_route::NetlinkPayload::RtmNewLink(_link) => {
                     info!("Network link state change detected");
                 }
-                rtnetlink::packet::NetlinkMessage::RtmNewAddr(_addr) => {
+                netlink_packet_route::NetlinkPayload::RtmNewAddr(_addr) => {
                     info!("IP address change detected");
                 }
                 _ => {}
