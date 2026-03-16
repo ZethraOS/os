@@ -1,4 +1,4 @@
-// dns.rs — Secure DNS and DoH for AetherOS
+// dns.rs — Secure DNS and DoH for ZethraOS
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
@@ -9,7 +9,7 @@ pub struct DnsResolver;
 
 impl DnsResolver {
     pub async fn apply_system_config(nameservers: &[&str]) -> Result<()> {
-        let mut config = String::from("# AetherOS System Resolver\n");
+        let mut config = String::from("# ZethraOS System Resolver\n");
         for ns in nameservers {
             config.push_str(&format!("nameserver {}\n", ns));
         }

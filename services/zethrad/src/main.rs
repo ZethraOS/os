@@ -1,4 +1,4 @@
-// aetherd — AetherOS Init System (PID 1)
+// zethrad — ZethraOS Init System (PID 1)
 // SPDX-License-Identifier: Apache-2.0
 //
 // LOCAL DEV BUILD: filesystem mounts are stubbed out.
@@ -210,17 +210,17 @@ impl Supervisor {
     async fn emit_health_report(&self) {
         let report: Vec<&ServiceStatus> = self.statuses.values().collect();
         if let Ok(json) = serde_json::to_string_pretty(&report) {
-            let dir = std::path::Path::new("/tmp/aether");
+            let dir = std::path::Path::new("/tmp/zethra");
             let _ = std::fs::create_dir_all(dir);
-            let _ = tokio::fs::write("/tmp/aether/health.json", json).await;
+            let _ = tokio::fs::write("/tmp/zethra/health.json", json).await;
         }
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        info!("aetherd: PID {}", std::process::id());
+        info!("zethrad: PID {}", std::process::id());
 
         let units_dir = PathBuf::from(
-            std::env::var("AETHER_UNITS_DIR").unwrap_or_else(|_| "build/configs/units".to_string()),
+            std::env::var("ZETHRA_UNITS_DIR").unwrap_or_else(|_| "build/configs/units".to_string()),
         );
 
         if units_dir.exists() {
@@ -256,7 +256,7 @@ impl Supervisor {
                     self.emit_health_report().await;
                 }
                 Some(SupervisorEvent::Shutdown) | None => {
-                    info!("aetherd shutting down");
+                    info!("zethrad shutting down");
                     break;
                 }
             }
@@ -268,9 +268,9 @@ impl Supervisor {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "aetherd=info".to_string()))
+        .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "zethrad=info".to_string()))
         .init();
-    info!("AetherOS init system starting");
+    info!("ZethraOS init system starting");
     let mut supervisor = Supervisor::new();
     supervisor.run().await
 }

@@ -1,4 +1,4 @@
-// netlink.rs — Netlink monitor for AetherOS Network
+// netlink.rs — Netlink monitor for ZethraOS Network
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;

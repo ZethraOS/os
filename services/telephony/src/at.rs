@@ -1,4 +1,4 @@
-// at.rs — AT command engine for AetherOS Telephony
+// at.rs — AT command engine for ZethraOS Telephony
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(dead_code)]

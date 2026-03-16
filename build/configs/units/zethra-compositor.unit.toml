@@ -1,0 +1,7 @@
+name        = "zethra-compositor"
+description = "ZethraShell Wayland Compositor"
+after       = ["zethrad-base", "zethra-sensord"]
+exec_start  = "/usr/lib/zethra/compositor/zethra-compositor"
+restart     = "on_failure"
+restart_delay_ms = 2000
+watchdog_sec = 60

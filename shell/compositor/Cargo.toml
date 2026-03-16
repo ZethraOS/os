@@ -1,11 +1,11 @@
 [package]
-name    = "aether-compositor"
+name    = "zethra-compositor"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-compositor"
+name = "zethra-compositor"
 path = "src/main.rs"
 
 [dependencies]

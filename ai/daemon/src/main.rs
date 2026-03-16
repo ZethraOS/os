@@ -1,4 +1,4 @@
-// aether-ai-daemon — AetherOS Self-Healing Intelligence Layer
+// zethra-ai-daemon — ZethraOS Self-Healing Intelligence Layer
 // SPDX-License-Identifier: Apache-2.0
 
 mod analyzer;
@@ -27,12 +27,12 @@ async fn main() -> Result<()> {
         .init();
 
     let provider = ProviderConfig::detect();
-    let crash_dir = std::env::var("AETHER_CRASH_DIR")
-        .unwrap_or_else(|_| format!("{}/aether/crashes", std::env::temp_dir().display()));
-    let repo_path = std::env::var("AETHER_REPO_PATH").unwrap_or_else(|_| ".".to_string());
+    let crash_dir = std::env::var("ZETHRA_CRASH_DIR")
+        .unwrap_or_else(|_| format!("{}/zethra/crashes", std::env::temp_dir().display()));
+    let repo_path = std::env::var("ZETHRA_REPO_PATH").unwrap_or_else(|_| ".".to_string());
 
     info!("══════════════════════════════════════════");
-    info!("  AetherAI daemon — self-healing pipeline");
+    info!("  ZethraAI daemon — self-healing pipeline");
     match &provider {
         Some(p) => {
             info!("  Provider   : {}", p.name);
@@ -85,7 +85,7 @@ async fn main() -> Result<()> {
                 .send(Issue::AppCrash {
                     id: Uuid::new_v4().to_string(),
                     timestamp: Utc::now(),
-                    package: "aether.dialer".to_string(),
+                    package: "zethra.dialer".to_string(),
                     stack_trace: "SIGSEGV in EventLoop::dispatch at event_loop.rs:88".to_string(),
                     signal: 11,
                 })

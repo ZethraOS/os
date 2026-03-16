@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "services/aetherd",
+    "services/zethrad",
     "services/telephony",
     "services/network",
     "services/sensors",
@@ -14,7 +14,7 @@ members = [
 
 [workspace.package]
 version    = "0.1.0"
-authors    = ["AetherOS Contributors"]
+authors    = ["ZethraOS Contributors"]
 license    = "Apache-2.0"
 edition    = "2021"
 

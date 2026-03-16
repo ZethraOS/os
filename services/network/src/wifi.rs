@@ -1,4 +1,4 @@
-// wifi.rs — WPA Supplicant control for AetherOS
+// wifi.rs — WPA Supplicant control for ZethraOS
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;

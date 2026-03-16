@@ -1,11 +1,11 @@
 [package]
-name    = "aetherd"
+name    = "zethrad"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aetherd"
+name = "zethrad"
 path = "src/main.rs"
 
 [dependencies]

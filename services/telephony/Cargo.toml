@@ -1,11 +1,11 @@
 [package]
-name    = "aether-telephony"
+name    = "zethra-telephony"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-telephonyd"
+name = "zethra-telephonyd"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,4 +1,4 @@
-// aether-release-bot — AetherOS Autonomous Release Manager
+// zethra-release-bot — ZethraOS Autonomous Release Manager
 // SPDX-License-Identifier: Apache-2.0
 //
 // Responsibilities:
@@ -193,7 +193,7 @@ impl ChangelogGenerator {
 
     pub async fn generate(&self, build: &CiBuild, version: &Version) -> Result<String> {
         let prompt = format!(
-            r#"Generate a concise, user-friendly changelog entry for AetherOS version {}.
+            r#"Generate a concise, user-friendly changelog entry for ZethraOS version {}.
 
 Build details:
 - Trigger: {:?}
@@ -202,7 +202,7 @@ Build details:
 - Commit: {}
 
 Write it in this format:
-## AetherOS {} — <short title>
+## ZethraOS {} — <short title>
 _Released <today's date>_
 
 ### What's fixed
@@ -265,7 +265,7 @@ impl OtaBuilder {
     }
 
     pub async fn build(&self, version: &Version, channel: &str) -> Result<OtaPackage> {
-        let filename = format!("aetheros-{}-{}.zip", version, channel);
+        let filename = format!("zethraos-{}-{}.zip", version, channel);
         let output_path = self.repo_path.join("dist").join(&filename);
         fs::create_dir_all(output_path.parent().unwrap()).await?;
 
@@ -273,7 +273,7 @@ impl OtaBuilder {
         // with A/B partition support and verified boot metadata.
         // Here we write a placeholder.
         let content = format!(
-            "AetherOS OTA Package\nVersion: {}\nChannel: {}\nBuilt: {}\n",
+            "ZethraOS OTA Package\nVersion: {}\nChannel: {}\nBuilt: {}\n",
             version,
             channel,
             Utc::now()
@@ -398,12 +398,12 @@ impl Notifier {
 
     pub async fn notify_release(&self, release: &Release) -> Result<()> {
         let msg = format!(
-            "AetherOS {} published to *{}* channel ({} rollout)\n{}\n{}",
+            "ZethraOS {} published to *{}* channel ({} rollout)\n{}\n{}",
             release.version,
             release.channel,
             release.rollout_percent,
             if release.auto_generated {
-                "_Auto-released by AetherAI_"
+                "_Auto-released by ZethraAI_"
             } else {
                 "_Manually released_"
             },
@@ -419,7 +419,7 @@ impl Notifier {
     }
 
     pub async fn notify_rollback(&self, version: &str, reason: &str) -> Result<()> {
-        let msg = format!("⚠ AetherOS {} ROLLED BACK: {}", version, reason);
+        let msg = format!("⚠ ZethraOS {} ROLLED BACK: {}", version, reason);
         let _ = self
             .client
             .post(&self.webhook_url)
@@ -446,11 +446,11 @@ pub struct ReleaseBot {
 impl ReleaseBot {
     pub fn new() -> Self {
         let api_key = std::env::var("ANTHROPIC_API_KEY").unwrap_or_default();
-        let repo_path = std::env::var("AETHER_REPO").unwrap_or("/opt/aetheros/src".into());
-        let ota_url = std::env::var("OTA_SERVER_URL").unwrap_or("http://ota.aetheros.dev".into());
+        let repo_path = std::env::var("ZETHRA_REPO").unwrap_or("/opt/zethraos/src".into());
+        let ota_url = std::env::var("OTA_SERVER_URL").unwrap_or("http://ota.zethraos.com".into());
         let ota_token = std::env::var("OTA_TOKEN").unwrap_or_default();
         let webhook = std::env::var("NOTIFY_WEBHOOK").unwrap_or_default();
-        let ci_url = std::env::var("CI_API_URL").unwrap_or("http://ci.aetheros.dev".into());
+        let ci_url = std::env::var("CI_API_URL").unwrap_or("http://ci.zethraos.com".into());
         let signing_key = std::env::var("OTA_SIGNING_KEY")
             .unwrap_or_default()
             .into_bytes();
@@ -508,7 +508,7 @@ impl ReleaseBot {
             .changelog_gen
             .generate(build, &version)
             .await
-            .unwrap_or_else(|_| format!("AetherOS {} — automated patch release", version));
+            .unwrap_or_else(|_| format!("ZethraOS {} — automated patch release", version));
 
         // 3. Build OTA package
         let pkg = self.ota_builder.build(&version, &channel.name).await?;
@@ -541,7 +541,7 @@ impl ReleaseBot {
         };
 
         // 5. Persist release record
-        let record_path = PathBuf::from("/var/log/aether/releases")
+        let record_path = PathBuf::from("/var/log/zethra/releases")
             .join(format!("{}-{}.json", version, channel.name));
         let _ = fs::create_dir_all(record_path.parent().unwrap()).await;
         let _ = fs::write(&record_path, serde_json::to_string_pretty(&release)?).await;
@@ -588,7 +588,7 @@ impl ReleaseBot {
     }
 
     pub async fn run(self) -> Result<()> {
-        info!("AetherOS release bot starting");
+        info!("ZethraOS release bot starting");
         let mut poll_ticker = interval(Duration::from_secs(60));
 
         loop {
@@ -656,7 +656,7 @@ impl ReleaseBot {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter("aether_release_bot=info,warn")
+        .with_env_filter("zethra_release_bot=info,warn")
         .init();
     ReleaseBot::new().run().await
 }

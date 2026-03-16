@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# build_ota.sh — AetherOS OTA package builder
+# build_ota.sh — ZethraOS OTA package builder
 # SPDX-License-Identifier: Apache-2.0
 #
 # Usage:
 #   bash build_ota.sh --version 0.3.1 --channel dev --sign-key $KEY
 #
-# Produces: dist/aetheros-<version>-<channel>-<arch>.zip
+# Produces: dist/zethraos-<version>-<channel>-<arch>.zip
 # Structure of the OTA zip (A/B update format):
 #   payload.bin         — delta/full update payload (bsdiff format)
 #   payload_properties.txt
 #   META-INF/
-#     com/google/android/update-binary  — (replaced by aether-update-engine)
+#     com/google/android/update-binary  — (replaced by zethra-update-engine)
 #     com/google/android/updater-script — empty; engine handles update
-#   aether-manifest.json — our metadata (version, sha256, required_version)
+#   zethra-manifest.json — our metadata (version, sha256, required_version)
 
 set -euo pipefail
 
@@ -37,11 +37,11 @@ done
 
 [[ -z "$VERSION" ]] && { echo "ERROR: --version required"; exit 1; }
 
-FILENAME="aetheros-${VERSION}-${CHANNEL}-${ARCH}.zip"
+FILENAME="zethraos-${VERSION}-${CHANNEL}-${ARCH}.zip"
 OUTPUT="$DIST_DIR/$FILENAME"
 
-echo "==> AetherOS OTA build: $VERSION ($CHANNEL/$ARCH)"
-mkdir -p "$DIST_DIR" "$WORK_DIR/META-INF/com/aether"
+echo "==> ZethraOS OTA build: $VERSION ($CHANNEL/$ARCH)"
+mkdir -p "$DIST_DIR" "$WORK_DIR/META-INF/com/zethra"
 
 # ─── 1. Copy built artifacts ──────────────────────────────────────────────────
 echo "--> Copying kernel image..."
@@ -51,7 +51,7 @@ cp "$REPO_ROOT/build/out/Image.gz" "$WORK_DIR/Image.gz" 2>/dev/null || {
 }
 
 echo "--> Copying userspace binaries..."
-for bin in aetherd aether-telephonyd aether-networkd aether-ai-daemon aether-compositor aether-release-bot; do
+for bin in zethrad zethra-telephonyd zethra-networkd zethra-ai-daemon zethra-compositor zethra-release-bot; do
   src="$REPO_ROOT/target/aarch64-unknown-linux-gnu/release/$bin"
   if [[ -f "$src" ]]; then
     cp "$src" "$WORK_DIR/$bin"
@@ -67,7 +67,7 @@ KERNEL_SHA=$(sha256sum "$WORK_DIR/Image.gz" | awk '{print $1}')
 BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_COMMIT=$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-cat > "$WORK_DIR/aether-manifest.json" << EOF
+cat > "$WORK_DIR/zethra-manifest.json" << EOF
 {
   "version": "$VERSION",
   "channel": "$CHANNEL",
@@ -83,22 +83,22 @@ cat > "$WORK_DIR/aether-manifest.json" << EOF
 EOF
 
 # ─── 3. Write update engine entry point ───────────────────────────────────────
-cat > "$WORK_DIR/META-INF/com/aether/update-script" << 'EOF'
-# AetherOS update script — processed by aether-update-engine
+cat > "$WORK_DIR/META-INF/com/zethra/update-script" << 'EOF'
+# ZethraOS update script — processed by zethra-update-engine
 # Format: <command> <args>
 flash_image  kernel    Image.gz
-install_bin  aetherd
-install_bin  aether-telephonyd
-install_bin  aether-networkd
-install_bin  aether-ai-daemon
-install_bin  aether-compositor
-install_bin  aether-release-bot
+install_bin  zethrad
+install_bin  zethra-telephonyd
+install_bin  zethra-networkd
+install_bin  zethra-ai-daemon
+install_bin  zethra-compositor
+install_bin  zethra-release-bot
 set_version  @@VERSION@@
 sync
 reboot
 EOF
 
-sed -i "s/@@VERSION@@/$VERSION/g" "$WORK_DIR/META-INF/com/aether/update-script"
+sed -i "s/@@VERSION@@/$VERSION/g" "$WORK_DIR/META-INF/com/zethra/update-script"
 
 # ─── 4. Package ───────────────────────────────────────────────────────────────
 echo "--> Creating OTA zip..."

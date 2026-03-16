@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-// permissions.rs — Permission manifest parser for AetherOS Apps
+// permissions.rs — Permission manifest parser for ZethraOS Apps
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};
@@ -38,7 +38,7 @@ pub enum PermissionType {
 
 impl AppManifest {
     pub fn from_toml(content: &str) -> Result<Self> {
-        toml::from_str(content).context("Failed to parse aether.permissions.toml")
+        toml::from_str(content).context("Failed to parse zethra.permissions.toml")
     }
 
     pub fn has_permission(&self, perm: PermissionType) -> bool {
