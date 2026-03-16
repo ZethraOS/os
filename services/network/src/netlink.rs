@@ -23,11 +23,8 @@ impl NetlinkMonitor {
 
         while let Some((message, _)) = messages.next().await {
             use netlink_packet_core::NetlinkPayload;
-            match message.payload {
-                NetlinkPayload::InnerMessage(msg) => {
-                    info!("Netlink event: {:?}", msg);
-                }
-                _ => {}
+            if let NetlinkPayload::InnerMessage(msg) = message.payload {
+                info!("Netlink event: {:?}", msg);
             }
         }
         Ok(())
