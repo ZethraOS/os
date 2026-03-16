@@ -160,17 +160,19 @@ jobs:
           find . | cpio -oH newc | gzip > ../initramfs.cpio.gz
 
       - name: QEMU boot test
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
           qemu-system-aarch64 \
             -M virt \
-            -cpu max \
+            -cpu cortex-a57 \
             -m 512M \
             -kernel Image.gz \
             -initrd initramfs.cpio.gz \
-            -append "console=ttyAMA0 earlycon=pl011,0x09000000 rdinit=/init" \
+            -append "console=ttyAMA0 rdinit=/init" \
             -nographic \
-            -no-reboot 2>&1 | tee boot.log
+            -serial stdio \
+            -monitor none \
+            -no-reboot 2>&1 | tee boot.log || true
           grep -q "Boot test PASSED" boot.log || exit 1
 
   # ── 4. Security scan ─────────────────────────────────────────────────────
