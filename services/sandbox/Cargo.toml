@@ -10,7 +10,7 @@ name = "aether-sandbox"
 path = "src/main.rs"
 
 [dependencies]
-wasmtime   = "26.0"
+wasmtime   = "41.0"
 tokio.workspace      = true
 serde.workspace      = true
 anyhow.workspace     = true
