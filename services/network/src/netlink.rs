@@ -24,12 +24,12 @@ impl NetlinkMonitor {
         while let Some((message, _metadata)) = messages.next().await {
             match message.payload {
                 netlink_packet_core::NetlinkPayload::InnerMessage(
-                    netlink_packet_route::rtnl::RtnlMessage::NewLink(_link),
+                    netlink_packet_route::RouteNetlinkMessage::NewLink(_link),
                 ) => {
                     info!("Network link state change detected");
                 }
                 netlink_packet_core::NetlinkPayload::InnerMessage(
-                    netlink_packet_route::rtnl::RtnlMessage::NewAddress(_addr),
+                    netlink_packet_route::RouteNetlinkMessage::NewAddress(_addr),
                 ) => {
                     info!("IP address change detected");
                 }
