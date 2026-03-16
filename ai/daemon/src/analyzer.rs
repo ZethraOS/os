@@ -2,8 +2,6 @@ use crate::models::*;
 use crate::provider::*;
 use crate::repair::repair_json;
 use anyhow::{Context, Result};
-use reqwest;
-use serde_json;
 
 // ─── Mock engine ──────────────────────────────────────────────────────────────
 

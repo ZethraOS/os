@@ -25,7 +25,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChannelConfig {
-    pub name: String,       // "dev" | "beta" | "stable"
+    pub name: String, // "dev" | "beta" | "stable"
     pub auto_publish: bool,
     pub min_confidence: f32,
     pub rollout_percent: u8, // 0–100; gradual rollout
@@ -83,11 +83,22 @@ pub struct CiBuild {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
-pub enum BuildStatus { Pending, Running, Success, Failed, Cancelled }
+pub enum BuildStatus {
+    Pending,
+    Running,
+    Success,
+    Failed,
+    Cancelled,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum BuildTrigger { AiPatch, ManualPush, ScheduledNightly, CveFix }
+pub enum BuildTrigger {
+    AiPatch,
+    ManualPush,
+    ScheduledNightly,
+    CveFix,
+}
 
 // ─── Release record ────────────────────────────────────────────────────────
 
@@ -115,11 +126,14 @@ pub struct VersionBumper {
 
 impl VersionBumper {
     pub fn new(repo_path: &str) -> Self {
-        Self { version_file: PathBuf::from(repo_path).join("VERSION") }
+        Self {
+            version_file: PathBuf::from(repo_path).join("VERSION"),
+        }
     }
 
     pub async fn current(&self) -> Result<Version> {
-        let raw = fs::read_to_string(&self.version_file).await
+        let raw = fs::read_to_string(&self.version_file)
+            .await
             .unwrap_or_else(|_| "0.1.0".to_string());
         Ok(Version::parse(raw.trim())?)
     }
@@ -128,8 +142,15 @@ impl VersionBumper {
         let mut v = self.current().await?;
         match kind {
             BumpKind::Patch => v.patch += 1,
-            BumpKind::Minor => { v.minor += 1; v.patch = 0; }
-            BumpKind::Major => { v.major += 1; v.minor = 0; v.patch = 0; }
+            BumpKind::Minor => {
+                v.minor += 1;
+                v.patch = 0;
+            }
+            BumpKind::Major => {
+                v.major += 1;
+                v.minor = 0;
+                v.patch = 0;
+            }
         }
         fs::write(&self.version_file, v.to_string()).await?;
         info!(version = %v, "version bumped");
@@ -140,14 +161,18 @@ impl VersionBumper {
         // Heuristic: severity of fix drives version bump
         match build.risk_level.as_str() {
             "Critical" => BumpKind::Minor, // breaking/security → minor bump
-            "High"     => BumpKind::Patch,
-            _          => BumpKind::Patch,
+            "High" => BumpKind::Patch,
+            _ => BumpKind::Patch,
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum BumpKind { Patch, Minor, Major }
+pub enum BumpKind {
+    Patch,
+    Minor,
+    Major,
+}
 
 // ─── Changelog generator ───────────────────────────────────────────────────
 
@@ -204,7 +229,8 @@ Keep it brief, honest, and human. Avoid marketing language."#,
             "messages": [{ "role": "user", "content": prompt }]
         });
 
-        let resp = self.client
+        let resp = self
+            .client
             .post("https://api.anthropic.com/v1/messages")
             .header("x-api-key", &self.api_key)
             .header("anthropic-version", "2023-06-01")
@@ -227,12 +253,15 @@ Keep it brief, honest, and human. Avoid marketing language."#,
 
 pub struct OtaBuilder {
     repo_path: PathBuf,
-    signing_key: Vec<u8>,
+    _signing_key: Vec<u8>,
 }
 
 impl OtaBuilder {
     pub fn new(repo_path: &str, signing_key: Vec<u8>) -> Self {
-        Self { repo_path: PathBuf::from(repo_path), signing_key }
+        Self {
+            repo_path: PathBuf::from(repo_path),
+            _signing_key: signing_key,
+        }
     }
 
     pub async fn build(&self, version: &Version, channel: &str) -> Result<OtaPackage> {
@@ -245,7 +274,9 @@ impl OtaBuilder {
         // Here we write a placeholder.
         let content = format!(
             "AetherOS OTA Package\nVersion: {}\nChannel: {}\nBuilt: {}\n",
-            version, channel, Utc::now()
+            version,
+            channel,
+            Utc::now()
         );
         fs::write(&output_path, &content).await?;
 
@@ -319,7 +350,8 @@ impl OtaServerClient {
             "published_at": Utc::now(),
         });
 
-        let resp = self.client
+        let resp = self
+            .client
             .post(format!("{}/api/v1/releases", self.base_url))
             .bearer_auth(&self.token)
             .json(&payload)
@@ -335,8 +367,12 @@ impl OtaServerClient {
 
     /// Check error rate on a channel; returns fraction of devices reporting errors
     pub async fn get_error_rate(&self, version: &str, channel: &str) -> Result<f32> {
-        let resp = self.client
-            .get(format!("{}/api/v1/metrics/{}/{}", self.base_url, channel, version))
+        let resp = self
+            .client
+            .get(format!(
+                "{}/api/v1/metrics/{}/{}",
+                self.base_url, channel, version
+            ))
             .bearer_auth(&self.token)
             .send()
             .await?;
@@ -354,28 +390,42 @@ pub struct Notifier {
 
 impl Notifier {
     pub fn new(webhook_url: &str) -> Self {
-        Self { webhook_url: webhook_url.to_string(), client: Client::new() }
+        Self {
+            webhook_url: webhook_url.to_string(),
+            client: Client::new(),
+        }
     }
 
     pub async fn notify_release(&self, release: &Release) -> Result<()> {
         let msg = format!(
             "AetherOS {} published to *{}* channel ({} rollout)\n{}\n{}",
-            release.version, release.channel,
+            release.version,
+            release.channel,
             release.rollout_percent,
-            if release.auto_generated { "_Auto-released by AetherAI_" } else { "_Manually released_" },
+            if release.auto_generated {
+                "_Auto-released by AetherAI_"
+            } else {
+                "_Manually released_"
+            },
             release.ota_url
         );
-        let _ = self.client.post(&self.webhook_url)
+        let _ = self
+            .client
+            .post(&self.webhook_url)
             .json(&serde_json::json!({ "text": msg }))
-            .send().await;
+            .send()
+            .await;
         Ok(())
     }
 
     pub async fn notify_rollback(&self, version: &str, reason: &str) -> Result<()> {
         let msg = format!("⚠ AetherOS {} ROLLED BACK: {}", version, reason);
-        let _ = self.client.post(&self.webhook_url)
+        let _ = self
+            .client
+            .post(&self.webhook_url)
             .json(&serde_json::json!({ "text": msg }))
-            .send().await;
+            .send()
+            .await;
         Ok(())
     }
 }
@@ -412,15 +462,31 @@ impl ReleaseBot {
             ota_builder: OtaBuilder::new(&repo_path, signing_key),
             ota_server: OtaServerClient::new(&ota_url, &ota_token),
             notifier: Notifier::new(&webhook),
-            channels: vec![ChannelConfig::dev(), ChannelConfig::beta(), ChannelConfig::stable()],
+            channels: vec![
+                ChannelConfig::dev(),
+                ChannelConfig::beta(),
+                ChannelConfig::stable(),
+            ],
             client: Client::new(),
         }
     }
+}
 
+impl Default for ReleaseBot {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ReleaseBot {
     /// Poll CI for successful builds ready to release
     async fn poll_ready_builds(&self) -> Result<Vec<CiBuild>> {
-        let resp = self.client
-            .get(format!("{}/api/builds?status=success&published=false", self.ci_api_url))
+        let resp = self
+            .client
+            .get(format!(
+                "{}/api/builds?status=success&published=false",
+                self.ci_api_url
+            ))
             .send()
             .await;
 
@@ -438,16 +504,26 @@ impl ReleaseBot {
         info!(version = %version, channel = %channel.name, "releasing build");
 
         // 2. Generate changelog with Claude
-        let changelog = self.changelog_gen.generate(build, &version).await
+        let changelog = self
+            .changelog_gen
+            .generate(build, &version)
+            .await
             .unwrap_or_else(|_| format!("AetherOS {} — automated patch release", version));
 
         // 3. Build OTA package
         let pkg = self.ota_builder.build(&version, &channel.name).await?;
 
         // 4. Publish to OTA server
-        let ota_url = self.ota_server.publish(
-            &pkg, &version, &channel.name, &changelog, channel.rollout_percent
-        ).await?;
+        let ota_url = self
+            .ota_server
+            .publish(
+                &pkg,
+                &version,
+                &channel.name,
+                &changelog,
+                channel.rollout_percent,
+            )
+            .await?;
 
         let release = Release {
             id: Uuid::new_v4().to_string(),
@@ -477,6 +553,7 @@ impl ReleaseBot {
     }
 
     /// Monitor error rates and roll back if they spike
+    #[allow(dead_code)]
     async fn watch_rollout(&self, version: &str, channel: &str) {
         let mut ticker = interval(Duration::from_secs(300)); // check every 5 min
         let mut checks = 0u32;
@@ -490,10 +567,13 @@ impl ReleaseBot {
                     info!(version, channel, rate, "rollout health check");
                     if rate > 0.05 {
                         warn!(version, channel, rate, "error rate spike — rolling back");
-                        let _ = self.notifier.notify_rollback(
-                            version,
-                            &format!("Error rate {:.1}% exceeds 5% threshold", rate * 100.0)
-                        ).await;
+                        let _ = self
+                            .notifier
+                            .notify_rollback(
+                                version,
+                                &format!("Error rate {:.1}% exceeds 5% threshold", rate * 100.0),
+                            )
+                            .await;
                         break;
                     }
                     // After 12 checks (1 hour) with no issues, expand rollout
@@ -516,16 +596,25 @@ impl ReleaseBot {
 
             let builds = match self.poll_ready_builds().await {
                 Ok(b) => b,
-                Err(e) => { error!("CI poll failed: {}", e); continue; }
+                Err(e) => {
+                    error!("CI poll failed: {}", e);
+                    continue;
+                }
             };
 
             for build in builds {
                 // Find the most permissive channel this build qualifies for
                 for channel in &self.channels {
-                    if !channel.auto_publish { continue; }
-                    if build.confidence < channel.min_confidence { continue; }
-                    if build.risk_level == "Critical" || build.risk_level == "High" {
-                        if channel.name != "dev" { continue; }
+                    if !channel.auto_publish {
+                        continue;
+                    }
+                    if build.confidence < channel.min_confidence {
+                        continue;
+                    }
+                    if (build.risk_level == "Critical" || build.risk_level == "High")
+                        && channel.name != "dev"
+                    {
+                        continue;
                     }
 
                     match self.release_build(&build, channel).await {

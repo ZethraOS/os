@@ -22,19 +22,29 @@ use uuid::Uuid;
 #[serde(rename_all = "snake_case")]
 pub enum CallState {
     Idle,
-    Dialing   { number: String },
-    Ringing   { number: String, incoming: bool },
-    Active    { number: String, started_at: DateTime<Utc> },
+    Dialing {
+        number: String,
+    },
+    Ringing {
+        number: String,
+        incoming: bool,
+    },
+    Active {
+        number: String,
+        started_at: DateTime<Utc>,
+    },
     Held,
-    Ended     { duration_secs: u64 },
+    Ended {
+        duration_secs: u64,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Call {
-    pub id:         String,
-    pub number:     String,
-    pub state:      CallState,
-    pub incoming:   bool,
+    pub id: String,
+    pub number: String,
+    pub state: CallState,
+    pub incoming: bool,
     pub created_at: DateTime<Utc>,
 }
 
@@ -43,7 +53,9 @@ impl Call {
         Self {
             id: Uuid::new_v4().to_string(),
             number: number.to_string(),
-            state: CallState::Dialing { number: number.to_string() },
+            state: CallState::Dialing {
+                number: number.to_string(),
+            },
             incoming: false,
             created_at: Utc::now(),
         }
@@ -52,7 +64,10 @@ impl Call {
         Self {
             id: Uuid::new_v4().to_string(),
             number: number.to_string(),
-            state: CallState::Ringing { number: number.to_string(), incoming: true },
+            state: CallState::Ringing {
+                number: number.to_string(),
+                incoming: true,
+            },
             incoming: true,
             created_at: Utc::now(),
         }
@@ -61,38 +76,49 @@ impl Call {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sms {
-    pub id:        String,
-    pub from:      String,
-    pub to:        String,
-    pub body:      String,
+    pub id: String,
+    pub from: String,
+    pub to: String,
+    pub body: String,
     pub timestamp: DateTime<Utc>,
     pub delivered: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SimInfo {
-    pub iccid:     String,
-    pub imsi:      String,
-    pub operator:  String,
-    pub mcc:       String,
-    pub mnc:       String,
+    pub iccid: String,
+    pub imsi: String,
+    pub operator: String,
+    pub mcc: String,
+    pub mnc: String,
     pub pin_state: PinState,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum PinState { Ready, PinRequired, PukRequired, Absent }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SignalInfo {
-    pub rssi_dbm:   i32,
-    pub rsrp_dbm:   Option<i32>,
-    pub technology: RadioTech,
-    pub bars:       u8,
+pub enum PinState {
+    Ready,
+    PinRequired,
+    PukRequired,
+    Absent,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum RadioTech { Gsm, Umts, Lte, Nr5g, Unknown }
+pub struct SignalInfo {
+    pub rssi_dbm: i32,
+    pub rsrp_dbm: Option<i32>,
+    pub technology: RadioTech,
+    pub bars: u8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum RadioTech {
+    Gsm,
+    Umts,
+    Lte,
+    Nr5g,
+    Unknown,
+}
 
 impl SignalInfo {
     pub fn from_rssi(rssi: i32, tech: RadioTech) -> Self {
@@ -101,9 +127,14 @@ impl SignalInfo {
             i if i >= -75 => 3,
             i if i >= -85 => 2,
             i if i >= -95 => 1,
-            _              => 0,
+            _ => 0,
         };
-        Self { rssi_dbm: rssi, rsrp_dbm: None, technology: tech, bars }
+        Self {
+            rssi_dbm: rssi,
+            rsrp_dbm: None,
+            technology: tech,
+            bars,
+        }
     }
 }
 
@@ -112,11 +143,11 @@ impl SignalInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "cmd", rename_all = "snake_case")]
 pub enum TelephonyCommand {
-    Dial          { number: String },
-    Answer        { call_id: String },
-    Hangup        { call_id: String },
-    Hold          { call_id: String },
-    SendSms       { to: String, body: String },
+    Dial { number: String },
+    Answer { call_id: String },
+    Hangup { call_id: String },
+    Hold { call_id: String },
+    SendSms { to: String, body: String },
     GetSimInfo,
     GetSignal,
     GetActiveCalls,
@@ -126,12 +157,12 @@ pub enum TelephonyCommand {
 #[serde(tag = "event", rename_all = "snake_case")]
 pub enum TelephonyEvent {
     CallStateChanged { call: Call },
-    IncomingCall     { call: Call },
-    SmsReceived      { sms: Sms },
-    SmsDelivered     { id: String },
-    SignalChanged    { signal: SignalInfo },
-    SimStateChanged  { sim: SimInfo },
-    Error            { message: String },
+    IncomingCall { call: Call },
+    SmsReceived { sms: Sms },
+    SmsDelivered { id: String },
+    SignalChanged { signal: SignalInfo },
+    SimStateChanged { sim: SimInfo },
+    Error { message: String },
 }
 
 // ─── ModemBackend trait ───────────────────────────────────────────────────────
@@ -139,12 +170,12 @@ pub enum TelephonyEvent {
 
 #[async_trait]
 pub trait ModemBackend: Send + Sync {
-    async fn dial(&self, number: &str)               -> Result<()>;
-    async fn answer(&self)                           -> Result<()>;
-    async fn hangup(&self)                           -> Result<()>;
-    async fn send_sms(&self, to: &str, body: &str)   -> Result<String>;
-    async fn get_signal(&self)                       -> Result<SignalInfo>;
-    async fn get_sim_info(&self)                     -> Result<SimInfo>;
+    async fn dial(&self, number: &str) -> Result<()>;
+    async fn answer(&self) -> Result<()>;
+    async fn hangup(&self) -> Result<()>;
+    async fn send_sms(&self, to: &str, body: &str) -> Result<String>;
+    async fn get_signal(&self) -> Result<SignalInfo>;
+    async fn get_sim_info(&self) -> Result<SimInfo>;
 }
 
 // ─── Simulated modem (local dev / CI) ─────────────────────────────────────────
@@ -164,14 +195,19 @@ impl ModemBackend for SimulatedModem {
     async fn dial(&self, number: &str) -> Result<()> {
         info!(number, "[SIM] dialing");
         let call = Call::new_outgoing(number);
-        let _ = self.event_tx.send(TelephonyEvent::CallStateChanged { call });
+        let _ = self
+            .event_tx
+            .send(TelephonyEvent::CallStateChanged { call });
         // Simulate ringing after 1 second
-        let tx  = self.event_tx.clone();
+        let tx = self.event_tx.clone();
         let num = number.to_string();
         tokio::spawn(async move {
             tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
             let mut c = Call::new_outgoing(&num);
-            c.state = CallState::Ringing { number: num.clone(), incoming: false };
+            c.state = CallState::Ringing {
+                number: num.clone(),
+                incoming: false,
+            };
             let _ = tx.send(TelephonyEvent::CallStateChanged { call: c });
         });
         Ok(())
@@ -190,7 +226,7 @@ impl ModemBackend for SimulatedModem {
     async fn send_sms(&self, to: &str, body: &str) -> Result<String> {
         let id = Uuid::new_v4().to_string();
         info!(to, body_len = body.len(), "[SIM] SMS sent");
-        let tx  = self.event_tx.clone();
+        let tx = self.event_tx.clone();
         let sid = id.clone();
         tokio::spawn(async move {
             tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
@@ -205,11 +241,11 @@ impl ModemBackend for SimulatedModem {
 
     async fn get_sim_info(&self) -> Result<SimInfo> {
         Ok(SimInfo {
-            iccid:     "8991101200003204510".into(),
-            imsi:      "310260000000000".into(),
-            operator:  "AetherNet (simulated)".into(),
-            mcc:       "310".into(),
-            mnc:       "260".into(),
+            iccid: "8991101200003204510".into(),
+            imsi: "310260000000000".into(),
+            operator: "AetherNet (simulated)".into(),
+            mcc: "310".into(),
+            mnc: "260".into(),
             pin_state: PinState::Ready,
         })
     }
@@ -223,7 +259,9 @@ pub struct AtModem {
 
 impl AtModem {
     pub fn new(device_path: &str) -> Self {
-        Self { device_path: device_path.to_string() }
+        Self {
+            device_path: device_path.to_string(),
+        }
     }
 
     async fn send_at(&self, cmd: &str) -> Result<String> {
@@ -261,8 +299,11 @@ impl ModemBackend for AtModem {
         self.send_at("AT+CIMI").await?;
         self.send_at("AT+CCID").await?;
         Ok(SimInfo {
-            iccid: String::new(), imsi: String::new(),
-            operator: String::new(), mcc: String::new(), mnc: String::new(),
+            iccid: String::new(),
+            imsi: String::new(),
+            operator: String::new(),
+            mcc: String::new(),
+            mnc: String::new(),
             pin_state: PinState::Ready,
         })
     }
@@ -278,50 +319,72 @@ pub enum Modem {
 
 impl Modem {
     async fn dial(&self, number: &str) -> Result<()> {
-        match self { Modem::Simulated(m) => m.dial(number).await, Modem::At(m) => m.dial(number).await }
+        match self {
+            Modem::Simulated(m) => m.dial(number).await,
+            Modem::At(m) => m.dial(number).await,
+        }
     }
     async fn answer(&self) -> Result<()> {
-        match self { Modem::Simulated(m) => m.answer().await, Modem::At(m) => m.answer().await }
+        match self {
+            Modem::Simulated(m) => m.answer().await,
+            Modem::At(m) => m.answer().await,
+        }
     }
     async fn hangup(&self) -> Result<()> {
-        match self { Modem::Simulated(m) => m.hangup().await, Modem::At(m) => m.hangup().await }
+        match self {
+            Modem::Simulated(m) => m.hangup().await,
+            Modem::At(m) => m.hangup().await,
+        }
     }
     async fn send_sms(&self, to: &str, body: &str) -> Result<String> {
-        match self { Modem::Simulated(m) => m.send_sms(to, body).await, Modem::At(m) => m.send_sms(to, body).await }
+        match self {
+            Modem::Simulated(m) => m.send_sms(to, body).await,
+            Modem::At(m) => m.send_sms(to, body).await,
+        }
     }
     async fn get_signal(&self) -> Result<SignalInfo> {
-        match self { Modem::Simulated(m) => m.get_signal().await, Modem::At(m) => m.get_signal().await }
+        match self {
+            Modem::Simulated(m) => m.get_signal().await,
+            Modem::At(m) => m.get_signal().await,
+        }
     }
     async fn get_sim_info(&self) -> Result<SimInfo> {
-        match self { Modem::Simulated(m) => m.get_sim_info().await, Modem::At(m) => m.get_sim_info().await }
+        match self {
+            Modem::Simulated(m) => m.get_sim_info().await,
+            Modem::At(m) => m.get_sim_info().await,
+        }
     }
 }
 
 // ─── Telephony daemon ─────────────────────────────────────────────────────────
 
 pub struct TelephonyDaemon {
-    modem:        Modem,
+    modem: Modem,
     active_calls: HashMap<String, Call>,
-    event_tx:     broadcast::Sender<TelephonyEvent>,
+    event_tx: broadcast::Sender<TelephonyEvent>,
 }
 
 impl TelephonyDaemon {
     pub fn new(modem: Modem, event_tx: broadcast::Sender<TelephonyEvent>) -> Self {
-        Self { modem, active_calls: HashMap::new(), event_tx }
+        Self {
+            modem,
+            active_calls: HashMap::new(),
+            event_tx,
+        }
     }
 
     pub async fn handle_command(&mut self, cmd: TelephonyCommand) -> TelephonyEvent {
         match cmd {
-            TelephonyCommand::Dial { number } => {
-                match self.modem.dial(&number).await {
-                    Ok(_) => {
-                        let call = Call::new_outgoing(&number);
-                        self.active_calls.insert(call.id.clone(), call.clone());
-                        TelephonyEvent::CallStateChanged { call }
-                    }
-                    Err(e) => TelephonyEvent::Error { message: e.to_string() },
+            TelephonyCommand::Dial { number } => match self.modem.dial(&number).await {
+                Ok(_) => {
+                    let call = Call::new_outgoing(&number);
+                    self.active_calls.insert(call.id.clone(), call.clone());
+                    TelephonyEvent::CallStateChanged { call }
                 }
-            }
+                Err(e) => TelephonyEvent::Error {
+                    message: e.to_string(),
+                },
+            },
             TelephonyCommand::Answer { call_id } => {
                 if let Some(call) = self.active_calls.get_mut(&call_id) {
                     let _ = self.modem.answer().await;
@@ -331,53 +394,62 @@ impl TelephonyDaemon {
                     };
                     TelephonyEvent::CallStateChanged { call: call.clone() }
                 } else {
-                    TelephonyEvent::Error { message: format!("call {} not found", call_id) }
+                    TelephonyEvent::Error {
+                        message: format!("call {} not found", call_id),
+                    }
                 }
             }
             TelephonyCommand::Hangup { call_id } => {
                 let _ = self.modem.hangup().await;
                 if let Some(mut call) = self.active_calls.remove(&call_id) {
                     let duration = match &call.state {
-                        CallState::Active { started_at, .. } =>
-                            (Utc::now() - *started_at).num_seconds().max(0) as u64,
+                        CallState::Active { started_at, .. } => {
+                            (Utc::now() - *started_at).num_seconds().max(0) as u64
+                        }
                         _ => 0,
                     };
-                    call.state = CallState::Ended { duration_secs: duration };
+                    call.state = CallState::Ended {
+                        duration_secs: duration,
+                    };
                     TelephonyEvent::CallStateChanged { call }
                 } else {
-                    TelephonyEvent::Error { message: "no active call".into() }
+                    TelephonyEvent::Error {
+                        message: "no active call".into(),
+                    }
                 }
             }
-            TelephonyCommand::SendSms { to, body } => {
-                match self.modem.send_sms(&to, &body).await {
-                    Ok(id) => TelephonyEvent::SmsDelivered { id },
-                    Err(e) => TelephonyEvent::Error { message: e.to_string() },
-                }
-            }
-            TelephonyCommand::GetSignal => {
-                match self.modem.get_signal().await {
-                    Ok(sig) => TelephonyEvent::SignalChanged { signal: sig },
-                    Err(e)  => TelephonyEvent::Error { message: e.to_string() },
-                }
-            }
-            TelephonyCommand::GetSimInfo => {
-                match self.modem.get_sim_info().await {
-                    Ok(sim) => TelephonyEvent::SimStateChanged { sim },
-                    Err(e)  => TelephonyEvent::Error { message: e.to_string() },
-                }
-            }
-            TelephonyCommand::GetActiveCalls => {
-                match self.active_calls.values().next() {
-                    Some(call) => TelephonyEvent::CallStateChanged { call: call.clone() },
-                    None       => TelephonyEvent::Error { message: "no active calls".into() },
-                }
-            }
+            TelephonyCommand::SendSms { to, body } => match self.modem.send_sms(&to, &body).await {
+                Ok(id) => TelephonyEvent::SmsDelivered { id },
+                Err(e) => TelephonyEvent::Error {
+                    message: e.to_string(),
+                },
+            },
+            TelephonyCommand::GetSignal => match self.modem.get_signal().await {
+                Ok(sig) => TelephonyEvent::SignalChanged { signal: sig },
+                Err(e) => TelephonyEvent::Error {
+                    message: e.to_string(),
+                },
+            },
+            TelephonyCommand::GetSimInfo => match self.modem.get_sim_info().await {
+                Ok(sim) => TelephonyEvent::SimStateChanged { sim },
+                Err(e) => TelephonyEvent::Error {
+                    message: e.to_string(),
+                },
+            },
+            TelephonyCommand::GetActiveCalls => match self.active_calls.values().next() {
+                Some(call) => TelephonyEvent::CallStateChanged { call: call.clone() },
+                None => TelephonyEvent::Error {
+                    message: "no active calls".into(),
+                },
+            },
             TelephonyCommand::Hold { call_id } => {
                 if let Some(call) = self.active_calls.get_mut(&call_id) {
                     call.state = CallState::Held;
                     TelephonyEvent::CallStateChanged { call: call.clone() }
                 } else {
-                    TelephonyEvent::Error { message: "call not found".into() }
+                    TelephonyEvent::Error {
+                        message: "call not found".into(),
+                    }
                 }
             }
         }
@@ -459,9 +531,7 @@ async fn handle_client(
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string())
-        )
+        .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))
         .init();
 
     info!("AetherOS telephony daemon starting");
