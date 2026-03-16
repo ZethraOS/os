@@ -8,7 +8,9 @@ Welcome! ZethraOS is an open project and contributions are very welcome.
 
 1. Read the [README](../README.md) to understand the architecture.
 2. Check open issues on GitHub for things to work on.
-3. For large changes, open an **RFC issue** first to discuss the approach.
+3. **Fork the repository** to your own account to start working.
+4. Create a branch in your fork (e.g., `feature/my-new-feature`).
+5. For large changes, open an **RFC issue** first to discuss the approach.
 
 ---
 
@@ -27,13 +29,28 @@ This produces:
 ```
 fix: correct null pointer in zethrad service restart
 
-## Branch Strategy
-- `main` — production, tagged releases only (never commit directly)
-- `dev` — integration branch, all work starts here (default branch)
-- `staging` — pre-release testing, mirrors production
-- `feature/xxx` — branch from dev, PR back to dev
-- `bugfix/xxx` — non-critical bugs branch off dev
-- `hotfix/xxx` — critical prod bugs branch off main, PR to main + dev
+## Branch Strategy & Governance
+
+ZethraOS maintains a high-security posture. Direct pushes to the official repository are disabled for all community members. 
+
+### 1. The Branch Hierarchy
+- **`main`** — **Production (Strictly Protected)**. Only contains tagged, verified releases (e.g., `v0.1.0`). Direct commits are forbidden.
+- **`staging`** — **Release Candidates**. Used for pre-release testing and stabilization. No new features are merged here.
+- **`dev`** — **Integration (Default Branch)**. This is the integration point for all new features and bug fixes. All community PRs must target this branch.
+
+### 2. The Contribution Workflow (Fork & PR)
+To contribute, you **must** follow the Fork-and-Pull model:
+1.  **Fork** the official `ZethraOS/os` repository to your personal GitHub account.
+2.  **Clone** your fork locally and create a descriptive branch from `dev` (e.g., `feature/ai-patch-validation`).
+3.  **Implement** your changes following our coding standards.
+4.  **Push** to your fork.
+5.  **Open a Pull Request** from your fork's branch to the official ZethraOS `dev` branch.
+
+### 3. Release Lifecycle
+1.  **Development**: Features are merged into `dev` via PRs.
+2.  **Staging**: When a release is planned, `dev` is merged into `staging`.
+3.  **Testing**: Final verification, stress testing, and version bumping occur on `staging`.
+4.  **Ship**: `staging` is merged into `main` and a release is tagged.
 
 ## Before Every PR
 Ensure your code meets the quality bar:
