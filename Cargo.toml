@@ -6,6 +6,7 @@ members = [
     "services/network",
     "services/sensors",
     "services/ota",
+    "services/sandbox",
     "shell/compositor",
     "ai/daemon",
     "ai/release-bot",
