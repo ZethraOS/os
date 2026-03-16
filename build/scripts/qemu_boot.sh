@@ -87,7 +87,7 @@ if [[ ! -f "$KERNEL_IMAGE" ]]; then
   echo "       Run: bash build/scripts/build_kernel.sh first"
   echo ""
   echo "       Alternatively, download a pre-built ARM64 kernel for testing:"
-  echo "       wget https://github.com/zethraos/prebuilts/releases/latest/download/Image.gz"
+  echo "       wget https://github.com/ZethraOS/prebuilts/releases/latest/download/Image.gz"
   echo ""
   echo "Exiting (no kernel)."
   rm -rf "$WORK_DIR"

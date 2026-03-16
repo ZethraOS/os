@@ -1,15 +1,15 @@
-# AetherOS — Autonomous CI/CD Pipeline
-# This workflow is triggered both by human PRs and by the AetherAI daemon.
+# ZethraOS — Autonomous CI/CD Pipeline
+# This workflow is triggered both by human PRs and by the ZethraAI daemon.
 # On AI-generated patches with high confidence + passing tests, auto-merge fires.
 
-name: AetherOS Build & Self-Heal
+name: ZethraOS Build & Self-Heal
 
 on:
   push:
     branches: [main, dev]
   pull_request:
     branches: [main]
-  # AetherAI daemon triggers this via repository_dispatch
+  # ZethraAI daemon triggers this via repository_dispatch
   repository_dispatch:
     types: [ai-patch-ready, cve-fix-ready, performance-fix-ready]
   schedule:
@@ -73,8 +73,8 @@ jobs:
       - name: Upload userspace binaries
         uses: actions/upload-artifact@v4
         with:
-          name: aether-bins
-          path: target/${{ env.TARGET_ARCH }}/release/aetherd
+          name: zethra-bins
+          path: target/${{ env.TARGET_ARCH }}/release/zethrad
 
   # ── 2. Kernel build ──────────────────────────────────────────────────────
   kernel-build:
@@ -92,12 +92,12 @@ jobs:
         run: |
           wget -q https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${{ env.KERNEL_VERSION }}.tar.xz
           tar xf linux-${{ env.KERNEL_VERSION }}.tar.xz
-          cp kernel/aether_defconfig linux-${{ env.KERNEL_VERSION }}/arch/arm64/configs/
+          cp kernel/zethra_defconfig linux-${{ env.KERNEL_VERSION }}/arch/arm64/configs/
 
       - name: Build kernel
         working-directory: linux-${{ env.KERNEL_VERSION }}
         run: |
-          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- aether_defconfig
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc) Image.gz modules dtbs
 
       - name: Upload kernel artifact
@@ -122,7 +122,7 @@ jobs:
       - name: Download userspace binaries
         uses: actions/download-artifact@v4
         with:
-          name: aether-bins
+          name: zethra-bins
           path: bin-dist
 
       - name: Install ARM64 cross-compiler
@@ -143,13 +143,13 @@ jobs:
           mkdir initramfs
           cat > initramfs/init.c << 'EOF'
           #include <stdio.h>
-          int main() { printf("AetherOS boot: OK\n"); return 0; }
+          int main() { printf("ZethraOS boot: OK\n"); return 0; }
           EOF
           aarch64-linux-gnu-gcc -static -O3 initramfs/init.c -o initramfs/init
           
-          # Include aetherd in the check to ensure it's present from the artifact
+          # Include zethrad in the check to ensure it's present from the artifact
           mkdir -p initramfs/sbin
-          cp bin-dist/aetherd initramfs/sbin/
+          cp bin-dist/zethrad initramfs/sbin/
           
           cd initramfs
           find . | cpio -oH newc | gzip > ../initramfs.cpio.gz
@@ -172,7 +172,7 @@ jobs:
           cargo audit
 
       - name: Scan kernel config for dangerous options
-        run: python3 tools/ci/check_kernel_config.py kernel/aether_defconfig
+        run: python3 tools/ci/check_kernel_config.py kernel/zethra_defconfig
 
       - name: Check for hardcoded secrets
         uses: trufflesecurity/trufflehog@main
@@ -190,7 +190,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.AETHER_BOT_TOKEN }}
+          token: ${{ secrets.ZETHRA_BOT_TOKEN }}
 
       - name: Validate AI patch metadata
         run: |
@@ -211,8 +211,8 @@ jobs:
 
       - name: Apply patch
         run: |
-          git config user.name "AetherAI Bot"
-          git config user.email "ai-bot@aetheros.dev"
+          git config user.name "ZethraAI Bot"
+          git config user.email "ai-bot@zethraos.dev"
           PATCH_FILE="${{ github.event.client_payload.patch_file }}"
           git apply "$PATCH_FILE"
           git add -A
@@ -221,7 +221,7 @@ jobs:
           Confidence: ${{ github.event.client_payload.confidence }}
           Root cause: ${{ github.event.client_payload.root_cause }}
 
-          Auto-merged by AetherAI daemon after passing all CI checks.
+          Auto-merged by ZethraAI daemon after passing all CI checks.
           Human review available at: patches/needs-review/"
           git push origin main
 
@@ -256,7 +256,7 @@ jobs:
       - name: Publish to OTA server
         run: |
           bash build/scripts/publish_ota.sh \
-            --package dist/aetheros-ota-*.zip \
+            --package dist/zethraos-ota-*.zip \
             --channel dev \
             --server "${{ secrets.OTA_SERVER_URL }}"
 
@@ -265,7 +265,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "AetherOS dev OTA published automatically. Issue: ${{ github.event.client_payload.issue_id }}. Commit: ${{ github.sha }}"
+              "text": "ZethraOS dev OTA published automatically. Issue: ${{ github.event.client_payload.issue_id }}. Commit: ${{ github.sha }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
