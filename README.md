@@ -2,7 +2,7 @@
 
 > An open, AI-native mobile operating system — built on Linux, beyond Android.
 
-[![Build](https://github.com/aetheros/aetheros/actions/workflows/ci.yml/badge.svg)](https://github.com/aetheros/aetheros/actions)
+[![CI](https://github.com/er-mayanka/aetheros/actions/workflows/ci.yml/badge.svg)](https://github.com/er-mayanka/aetheros/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Kernel](https://img.shields.io/badge/kernel-Linux%206.x-orange)](kernel/)
 
