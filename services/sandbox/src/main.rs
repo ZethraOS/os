@@ -1,16 +1,16 @@
 // main.rs — AetherOS Sandbox Orchestrator
 // SPDX-License-Identifier: Apache-2.0
 
-mod runtime;
-mod permissions;
 mod ipc;
 mod lifecycle;
+mod permissions;
+mod runtime;
 
+use crate::ipc::SandboxIPC;
+use crate::lifecycle::{AppState, LifecycleManager};
+use crate::runtime::SandboxRuntime;
 use anyhow::Result;
 use tracing::info;
-use crate::runtime::SandboxRuntime;
-use crate::lifecycle::{LifecycleManager, AppState};
-use crate::ipc::SandboxIPC;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     let ipc = SandboxIPC::new("demo-app");
 
     lifecycle.set_state(AppState::Running);
-    
+
     // Spawn IPC bridge
     tokio::spawn(async move {
         let _ = ipc.run_bridge().await;

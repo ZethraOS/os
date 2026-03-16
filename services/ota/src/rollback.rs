@@ -1,14 +1,14 @@
 // rollback.rs — Health monitor and rollback logic for AetherOS OTA
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::partition::PartitionManager;
 use anyhow::Result;
+use chrono::Utc;
+use std::path::Path;
 use tokio::fs::{self, OpenOptions};
 use tokio::io::AsyncWriteExt;
 use tokio::time::{interval, Duration, Instant};
 use tracing::{error, info, warn};
-use std::path::Path;
-use chrono::Utc;
-use crate::partition::PartitionManager;
 
 pub struct PostUpdateMonitor {
     error_rate_threshold: f32,
@@ -42,7 +42,10 @@ impl PostUpdateMonitor {
 
             let crash_rate = self.get_crash_rate().await?;
             if crash_rate > self.error_rate_threshold {
-                warn!(crash_rate, "Crash rate exceeded threshold! Initiating rollback.");
+                warn!(
+                    crash_rate,
+                    "Crash rate exceeded threshold! Initiating rollback."
+                );
                 self.trigger_rollback(crash_rate).await?;
                 break;
             }
@@ -60,23 +63,31 @@ impl PostUpdateMonitor {
     }
 
     async fn trigger_rollback(&self, rate: f32) -> Result<()> {
-        let msg = format!("[{}] ROLLBACK: detected {:.2}% crash rate. Reverting slot.\n", Utc::now(), rate * 100.0);
-        
+        let msg = format!(
+            "[{}] ROLLBACK: detected {:.2}% crash rate. Reverting slot.\n",
+            Utc::now(),
+            rate * 100.0
+        );
+
         // Log the event
         if let Some(parent) = Path::new(self.log_file).parent() {
             fs::create_dir_all(parent).await.ok();
         }
-        let mut file = OpenOptions::new().append(true).create(true).open(self.log_file).await?;
+        let mut file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(self.log_file)
+            .await?;
         file.write_all(msg.as_bytes()).await?;
 
         error!("Initiating emergency slot revert");
-        
+
         // Revert to the last known good slot
         let current = PartitionManager::get_current_slot()?;
         let previous = current.inactive();
-        
+
         info!(reverting_to = ?previous, "Emergency revert initiated");
-        
+
         tokio::process::Command::new("reboot").spawn().ok();
         Ok(())
     }

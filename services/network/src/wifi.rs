@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use tokio::net::UnixStream;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tracing::info;
 use std::time::Duration;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::UnixStream;
+use tracing::info;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -49,13 +49,15 @@ impl WifiManager {
     pub async fn connect(&self, ssid: &str, psk: &str) -> Result<()> {
         info!(ssid, "Connecting to Wi-Fi");
         let mut stream = UnixStream::connect(&self.socket_path).await?;
-        
+
         // Simplified wpa_cli-like interaction
         self.send_cmd(&mut stream, "ADD_NETWORK").await?;
-        self.send_cmd(&mut stream, &format!("SET_NETWORK 0 ssid \"{}\"", ssid)).await?;
-        self.send_cmd(&mut stream, &format!("SET_NETWORK 0 psk \"{}\"", psk)).await?;
+        self.send_cmd(&mut stream, &format!("SET_NETWORK 0 ssid \"{}\"", ssid))
+            .await?;
+        self.send_cmd(&mut stream, &format!("SET_NETWORK 0 psk \"{}\"", psk))
+            .await?;
         self.send_cmd(&mut stream, "SELECT_NETWORK 0").await?;
-        
+
         Ok(())
     }
 
@@ -72,9 +74,10 @@ impl WifiManager {
             // Monitor link status and handle auto-reconnect logic
             // In a real implementation this would listen for events on the control socket
             tokio::time::sleep(Duration::from_secs(10)).await;
-            
+
             // Exponential backoff simulation on failure
-            if false { // simulation of disconnect
+            if false {
+                // simulation of disconnect
                 tokio::time::sleep(retry_delay).await;
                 retry_delay = (retry_delay * 2).min(Duration::from_secs(60));
             } else {

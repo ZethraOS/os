@@ -15,7 +15,9 @@ impl EmergencyHandler {
         for num in ["112", "911", "999", "100", "101", "108"] {
             set.insert(num.to_string());
         }
-        Self { emergency_numbers: set }
+        Self {
+            emergency_numbers: set,
+        }
     }
 
     pub fn is_emergency(&self, number: &str) -> bool {

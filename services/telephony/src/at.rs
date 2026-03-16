@@ -3,12 +3,12 @@
 
 #![allow(dead_code)]
 
-use anyhow::{Result, Context};
-use tokio_serial::{SerialPortBuilderExt, SerialStream};
-use tokio::io::{AsyncWriteExt, BufReader, AsyncBufReadExt};
-use tracing::{info, warn};
+use anyhow::{Context, Result};
 use std::collections::VecDeque;
 use std::time::Duration;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio_serial::{SerialPortBuilderExt, SerialStream};
+use tracing::{info, warn};
 
 #[derive(Debug, Clone)]
 pub enum AtPriority {
@@ -51,10 +51,10 @@ impl AtEngine {
         if let Some(at_cmd) = self.queue.pop_front() {
             let cmd_bytes = format!("{}\r\n", at_cmd.cmd).into_bytes();
             self.port.write_all(&cmd_bytes).await?;
-            
+
             let mut reader = BufReader::new(&mut self.port);
             let mut response = String::new();
-            
+
             tokio::select! {
                 res = reader.read_line(&mut response) => {
                     res?;

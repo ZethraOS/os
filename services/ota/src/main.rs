@@ -1,18 +1,18 @@
 // aether-otad — AetherOS Over-The-Air Update Client
 // SPDX-License-Identifier: Apache-2.0
 
-mod signing;
 mod partition;
 mod rollback;
 mod server;
+mod signing;
 
+use crate::partition::PartitionManager;
+use crate::rollback::PostUpdateMonitor;
+use crate::server::UpdateServerClient;
+use crate::signing::SignatureVerifier;
 use anyhow::Result;
 use tokio::time::{interval, Duration};
 use tracing::info;
-use crate::server::UpdateServerClient;
-use crate::partition::PartitionManager;
-use crate::signing::SignatureVerifier;
-use crate::rollback::PostUpdateMonitor;
 
 pub struct OtaOrchestrator {
     server_client: UpdateServerClient,
@@ -32,14 +32,18 @@ impl OtaOrchestrator {
     pub async fn run(&self) -> Result<()> {
         info!("AetherOS OTA Orchestrator starting");
         if std::path::Path::new("/data/ota/post_reboot_monitor.json").exists() {
-            tokio::spawn(async move { let _ = PostUpdateMonitor::new().run().await; });
+            tokio::spawn(async move {
+                let _ = PostUpdateMonitor::new().run().await;
+            });
         }
         let mut interval = interval(Duration::from_secs(4 * 3600));
         loop {
             interval.tick().await;
             if let Ok(Some(m)) = self.server_client.check_updates("0.1.0", "dev").await {
                 let path = std::path::Path::new("/tmp/ota.zip");
-                self.server_client.download_payload(&m.payload_url, path).await?;
+                self.server_client
+                    .download_payload(&m.payload_url, path)
+                    .await?;
                 SignatureVerifier::verify_payload_sha256(path, &m.payload_sha256).await?;
                 if self.verifier.verify(m.version.as_bytes(), &m.signature_b64) {
                     let slot = PartitionManager::get_current_slot()?.inactive();
@@ -56,8 +60,9 @@ async fn main() -> Result<()> {
         .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))
         .init();
 
-    let public_key = std::env::var("AETHER_OTA_PUBLIC_KEY")
-        .unwrap_or_else(|_| "0000000000000000000000000000000000000000000000000000000000000000".to_string());
+    let public_key = std::env::var("AETHER_OTA_PUBLIC_KEY").unwrap_or_else(|_| {
+        "0000000000000000000000000000000000000000000000000000000000000000".to_string()
+    });
     let server_url = std::env::var("AETHER_OTA_SERVER")
         .unwrap_or_else(|_| "https://updates.aetheros.dev".to_string());
 

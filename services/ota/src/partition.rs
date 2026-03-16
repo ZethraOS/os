@@ -1,11 +1,11 @@
 // partition.rs — A/B partition manager for AetherOS OTA
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result};
-use std::path::{Path};
-use std::fs;
-use tracing::{info, warn};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::Path;
+use tracing::{info, warn};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Slot {
@@ -41,8 +41,7 @@ pub struct PartitionManager;
 
 impl PartitionManager {
     pub fn get_current_slot() -> Result<Slot> {
-        let cmdline = fs::read_to_string("/proc/cmdline")
-            .unwrap_or_default();
+        let cmdline = fs::read_to_string("/proc/cmdline").unwrap_or_default();
 
         for arg in cmdline.split_whitespace() {
             if let Some(suffix) = arg.strip_prefix("androidboot.slot_suffix=") {
@@ -51,7 +50,7 @@ impl PartitionManager {
                 }
             }
         }
-        
+
         // Fallback or default for systems without slot_suffix
         warn!("slot_suffix not found in cmdline, defaulting to Slot A");
         Ok(Slot::A)

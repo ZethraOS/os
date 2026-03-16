@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};
-use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use base64::{engine::general_purpose, Engine as _};
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use tokio::fs::File;
@@ -17,8 +17,11 @@ pub struct SignatureVerifier {
 impl SignatureVerifier {
     pub fn new(public_key_hex: &str) -> Result<Self> {
         let bytes = hex::decode(public_key_hex).context("Failed to decode public key hex")?;
-        let key_bytes: [u8; 32] = bytes.try_into().map_err(|_| anyhow::anyhow!("Invalid public key length"))?;
-        let verifying_key = VerifyingKey::from_bytes(&key_bytes).context("Invalid public key bytes")?;
+        let key_bytes: [u8; 32] = bytes
+            .try_into()
+            .map_err(|_| anyhow::anyhow!("Invalid public key length"))?;
+        let verifying_key =
+            VerifyingKey::from_bytes(&key_bytes).context("Invalid public key bytes")?;
         Ok(Self { verifying_key })
     }
 
@@ -27,7 +30,7 @@ impl SignatureVerifier {
             Ok(b) => b,
             Err(_) => return false,
         };
-        
+
         let signature = match Signature::from_slice(&sig_bytes) {
             Ok(s) => s,
             Err(_) => return false,
@@ -58,7 +61,11 @@ impl SignatureVerifier {
         }
         let actual_hash = format!("{:x}", hasher.finalize());
         if actual_hash != expected_sha256 {
-            anyhow::bail!("Payload hash mismatch: expected {} got {}", expected_sha256, actual_hash);
+            anyhow::bail!(
+                "Payload hash mismatch: expected {} got {}",
+                expected_sha256,
+                actual_hash
+            );
         }
         info!("Payload SHA-256 verification PASSED");
         Ok(())

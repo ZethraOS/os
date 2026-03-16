@@ -2,8 +2,8 @@
 // lifecycle.rs — App lifecycle and OOM management for AetherOS
 // SPDX-License-Identifier: Apache-2.0
 
-use tracing::info;
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum AppState {
@@ -20,7 +20,9 @@ pub struct LifecycleManager {
 
 impl LifecycleManager {
     pub fn new() -> Self {
-        Self { current_state: AppState::Loading }
+        Self {
+            current_state: AppState::Loading,
+        }
     }
 
     pub fn set_state(&mut self, state: AppState) {

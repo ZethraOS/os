@@ -23,12 +23,13 @@ impl DnsResolver {
         info!(domain, "Resolving via DoH (Cloudflare)");
         let client = reqwest::Client::new();
         let url = format!("https://1.1.1.1/dns-query?name={}&type=A", domain);
-        
-        let resp = client.get(url)
+
+        let resp = client
+            .get(url)
             .header("accept", "application/dns-json")
             .send()
             .await?;
-            
+
         let json: serde_json::Value = resp.json().await?;
         // Simplified parsing of DNS-over-HTTPS JSON response
         if let Some(answer) = json["Answer"].as_array().and_then(|a| a.first()) {
@@ -36,7 +37,7 @@ impl DnsResolver {
                 return Ok(data.to_string());
             }
         }
-        
+
         anyhow::bail!("Failed to resolve via DoH")
     }
 }

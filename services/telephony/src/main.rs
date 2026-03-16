@@ -1,11 +1,11 @@
 mod at;
-mod pdu;
 mod emergency;
+mod pdu;
 
-use anyhow::Result;
-use tracing::{info};
-use crate::at::{AtEngine};
+use crate::at::AtEngine;
 use crate::emergency::EmergencyHandler;
+use anyhow::Result;
+use tracing::info;
 
 pub struct TelephonyOrchestrator {
     #[allow(dead_code)]
@@ -35,11 +35,10 @@ async fn main() -> Result<()> {
         .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))
         .init();
 
-    let device = std::env::var("MODEM_DEVICE")
-        .unwrap_or_else(|_| "/dev/ttyUSB0".to_string());
+    let device = std::env::var("MODEM_DEVICE").unwrap_or_else(|_| "/dev/ttyUSB0".to_string());
 
     info!(device, "Starting AetherOS Telephony Service");
-    
+
     let mut orchestrator = TelephonyOrchestrator::new(&device).await?;
     orchestrator.run().await?;
 
