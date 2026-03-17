@@ -8,3 +8,4 @@ Cargo.lock
 *.pem
 .DS_Store
 /tmp/
+.aider*
