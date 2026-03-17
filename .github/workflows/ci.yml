@@ -150,6 +150,7 @@ jobs:
           # Include zethrad in the check to ensure it's present from the artifact
           mkdir -p initramfs/sbin
           cp bin-dist/zethrad initramfs/sbin/
+          chmod +x initramfs/sbin/zethrad
           
           cd initramfs
           find . | cpio -oH newc | gzip > ../initramfs.cpio.gz

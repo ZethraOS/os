@@ -281,6 +281,7 @@ Cargo.lock
 *.pem
 .DS_Store
 /tmp/
+.aider*
 EOF
     git add .
     git commit -m "feat: ZethraOS v0.1.0 — initial commit

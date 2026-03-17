@@ -1,4 +1,3 @@
-```
 // zethra-networkd — ZethraOS Network Manager
 // SPDX-License-Identifier: Apache-2.0
 

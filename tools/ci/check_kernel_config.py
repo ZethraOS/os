@@ -101,4 +101,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: check_kernel_config.py <path/to/defconfig>")
         sys.exit(1)
-    sys.exit(check(sys.argv[1]))
+    sys.exit(audit_config(sys.argv[1]))

@@ -262,9 +262,6 @@ impl Display {
 
 // ZethraShell protocol extension for mobile gestures + app lifecycle
 
-use anyhow::Result;
-use tracing::info;
-
 // Compositor main state
 pub struct ZethraCompositor {
     pub display: Display,
