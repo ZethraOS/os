@@ -129,7 +129,7 @@ pub fn mock_analyze(issue: &Issue) -> AnalysisResult {
         }],
         impact,
         explanation: format!(
-            "[MOCK] Simulated analysis for: {}.\nSet AETHER_AI_PROVIDER to use a real model.",
+            "[MOCK] Simulated analysis for: {}.\nSet ZETHRA_AI_PROVIDER to use a real model.",
             issue.summary()
         ),
         generated_by: "mock".to_string(),
@@ -141,7 +141,7 @@ pub fn mock_analyze(issue: &Issue) -> AnalysisResult {
 pub async fn live_analyze(issue: &Issue, provider: &ProviderConfig) -> Result<AnalysisResult> {
     let client = reqwest::Client::new();
 
-    let system = "You are AetherAI, an OS self-healing system. \
+    let system = "You are ZethraAI, an OS self-healing system. \
         Analyze the issue and respond ONLY with valid JSON matching this schema: \
         {\"issue_id\":\"[ID]\",\"root_cause\":{\"description\":\"\",\"type\":\"\",\"subsystem\":\"\",\"cwe_id\":\"\"},\
         \"affected_files\":[],\"proposed_fix\":{\"description\":\"\",\"fix_type\":\"\",\"confidence\":0.2},\

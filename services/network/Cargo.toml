@@ -1,11 +1,11 @@
 [package]
-name    = "aether-network"
+name    = "zethra-network"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-networkd"
+name = "zethra-networkd"
 path = "src/main.rs"
 
 [dependencies]

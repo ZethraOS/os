@@ -1,4 +1,4 @@
-// aether-otad — AetherOS Over-The-Air Update Client
+// zethra-otad — ZethraOS Over-The-Air Update Client
 // SPDX-License-Identifier: Apache-2.0
 
 mod partition;
@@ -30,7 +30,7 @@ impl OtaOrchestrator {
     }
 
     pub async fn run(&self) -> Result<()> {
-        info!("AetherOS OTA Orchestrator starting");
+        info!("ZethraOS OTA Orchestrator starting");
         if std::path::Path::new("/data/ota/post_reboot_monitor.json").exists() {
             tokio::spawn(async move {
                 let _ = PostUpdateMonitor::new().run().await;
@@ -60,11 +60,11 @@ async fn main() -> Result<()> {
         .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string()))
         .init();
 
-    let public_key = std::env::var("AETHER_OTA_PUBLIC_KEY").unwrap_or_else(|_| {
+    let public_key = std::env::var("ZETHRA_OTA_PUBLIC_KEY").unwrap_or_else(|_| {
         "0000000000000000000000000000000000000000000000000000000000000000".to_string()
     });
-    let server_url = std::env::var("AETHER_OTA_SERVER")
-        .unwrap_or_else(|_| "https://updates.aetheros.dev".to_string());
+    let server_url = std::env::var("ZETHRA_OTA_SERVER")
+        .unwrap_or_else(|_| "https://updates.zethraos.com".to_string());
 
     let orchestrator = OtaOrchestrator::new(&public_key, &server_url)?;
     orchestrator.run().await

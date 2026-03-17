@@ -1,4 +1,4 @@
-// signing.rs — Cryptographic verification for AetherOS OTA
+// signing.rs — Cryptographic verification for ZethraOS OTA
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};

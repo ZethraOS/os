@@ -1,4 +1,4 @@
-// aether-compositor — AetherOS Wayland Compositor (AetherShell)
+// zethra-compositor — ZethraOS Wayland Compositor (ZethraShell)
 // SPDX-License-Identifier: Apache-2.0
 //
 // Built on Smithay (pure Rust Wayland compositor library).
@@ -9,7 +9,7 @@
 //   • libinput → touch, stylus, keyboard input
 //   • OpenGL ES 3.x rendering via GBM/EGL
 //   • App windows are Wayland XDG surfaces
-//   • AetherShell protocol extension for mobile gestures + app lifecycle
+//   • ZethraShell protocol extension for mobile gestures + app lifecycle
 
 use anyhow::Result;
 use tracing::info;
@@ -260,8 +260,10 @@ impl Display {
     }
 }
 
+// ZethraShell protocol extension for mobile gestures + app lifecycle
+
 // Compositor main state
-pub struct AetherCompositor {
+pub struct ZethraCompositor {
     pub display: Display,
     pub windows: Vec<WindowState>,
     pub gestures: GestureRecognizer,
@@ -269,7 +271,7 @@ pub struct AetherCompositor {
     next_id: u32,
 }
 
-impl AetherCompositor {
+impl ZethraCompositor {
     pub fn new(display: Display) -> Self {
         Self {
             display,
@@ -346,9 +348,9 @@ impl AetherCompositor {
 
 fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter("aether_compositor=info")
+        .with_env_filter("zethra_compositor=info")
         .init();
-    info!("AetherShell compositor starting");
+    info!("ZethraShell compositor starting");
 
     let display = Display {
         width: 1080,
@@ -358,10 +360,10 @@ fn main() -> Result<()> {
         hdr: true,
     };
 
-    let mut compositor = AetherCompositor::new(display);
-    compositor.add_window("aether.launcher", WindowLayer::Normal);
+    let mut compositor = ZethraCompositor::new(display);
+    compositor.add_window("zethra.launcher", WindowLayer::Normal);
 
-    info!("AetherShell ready — Wayland socket at /run/aether/wayland-0");
+    info!("ZethraShell ready — Wayland socket at /run/zethra/wayland-0");
     // Full Smithay event loop would start here
     Ok(())
 }

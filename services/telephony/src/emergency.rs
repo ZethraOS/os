@@ -1,4 +1,4 @@
-// emergency.rs — Emergency call handler for AetherOS Telephony
+// emergency.rs — Emergency call handler for ZethraOS Telephony
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(dead_code)]

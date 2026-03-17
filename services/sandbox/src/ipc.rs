@@ -1,4 +1,4 @@
-// ipc.rs — Unix socket bridge for AetherOS sandboxed apps
+// ipc.rs — Unix socket bridge for ZethraOS sandboxed apps
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
@@ -13,7 +13,7 @@ pub struct SandboxIPC {
 impl SandboxIPC {
     pub fn new(app_id: &str) -> Self {
         Self {
-            socket_path: format!("/run/aether/sandbox/{}.sock", app_id),
+            socket_path: format!("/run/zethra/sandbox/{}.sock", app_id),
         }
     }
 

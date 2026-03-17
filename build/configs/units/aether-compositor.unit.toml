@@ -1,7 +1,0 @@
-name        = "aether-compositor"
-description = "AetherShell Wayland Compositor"
-after       = ["aetherd-base", "aether-sensord"]
-exec_start  = "/usr/lib/aether/compositor/aether-compositor"
-restart     = "on_failure"
-restart_delay_ms = 2000
-watchdog_sec = 60

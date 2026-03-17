@@ -1,11 +1,11 @@
 [package]
-name    = "aether-sensord"
+name    = "zethra-sensord"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-sensord"
+name = "zethra-sensord"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,4 +1,4 @@
-// hal/src/lib.rs — AetherOS Hardware Abstraction Layer
+// hal/src/lib.rs — ZethraOS Hardware Abstraction Layer
 // SPDX-License-Identifier: Apache-2.0
 //
 // Defines the trait interfaces that all HAL implementations must satisfy.

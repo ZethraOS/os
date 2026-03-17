@@ -17,7 +17,7 @@ pub struct ProviderConfig {
 
 impl ProviderConfig {
     pub fn detect() -> Option<Self> {
-        let provider = std::env::var("AETHER_AI_PROVIDER")
+        let provider = std::env::var("ZETHRA_AI_PROVIDER")
             .unwrap_or_else(|_| "auto".to_string())
             .to_lowercase();
 
@@ -28,7 +28,7 @@ impl ProviderConfig {
                 name: "Anthropic Claude",
                 base_url: "https://api.anthropic.com/v1/messages".into(),
                 api_key: std::env::var("ANTHROPIC_API_KEY").unwrap_or_default(),
-                model: std::env::var("AETHER_MODEL")
+                model: std::env::var("ZETHRA_MODEL")
                     .unwrap_or_else(|_| "claude-haiku-4-5-20251001".into()), // cheapest Claude
                 auth_style: AuthStyle::XApiKey,
             }),
@@ -37,7 +37,7 @@ impl ProviderConfig {
                 name: "OpenAI",
                 base_url: "https://api.openai.com/v1/chat/completions".into(),
                 api_key: std::env::var("OPENAI_API_KEY").unwrap_or_default(),
-                model: std::env::var("AETHER_MODEL").unwrap_or_else(|_| "gpt-4o-mini".into()), // cheapest GPT-4 class
+                model: std::env::var("ZETHRA_MODEL").unwrap_or_else(|_| "gpt-4o-mini".into()), // cheapest GPT-4 class
                 auth_style: AuthStyle::Bearer,
             }),
 
@@ -45,7 +45,7 @@ impl ProviderConfig {
                 name: "Groq (free tier)",
                 base_url: "https://api.groq.com/openai/v1/chat/completions".into(),
                 api_key: std::env::var("GROQ_API_KEY").unwrap_or_default(),
-                model: std::env::var("AETHER_MODEL").unwrap_or_else(|_| "llama-3.3-70b-versatile".into()),
+                model: std::env::var("ZETHRA_MODEL").unwrap_or_else(|_| "llama-3.3-70b-versatile".into()),
                 auth_style: AuthStyle::Bearer,
             }),
 
@@ -53,7 +53,7 @@ impl ProviderConfig {
                 name: "Together AI (free tier)",
                 base_url: "https://api.together.xyz/v1/chat/completions".into(),
                 api_key: std::env::var("TOGETHER_API_KEY").unwrap_or_default(),
-                model: std::env::var("AETHER_MODEL")
+                model: std::env::var("ZETHRA_MODEL")
                     .unwrap_or_else(|_| "meta-llama/Llama-3-70b-chat-hf".into()),
                 auth_style: AuthStyle::Bearer,
             }),
@@ -63,7 +63,7 @@ impl ProviderConfig {
                 base_url: "https://openrouter.ai/api/v1/chat/completions".into(),
                 api_key: std::env::var("OPENROUTER_API_KEY").unwrap_or_default(),
                 // Free models on OpenRouter (no credit card needed):
-                model: std::env::var("AETHER_MODEL")
+                model: std::env::var("ZETHRA_MODEL")
                     .unwrap_or_else(|_| "meta-llama/llama-3.3-70b-instruct:free".into()),
                 auth_style: AuthStyle::Bearer,
             }),
@@ -73,11 +73,11 @@ impl ProviderConfig {
                 // API key goes in URL for Google's REST API
                 base_url: format!(
                     "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
-                    std::env::var("AETHER_MODEL").unwrap_or_else(|_| "gemini-2.0-flash".into()),
+                    std::env::var("ZETHRA_MODEL").unwrap_or_else(|_| "gemini-2.0-flash".into()),
                     std::env::var("GOOGLE_API_KEY").unwrap_or_default()
                 ),
                 api_key: std::env::var("GOOGLE_API_KEY").unwrap_or_default(),
-                model: std::env::var("AETHER_MODEL").unwrap_or_else(|_| "gemini-2.0-flash".into()),
+                model: std::env::var("ZETHRA_MODEL").unwrap_or_else(|_| "gemini-2.0-flash".into()),
                 auth_style: AuthStyle::GoogleApiKey,
             }),
 
@@ -85,7 +85,7 @@ impl ProviderConfig {
                 name: "xAI Grok",
                 base_url: "https://api.x.ai/v1/chat/completions".into(),
                 api_key: std::env::var("XAI_API_KEY").unwrap_or_default(),
-                model: std::env::var("AETHER_MODEL").unwrap_or_else(|_| "grok-beta".into()),
+                model: std::env::var("ZETHRA_MODEL").unwrap_or_else(|_| "grok-beta".into()),
                 auth_style: AuthStyle::Bearer,
             }),
 
@@ -96,7 +96,7 @@ impl ProviderConfig {
                     std::env::var("OLLAMA_HOST").unwrap_or_else(|_| "localhost:11434".into())
                 ),
                 api_key: String::new(), // no key needed
-                model: std::env::var("AETHER_MODEL").unwrap_or_else(|_| "llama3.2".into()),
+                model: std::env::var("ZETHRA_MODEL").unwrap_or_else(|_| "llama3.2".into()),
                 auth_style: AuthStyle::Bearer,
             }),
 

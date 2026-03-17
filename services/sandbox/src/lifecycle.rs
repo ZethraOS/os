@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-// lifecycle.rs — App lifecycle and OOM management for AetherOS
+// lifecycle.rs — App lifecycle and OOM management for ZethraOS
 // SPDX-License-Identifier: Apache-2.0
 
 use serde::{Deserialize, Serialize};

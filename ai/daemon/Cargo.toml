@@ -1,11 +1,11 @@
 [package]
-name    = "aether-ai-daemon"
+name    = "zethra-ai-daemon"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-ai-daemon"
+name = "zethra-ai-daemon"
 path = "src/main.rs"
 
 [dependencies]

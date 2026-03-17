@@ -1,0 +1,12 @@
+# ZethraOS Code Ownership
+# All changes to these directories require review from the owner.
+
+# Global owner
+* @er-mayanka
+
+# Critical components
+/kernel/ @er-mayanka
+/hal/ @er-mayanka
+/services/ @er-mayanka
+/ai/ @er-mayanka
+/.github/workflows/ @er-mayanka

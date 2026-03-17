@@ -1,11 +1,11 @@
 [package]
-name    = "aether-release-bot"
+name    = "zethra-release-bot"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-release-bot"
+name = "zethra-release-bot"
 path = "src/main.rs"
 
 [dependencies]

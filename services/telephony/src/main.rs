@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
 
     let device = std::env::var("MODEM_DEVICE").unwrap_or_else(|_| "/dev/ttyUSB0".to_string());
 
-    info!(device, "Starting AetherOS Telephony Service");
+    info!(device, "Starting ZethraOS Telephony Service");
 
     let mut orchestrator = TelephonyOrchestrator::new(&device).await?;
     orchestrator.run().await?;

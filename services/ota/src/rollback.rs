@@ -1,4 +1,4 @@
-// rollback.rs — Health monitor and rollback logic for AetherOS OTA
+// rollback.rs — Health monitor and rollback logic for ZethraOS OTA
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::partition::PartitionManager;
@@ -22,8 +22,8 @@ impl PostUpdateMonitor {
         Self {
             error_rate_threshold: 0.05,
             monitoring_window: Duration::from_secs(3600),
-            health_file: "/run/aether/health.json",
-            log_file: "/var/log/aether/ota_rollback.log",
+            health_file: "/run/zethra/health.json",
+            log_file: "/var/log/zethra/ota_rollback.log",
         }
     }
 

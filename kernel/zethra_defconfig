@@ -1,6 +1,6 @@
-# AetherOS Kernel Configuration — ARM64 (Qualcomm Snapdragon primary target)
+# ZethraOS Kernel Configuration — ARM64 (Qualcomm Snapdragon primary target)
 # Based on Linux 6.x — legal, GPL-2 licensed
-# Build with: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- aether_defconfig
+# Build with: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
 
 # ─── Core ─────────────────────────────────────────────────────────────────────
 CONFIG_AARCH64=y
@@ -36,7 +36,7 @@ CONFIG_INIT_ON_FREE_DEFAULT_ON=y
 CONFIG_PAGE_TABLE_ISOLATION=y   # Meltdown mitigation
 CONFIG_SPECULATION_MITIGATIONS=y
 
-# ─── eBPF (for AetherAI monitoring) ─────────────────────────────────────────
+# ─── eBPF (for ZethraAI monitoring) ─────────────────────────────────────────
 CONFIG_BPF=y
 CONFIG_BPF_SYSCALL=y
 CONFIG_BPF_JIT=y
@@ -131,7 +131,7 @@ CONFIG_TMPFS=y
 CONFIG_TMPFS_POSIX_ACL=y
 CONFIG_OVERLAY_FS=y             # For app sandboxing
 
-# ─── AetherOS specific ───────────────────────────────────────────────────────
-CONFIG_AETHER_CRASH_REPORTER=y  # In-kernel crash metadata export
-CONFIG_AETHER_PERF_COUNTERS=y   # Extended perf events for AI monitoring
-CONFIG_AETHER_SECCOMP_PROFILES=y # Per-app syscall filtering
+# ─── ZethraOS specific ───────────────────────────────────────────────────────
+CONFIG_ZETHRA_CRASH_REPORTER=y  # In-kernel crash metadata export
+CONFIG_ZETHRA_PERF_COUNTERS=y   # Extended perf events for AI monitoring
+CONFIG_ZETHRA_SECCOMP_PROFILES=y # Per-app syscall filtering

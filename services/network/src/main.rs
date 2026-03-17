@@ -1,4 +1,4 @@
-// aether-networkd — AetherOS Network Manager
+// zethra-networkd — ZethraOS Network Manager
 // SPDX-License-Identifier: Apache-2.0
 
 mod dns;
@@ -29,7 +29,7 @@ impl NetworkOrchestrator {
     }
 
     pub async fn run(&self) -> Result<()> {
-        info!("AetherOS Network Orchestrator starting");
+        info!("ZethraOS Network Orchestrator starting");
 
         // Step 1: Initialize DNS
         DnsResolver::apply_system_config(&["1.1.1.1", "8.8.8.8"]).await?;
