@@ -8,7 +8,7 @@ on:
   push:
     branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   # ZethraAI daemon triggers this via repository_dispatch
   repository_dispatch:
     types: [ai-patch-ready, cve-fix-ready, performance-fix-ready]
