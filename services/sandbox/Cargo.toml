@@ -10,7 +10,7 @@ name = "zethra-sandbox"
 path = "src/main.rs"
 
 [dependencies]
-wasmtime   = "41.0"
+wasmtime   = "43.0.2"
 tokio.workspace      = true
 serde.workspace      = true
 anyhow.workspace     = true
