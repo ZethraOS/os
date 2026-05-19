@@ -142,11 +142,11 @@ This is the most novel part of ZethraOS. The daemon runs continuously, watching 
 ```
 Issue detected
     ↓
-Claude API: analyze_issue()
+Configured AI provider (local or cloud): analyze_issue()
     → root cause, affected files, proposed patch, confidence, risk level
     ↓
 confidence > 0.7?
-    → YES: Claude API: review_patch() (second opinion)
+    → YES: provider review_patch() (second opinion)
     → NO: save to patches/needs-review/ for human
     ↓
 review.approved?
@@ -169,7 +169,7 @@ All CI jobs pass?
 | 0.70–0.92 | Trigger CI; require human merge approval |
 | >= 0.92 + Low/Medium risk | Full auto-merge + OTA to dev channel |
 
-### What Claude is NOT allowed to auto-merge
+### What the AI system is NOT allowed to auto-merge
 
 - `risk_level = Critical` or `High` — always human reviewed
 - Changes to `zethrad` (PID 1) — too risky to auto-update
@@ -185,7 +185,7 @@ The release bot (`zethra-release-bot`) runs alongside the AI daemon. It:
 
 1. Polls CI for successful builds
 2. Infers semver bump from risk level (Critical → minor, else patch)
-3. Generates human-readable changelogs with Claude
+3. Generates human-readable changelogs with a configured provider
 4. Builds and signs the OTA package
 5. Publishes to the OTA server with gradual rollout (1% → 10% → 100%)
 6. Monitors error rates post-rollout (5% threshold triggers auto-rollback)
@@ -259,6 +259,4 @@ Update payload format: `bsdiff` binary deltas over the full partition image, com
 1. Join [Open Invention Network (OIN)](https://openinventionnetwork.com) at v1.0
 2. Get a trademark on "ZethraOS" before public launch
 3. Commission a formal IP audit before seeking VC funding
-4. Consider [Software Freedom Conservancy](https://sfconservancy.org) for fiscal sponsorship
-l IP audit before seeking VC funding
 4. Consider [Software Freedom Conservancy](https://sfconservancy.org) for fiscal sponsorship
