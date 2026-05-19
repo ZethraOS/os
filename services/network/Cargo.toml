@@ -21,4 +21,4 @@ tokio-util = { version = "0.7", features = ["codec"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 rtnetlink = "0.18"
-netlink-packet-core = "0.7"
+netlink-packet-core = "0.8.1"
