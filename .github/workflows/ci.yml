@@ -7,8 +7,14 @@ name: ZethraOS Build & Self-Heal
 on:
   push:
     branches: [main, dev]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
     branches: [main, dev]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   # ZethraAI daemon triggers this via repository_dispatch
   repository_dispatch:
     types: [ai-patch-ready, cve-fix-ready, performance-fix-ready]
