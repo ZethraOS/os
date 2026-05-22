@@ -144,6 +144,32 @@ act -j rust-check
 
 ---
 
+## Dependency security policy
+
+For production branches, ZethraOS enforces a strict dependency security bar:
+
+1. `cargo audit` vulnerabilities are **blocking** on PR and merge.
+2. Security warnings (`unmaintained`, `unsound`, `yanked`) are tracked by CI monitoring artifacts and scheduled drift reports.
+3. Weekly dependency hygiene is required (at minimum one lockfile refresh and audit review per week).
+
+### Critical dependency ownership
+
+| Domain | Paths | Owner |
+|--------|-------|-------|
+| Sandbox runtime | `services/sandbox/` | `@er-mayanka` |
+| TLS / HTTP client stack | `services/network/`, `services/ota/`, `ai/*` | `@er-mayanka` |
+| Netlink / Linux networking | `services/network/` | `@er-mayanka` |
+
+### Major dependency bump rule
+
+Any major dependency bump in sandboxing, networking, cryptography, or update pipelines requires:
+
+1. Security review sign-off in PR
+2. `cargo audit` clean result
+3. Compatibility validation via `cargo check --all` and `cargo test --all`
+
+---
+
 ## AI-generated patches
 
 The ZethraAI daemon automatically generates patches and opens PRs. These are clearly labelled `[AI-GENERATED]` in the title. Human reviewers should:

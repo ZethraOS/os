@@ -7,8 +7,14 @@ name: ZethraOS Build & Self-Heal
 on:
   push:
     branches: [main, dev]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
     branches: [main, dev]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   # ZethraAI daemon triggers this via repository_dispatch
   repository_dispatch:
     types: [ai-patch-ready, cve-fix-ready, performance-fix-ready]
@@ -153,17 +159,38 @@ jobs:
           echo "Initramfs verified"
           echo "Boot test PASSED"
 
-  # ── 4. Security scan ─────────────────────────────────────────────────────
+  # ── 4. Security scan (blocking) ─────────────────────────────────────────
   security-scan:
-    name: Security — CVE + static analysis
+    name: Security — vulnerabilities + static analysis
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Rust security audit
         run: |
-          cargo install cargo-audit --quiet
-          cargo audit
+          cargo install cargo-audit --locked --quiet
+          cargo audit --format json > audit-blocking.json || true
+          python3 - << 'PY'
+          import json, sys
+          with open("audit-blocking.json", "r", encoding="utf-8") as f:
+              report = json.load(f)
+          vulns = report.get("vulnerabilities", {}).get("list", [])
+          count = len(vulns)
+          print(f"Blocking vulnerability count: {count}")
+          if count:
+              print("Blocking advisory IDs:")
+              for entry in vulns:
+                  adv = entry.get("advisory", {})
+                  print(f"- {adv.get('id', 'UNKNOWN')} | {adv.get('package', 'UNKNOWN')} | {adv.get('title', '')}")
+              sys.exit(1)
+          PY
+
+      - name: Upload blocking audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-audit-blocking-report
+          path: audit-blocking.json
 
       - name: Scan kernel config for dangerous options
         run: python3 tools/ci/check_kernel_config.py kernel/zethra_defconfig
@@ -174,7 +201,101 @@ jobs:
           path: ./
           base: ${{ github.event.repository.default_branch }}
 
-  # ── 5. AI patch auto-merge ──────────────────────────────────────────────
+  # ── 5. Security scan (monitoring, non-blocking) ────────────────────────
+  security-monitoring:
+    name: Security — warnings drift monitor
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust security warning monitor
+        id: drift
+        run: |
+          cargo install cargo-audit --locked --quiet
+          cargo audit --deny warnings --format json > audit-monitoring.json || true
+          python3 - << 'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report_path = Path("audit-monitoring.json")
+          try:
+              report = json.loads(report_path.read_text(encoding="utf-8"))
+          except Exception:
+              report = {"vulnerabilities": {"list": []}, "warnings": {}}
+
+          vulns = report.get("vulnerabilities", {}).get("list", [])
+          warnings = report.get("warnings", {})
+          warning_entries = []
+          for category, entries in warnings.items():
+              if isinstance(entries, list):
+                  for item in entries:
+                      if isinstance(item, dict):
+                          warning_entries.append({
+                              "category": category,
+                              "id": item.get("id", "UNKNOWN"),
+                              "package": item.get("package", "UNKNOWN"),
+                              "title": item.get("title", "")
+                          })
+
+          summary_lines = [
+              "## Security Drift Report",
+              f"- Vulnerabilities: {len(vulns)}",
+              f"- Warning findings: {len(warning_entries)}",
+              "",
+              "### Warning Findings",
+          ]
+          if warning_entries:
+              for item in warning_entries:
+                  summary_lines.append(f"- {item['category']}: {item['id']} ({item['package']}) {item['title']}")
+          else:
+              summary_lines.append("- none")
+
+          with open("security-drift-summary.md", "w", encoding="utf-8") as out:
+              out.write("\n".join(summary_lines) + "\n")
+          print("\n".join(summary_lines))
+
+          github_output = os.environ.get("GITHUB_OUTPUT")
+          if github_output:
+              with open(github_output, "a", encoding="utf-8") as out:
+                  out.write(f"warning_count={len(warning_entries)}\n")
+                  out.write(f"vuln_count={len(vulns)}\n")
+          PY
+
+      - name: Upload monitoring artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-drift-monitoring
+          path: |
+            audit-monitoring.json
+            security-drift-summary.md
+
+      - name: Auto-file drift issue on weekly schedule
+        if: github.event_name == 'schedule' && (steps.drift.outputs.warning_count != '0' || steps.drift.outputs.vuln_count != '0')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date();
+            // Monday-only auto-filing to avoid daily issue spam.
+            if (now.getUTCDay() !== 1) {
+              core.info("Skipping drift issue: only files on Monday UTC.");
+              return;
+            }
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-drift-summary.md', 'utf8');
+            const title = `Security drift report: ${new Date().toISOString().slice(0, 10)}`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: summary,
+              labels: ['security', 'dependencies']
+            });
+
+  # ── 6. AI patch auto-merge ──────────────────────────────────────────────
   ai-auto-merge:
     name: AI patch — auto-merge gate
     runs-on: ubuntu-24.04
@@ -231,7 +352,7 @@ jobs:
               "channels": ["dev", "beta"]
             }'
 
-  # ── 6. OTA release build ────────────────────────────────────────────────
+  # ── 7. OTA release build ────────────────────────────────────────────────
   ota-release:
     name: OTA — build & publish
     runs-on: ubuntu-24.04

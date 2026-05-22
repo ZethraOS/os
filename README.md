@@ -48,8 +48,8 @@ ZethraOS is a mobile operating system built from scratch on the Linux kernel. It
 The core differentiator of ZethraOS is the `zethra-ai-daemon`:
 
 1. **Monitor** — watches `/var/log/zethra/crashes/` and CVE feeds
-2. **Analyze** — sends crash data + stack traces to Claude API for root cause analysis
-3. **Patch** — Claude generates a unified diff patch + regression tests
+2. **Analyze** — sends crash data + stack traces to a configured AI provider (cloud or local) for root cause analysis
+3. **Patch** — the provider generates a unified diff patch + regression tests
 4. **Test** — CI boots a QEMU image with the patch and runs test suite
 5. **Release** — if confidence ≥ 0.92 and risk ≤ Medium, auto-merges and triggers OTA
 
@@ -119,7 +119,18 @@ bash build/scripts/qemu_boot.sh
 ### Run ZethraAI daemon locally (for development)
 
 ```bash
-export ANTHROPIC_API_KEY=your_key_here
+# Option A: local-first edge mode (no cloud key)
+export ZETHRA_AI_PROVIDER=ollama
+# optional: export OLLAMA_HOST=localhost:11434
+
+# Option B: cloud-assisted mode (auto-detects provider from key)
+# export GROQ_API_KEY=...
+# export OPENROUTER_API_KEY=...
+# export OPENAI_API_KEY=...
+# export GOOGLE_API_KEY=...
+# export XAI_API_KEY=...
+# export ANTHROPIC_API_KEY=...
+
 cargo run --bin zethra-ai-daemon
 ```
 

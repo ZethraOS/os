@@ -1,7 +1,7 @@
 // runtime.rs — WASMtime runtime for ZethraOS sandboxed apps
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use tracing::info;
 use wasmtime::*;
 
@@ -15,7 +15,7 @@ impl ResourceLimiter for MemoryLimiter {
         _current: usize,
         desired: usize,
         _maximum: Option<usize>,
-    ) -> Result<bool> {
+    ) -> std::result::Result<bool, wasmtime::Error> {
         Ok(desired <= self.max_memory)
     }
     fn table_growing(
@@ -23,7 +23,7 @@ impl ResourceLimiter for MemoryLimiter {
         _current: usize,
         desired: usize,
         _maximum: Option<usize>,
-    ) -> Result<bool> {
+    ) -> std::result::Result<bool, wasmtime::Error> {
         Ok(desired <= 1000)
     }
 }
@@ -55,7 +55,7 @@ impl SandboxRuntime {
         let start = instance
             .get_typed_func::<(), ()>(&mut store, "_start")
             .or_else(|_| instance.get_typed_func::<(), ()>(&mut store, "main"))
-            .context("No entry point found in WASM module")?;
+            .map_err(|_| anyhow::anyhow!("No entry point found in WASM module"))?;
 
         info!("Starting sandboxed app execution");
         start.call(&mut store, ())?;
