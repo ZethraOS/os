@@ -1,11 +1,11 @@
 [package]
-name    = "aether-network"
+name    = "zethra-network"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-networkd"
+name = "zethra-networkd"
 path = "src/main.rs"
 
 [dependencies]
@@ -15,3 +15,10 @@ serde_json.workspace = true
 anyhow.workspace     = true
 tracing.workspace    = true
 tracing-subscriber.workspace = true
+reqwest = { version = "0.12", features = ["json", "rustls-tls-native-roots"], default-features = false }
+futures-util = "0.3"
+tokio-util = { version = "0.7", features = ["codec"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rtnetlink = "0.18"
+netlink-packet-core = "0.8.1"

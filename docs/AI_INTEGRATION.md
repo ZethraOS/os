@@ -1,19 +1,19 @@
-# AetherAI Integration & Robustness Report
+# ZethraAI Integration & Robustness Report
 
-This document summarizes the changes made to the AetherOS AI daemon and development scripts to support modern AI providers and ensure system stability.
+This document summarizes the changes made to the ZethraOS AI daemon and development scripts to support modern AI providers and ensure system stability.
 
 ## 1. Multi-Provider Support
-We have successfully expanded the AI daemon to support a diverse set of AI "brains."
+We have expanded the AI daemon to support a diverse set of AI providers while preserving a local-first edge deployment path.
 
 - **Google Gemini**: Added native support for the `gemini-2.0-flash` model via the Google AI Studio API.
 - **xAI Grok**: Integrated the latest Grok models using the xAI API key.
 - **Ollama**: Stabilized local inference for private, offline crash analysis.
 - **Groq**: Configured for high-speed, low-latency processing of Llama-3 models.
 
-## 2. "Bulletproof" JSON Pipeline
+## 2. Robust JSON Pipeline
 To handle the inconsistencies of various AI models (especially small local models), we implemented a robust parsing stack:
 
-- **JSON Repair Engine**: A custom `repair_json` helper that automatically detecting truncated responses. It "heals" malformed JSON by closing dangling quotes, braces, and brackets, allowing the system to recover data from incomplete model outputs.
+- **JSON Repair Engine**: A custom `repair_json` helper that automatically detects truncated responses. It "heals" malformed JSON by closing dangling quotes, braces, and brackets, allowing the system to recover data from incomplete model outputs.
 - **Permissive Mapping**: The system now handles both `snake_case` and `camelCase` keys, coerces types (e.g., strings-to-numbers for confidence levels), and provides safe defaults for missing fields.
 - **Schema Mapping**: If a model returns the `proposed_fix` as a complex object instead of a string, the system now automatically stringifies it to ensure the patch generator can still function.
 
@@ -27,6 +27,11 @@ To handle the inconsistencies of various AI models (especially small local model
 - Added a comprehensive guided setup for free AI providers to help new developers get started without a credit card.
 - Implemented automatic binary rebuilding when `main.rs` changes are detected during a run.
 
+### Recommended local run modes
+
+- **Edge/local-first**: `ZETHRA_AI_PROVIDER=ollama` (no cloud API key required)
+- **Cloud-assisted**: use any supported provider key (Groq, OpenRouter, OpenAI, Google, xAI, Anthropic)
+
 ## 5. Summary of Files Changed
-- [main.rs](file:///Users/nomad/workstation/work/code/OS/Mobile/aetheros/ai/daemon/src/main.rs): Core logic, provider detection, JSON repair, and permissive mapping.
-- [dev.sh](file:///Users/nomad/workstation/work/code/OS/Mobile/aetheros/dev.sh): Environment validation and provider guidance.
+- [main.rs](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/ai/daemon/src/main.rs): Core logic, provider detection, JSON repair, and permissive mapping.
+- [dev.sh](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/dev.sh): Environment validation and provider guidance.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AetherOS — Local Development Setup Script
+# ZethraOS — Local Development Setup Script
 # Run this on your Linux machine (Ubuntu/Debian/Fedora/Arch) or macOS.
 # No hardware needed. No API key needed.
 #
@@ -26,17 +26,17 @@ RED="\033[0;31m"
 CYAN="\033[0;36m"
 RESET="\033[0m"
 
-info()    { echo -e "${CYAN}[aether]${RESET} $*"; }
-success() { echo -e "${GREEN}[aether]${RESET} $*"; }
-warn()    { echo -e "${YELLOW}[aether]${RESET} $*"; }
-error()   { echo -e "${RED}[aether]${RESET} $*"; exit 1; }
+info()    { echo -e "${CYAN}[zethra]${RESET} $*"; }
+success() { echo -e "${GREEN}[zethra]${RESET} $*"; }
+warn()    { echo -e "${YELLOW}[zethra]${RESET} $*"; }
+error()   { echo -e "${RED}[zethra]${RESET} $*"; exit 1; }
 header()  { echo -e "\n${BOLD}${CYAN}══ $* ══${RESET}"; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # ── Crash dir used by AI daemon ────────────────────────────────────────────────
-CRASH_DIR="${TMPDIR:-/tmp}/aether/crashes"
+CRASH_DIR="${TMPDIR:-/tmp}/zethra/crashes"
 
 cmd="${1:-help}"
 
@@ -44,7 +44,7 @@ case "$cmd" in
 
 # ────────────────────────────────────────────────────────────────────────────
 setup)
-  header "Setting up AetherOS dev environment"
+  header "Setting up ZethraOS dev environment"
 
   # Rust
   if command -v rustc &>/dev/null; then
@@ -80,14 +80,14 @@ setup)
 
 # ────────────────────────────────────────────────────────────────────────────
 build)
-  header "Building AetherOS (all crates)"
+  header "Building ZethraOS (all crates)"
   info "This may take a minute on first run (downloading dependencies)..."
   cargo build
   success "Build successful"
   echo ""
   info "Binaries available in target/debug/:"
-  ls -1 target/debug/ | grep -v '[\.\-]' | grep -v "^aether" || true
-  ls -1 target/debug/aether* 2>/dev/null | xargs -I{} basename {} || true
+  ls -1 target/debug/ | grep -v '[\.\-]' | grep -v "^zethra" || true
+  ls -1 target/debug/zethra* 2>/dev/null | xargs -I{} basename {} || true
   ;;
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ test)
 
 # ────────────────────────────────────────────────────────────────────────────
 run-ai)
-  header "Running AetherAI daemon — MOCK mode (no API key needed)"
+  header "Running ZethraAI daemon — MOCK mode (no API key needed)"
   info "The daemon will:"
   info "  1. Start watching $CRASH_DIR for *.crash files"
   info "  2. Auto-inject 2 demo crashes after 2s and 5s"
@@ -123,20 +123,20 @@ run-ai)
   echo ""
 
   mkdir -p "$CRASH_DIR"
-  AETHER_AI_MODE=mock \
-  AETHER_CRASH_DIR="$CRASH_DIR" \
-  AETHER_REPO_PATH="$SCRIPT_DIR" \
+  ZETHRA_AI_MODE=mock \
+  ZETHRA_CRASH_DIR="$CRASH_DIR" \
+  ZETHRA_REPO_PATH="$SCRIPT_DIR" \
   XAI_API_KEY="${XAI_API_KEY:-}" \
   RUST_LOG=info \
-  cargo run --bin aether-ai-daemon
+  cargo run --bin zethra-ai-daemon
   ;;
 
 # ────────────────────────────────────────────────────────────────────────────
 run-ai-live)
-  header "Running AetherAI daemon -- LIVE mode"
+  header "Running ZethraAI daemon -- LIVE mode"
 
   # Allow Ollama even if no cloud keys are set
-  if [ "${AETHER_AI_PROVIDER:-}" != "ollama" ]; then
+  if [ "${ZETHRA_AI_PROVIDER:-}" != "ollama" ]; then
     if [ -z "${GROQ_API_KEY:-}" ] && [ -z "${OPENROUTER_API_KEY:-}" ] && \
        [ -z "${TOGETHER_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ] && \
        [ -z "${GOOGLE_API_KEY:-}" ]   && [ -z "${XAI_API_KEY:-}" ] && \
@@ -155,7 +155,7 @@ run-ai-live)
     echo "  3. OLLAMA -- 100% local, no internet needed"
     echo "     Install : https://ollama.com"
     echo "     Setup   : ollama pull llama3.2"
-    echo "     Run     : AETHER_AI_PROVIDER=ollama ./dev.sh run-ai-live"
+    echo "     Run     : ZETHRA_AI_PROVIDER=ollama ./dev.sh run-ai-live"
     echo ""
     echo "  4. GOOGLE GEMINI -- free tier (recommended!)"
     echo "     Sign up : https://aistudio.google.com/apikey"
@@ -174,34 +174,34 @@ run-ai-live)
   info "API key found (or local provider set) -- starting live analysis"
   echo ""
   mkdir -p "$CRASH_DIR"
-  AETHER_CRASH_DIR="$CRASH_DIR" \
-  AETHER_REPO_PATH="$SCRIPT_DIR" \
+  ZETHRA_CRASH_DIR="$CRASH_DIR" \
+  ZETHRA_REPO_PATH="$SCRIPT_DIR" \
   GOOGLE_API_KEY="${GOOGLE_API_KEY:-}" \
   XAI_API_KEY="${XAI_API_KEY:-}" \
   RUST_LOG=info \
-  cargo run --bin aether-ai-daemon
+  cargo run --bin zethra-ai-daemon
   ;;
 
 # ────────────────────────────────────────────────────────────────────────────
 run-init)
-  header "Running aetherd (init system)"
+  header "Running zethrad (init system)"
   info "Loads unit files from build/configs/units/"
   info "Will try to start services listed there. Expects binaries in PATH."
   info "On first run most services won't start (binaries not in /usr/lib) — that's fine."
   echo ""
-  AETHER_UNITS_DIR="$SCRIPT_DIR/build/configs/units" \
+  ZETHRA_UNITS_DIR="$SCRIPT_DIR/build/configs/units" \
   RUST_LOG=info \
-  cargo run --bin aetherd
+  cargo run --bin zethrad
   ;;
 
 # ────────────────────────────────────────────────────────────────────────────
 run-sensors)
-  header "Running aether-sensord (simulated sensors)"
+  header "Running zethra-sensord (simulated sensors)"
   info "Runs a 100Hz sensor loop with simulated IMU data."
   info "No hardware needed — useful for testing the fusion algorithms."
   info "Press Ctrl+C to stop."
   echo ""
-  RUST_LOG=info cargo run --bin aether-sensord
+  RUST_LOG=info cargo run --bin zethra-sensord
   ;;
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -228,9 +228,9 @@ EOF
     success "Kernel panic crash written to $CRASH_FILE"
 
   elif [ "$TYPE" = "app" ]; then
-    CRASH_FILE="$CRASH_DIR/aether.dialer-$(date +%s).crash"
+    CRASH_FILE="$CRASH_DIR/zethra.dialer-$(date +%s).crash"
     cat > "$CRASH_FILE" << 'EOF'
-Process: aether.dialer (pid: 3421)
+Process: zethra.dialer (pid: 3421)
 Signal: 11 (SIGSEGV)
 Stack trace:
   #0  EventLoop::dispatch () at event_loop.rs:88
@@ -245,9 +245,9 @@ EOF
     cat > "$CRASH_FILE" << 'EOF'
 CVE-2025-99999
 Severity: High
-Component: aether-networkd
+Component: zethra-networkd
 Description: Integer overflow in packet length parsing allows heap overflow
-Affected: aether-networkd <= 0.1.0
+Affected: zethra-networkd <= 0.1.0
 EOF
     success "CVE report written to $CRASH_FILE"
   fi
@@ -259,7 +259,7 @@ EOF
 # ────────────────────────────────────────────────────────────────────────────
 kernel-check)
   header "Checking kernel defconfig for security issues"
-  python3 tools/ci/check_kernel_config.py kernel/aether_defconfig
+  python3 tools/ci/check_kernel_config.py kernel/zethra_defconfig
   ;;
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -281,24 +281,25 @@ Cargo.lock
 *.pem
 .DS_Store
 /tmp/
+.aider*
 EOF
     git add .
-    git commit -m "feat: AetherOS v0.1.0 — initial commit
+    git commit -m "feat: ZethraOS v0.1.0 — initial commit
 
 AI-native mobile OS built on Linux (Apache-2.0).
 Components:
-  - aetherd: init system / service manager
-  - aether-ai-daemon: self-healing AI pipeline (mock + live modes)
-  - aether-sensord: sensor fusion daemon
-  - aether-compositor: Wayland compositor
-  - aether-telephonyd: telephony stack
-  - aether-networkd: network manager
-  - aether-otad: OTA update client + A/B partitions
-  - aether-release-bot: autonomous release manager
+  - zethrad: init system / service manager
+  - zethra-ai-daemon: self-healing AI pipeline (mock + live modes)
+  - zethra-sensord: sensor fusion daemon
+  - zethra-compositor: Wayland compositor
+  - zethra-telephonyd: telephony stack
+  - zethra-networkd: network manager
+  - zethra-otad: OTA update client + A/B partitions
+  - zethra-release-bot: autonomous release manager
 
 Self-healing pipeline: crash detect → Claude analysis → patch → CI → OTA"
     success "Git repository initialised with first commit"
-    info "Next: ./dev.sh git-push https://github.com/YOUR_USERNAME/aetheros.git"
+    info "Next: ./dev.sh git-push https://github.com/YOUR_USERNAME/zethraos.git"
   fi
   ;;
 
@@ -306,7 +307,7 @@ Self-healing pipeline: crash detect → Claude analysis → patch → CI → OTA
 git-push)
   REMOTE_URL="${2:-}"
   if [ -z "$REMOTE_URL" ]; then
-    error "Usage: ./dev.sh git-push https://github.com/YOUR_USERNAME/aetheros.git"
+    error "Usage: ./dev.sh git-push https://github.com/YOUR_USERNAME/zethraos.git"
   fi
   header "Pushing to remote"
   git remote add origin "$REMOTE_URL" 2>/dev/null || git remote set-url origin "$REMOTE_URL"
@@ -317,7 +318,7 @@ git-push)
 
 # ────────────────────────────────────────────────────────────────────────────
 status)
-  header "AetherOS project status"
+  header "ZethraOS project status"
   echo ""
   info "Crates:"
   for toml in $(find . -name "Cargo.toml" -not -path "./Cargo.toml" -not -path "*/target/*" | sort); do
@@ -340,7 +341,7 @@ status)
 # ────────────────────────────────────────────────────────────────────────────
 help|*)
   echo ""
-  echo -e "${BOLD}AetherOS — Local Dev Script${RESET}"
+  echo -e "${BOLD}ZethraOS — Local Dev Script${RESET}"
   echo ""
   echo "  ./dev.sh setup              Install Rust + check deps"
   echo "  ./dev.sh build              Compile all 8 crates"

@@ -1,0 +1,8 @@
+# ─── zethrad-base.unit.toml ──────────────────────────────────────────────────
+# Sentinel unit — no exec, just a dependency anchor for first-boot setup
+
+name        = "zethrad-base"
+description = "ZethraOS base system initialisation"
+after       = []
+exec_start  = "/usr/lib/zethra/init/zethra-base-setup"
+restart     = "never"

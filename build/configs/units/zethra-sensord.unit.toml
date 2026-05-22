@@ -1,0 +1,7 @@
+name        = "zethra-sensord"
+description = "ZethraOS Sensor Aggregation Daemon"
+after       = ["zethrad-base"]
+exec_start  = "/usr/lib/zethra/sensord/zethra-sensord"
+restart     = "on_failure"
+restart_delay_ms = 500
+watchdog_sec = 15

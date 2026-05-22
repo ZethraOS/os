@@ -1,4 +1,4 @@
-// aether-compositor — AetherOS Wayland Compositor (AetherShell)
+// zethra-compositor — ZethraOS Wayland Compositor (ZethraShell)
 // SPDX-License-Identifier: Apache-2.0
 //
 // Built on Smithay (pure Rust Wayland compositor library).
@@ -9,7 +9,7 @@
 //   • libinput → touch, stylus, keyboard input
 //   • OpenGL ES 3.x rendering via GBM/EGL
 //   • App windows are Wayland XDG surfaces
-//   • AetherShell protocol extension for mobile gestures + app lifecycle
+//   • ZethraShell protocol extension for mobile gestures + app lifecycle
 
 use anyhow::Result;
 use tracing::info;
@@ -36,25 +36,51 @@ pub struct Rect {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowLayer {
-    Background,  // Wallpaper
-    Normal,      // Regular apps
-    StatusBar,   // Top status bar
-    NavBar,      // Bottom navigation
-    Overlay,     // Notifications, quick settings
-    Lock,        // Lock screen
+    Background, // Wallpaper
+    Normal,     // Regular apps
+    StatusBar,  // Top status bar
+    NavBar,     // Bottom navigation
+    Overlay,    // Notifications, quick settings
+    Lock,       // Lock screen
 }
 
 // Input event abstraction
 #[derive(Debug, Clone)]
 pub enum InputEvent {
-    Touch { slot: u8, action: TouchAction, x: f32, y: f32 },
-    Key { key: u32, state: KeyState, mods: Modifiers },
-    Scroll { dx: f32, dy: f32 },
+    Touch {
+        slot: u8,
+        action: TouchAction,
+        x: f32,
+        y: f32,
+    },
+    Key {
+        key: u32,
+        state: KeyState,
+        mods: Modifiers,
+    },
+    Scroll {
+        dx: f32,
+        dy: f32,
+    },
 }
 
-#[derive(Debug, Clone)] pub enum TouchAction { Down, Move, Up }
-#[derive(Debug, Clone)] pub enum KeyState { Press, Release }
-#[derive(Debug, Clone)] pub struct Modifiers { pub ctrl: bool, pub shift: bool, pub alt: bool }
+#[derive(Debug, Clone)]
+pub enum TouchAction {
+    Down,
+    Move,
+    Up,
+}
+#[derive(Debug, Clone)]
+pub enum KeyState {
+    Press,
+    Release,
+}
+#[derive(Debug, Clone)]
+pub struct Modifiers {
+    pub ctrl: bool,
+    pub shift: bool,
+    pub alt: bool,
+}
 
 // Gesture recognizer for mobile navigation
 pub struct GestureRecognizer {
@@ -64,21 +90,47 @@ pub struct GestureRecognizer {
 
 impl GestureRecognizer {
     pub fn new() -> Self {
-        Self { touch_start: None, touch_history: Vec::new() }
+        Self {
+            touch_start: None,
+            touch_history: Vec::new(),
+        }
     }
+}
 
+impl Default for GestureRecognizer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GestureRecognizer {
     pub fn process(&mut self, event: &InputEvent) -> Option<Gesture> {
         match event {
-            InputEvent::Touch { action: TouchAction::Down, x, y, .. } => {
+            InputEvent::Touch {
+                action: TouchAction::Down,
+                x,
+                y,
+                ..
+            } => {
                 self.touch_start = Some((*x, *y));
                 self.touch_history.clear();
                 None
             }
-            InputEvent::Touch { action: TouchAction::Move, x, y, .. } => {
+            InputEvent::Touch {
+                action: TouchAction::Move,
+                x,
+                y,
+                ..
+            } => {
                 self.touch_history.push((*x, *y, std::time::Instant::now()));
                 None
             }
-            InputEvent::Touch { action: TouchAction::Up, x, y, .. } => {
+            InputEvent::Touch {
+                action: TouchAction::Up,
+                x,
+                y,
+                ..
+            } => {
                 let gesture = self.classify_gesture(*x, *y);
                 self.touch_start = None;
                 gesture
@@ -102,9 +154,13 @@ impl GestureRecognizer {
             if dy < -80.0 && start_y > 1600.0 {
                 Some(Gesture::HomeSwipe)
             } else if dy < -50.0 {
-                Some(Gesture::SwipeUp { velocity: self.velocity() })
+                Some(Gesture::SwipeUp {
+                    velocity: self.velocity(),
+                })
             } else if dy > 50.0 {
-                Some(Gesture::SwipeDown { velocity: self.velocity() })
+                Some(Gesture::SwipeDown {
+                    velocity: self.velocity(),
+                })
             } else {
                 None
             }
@@ -116,7 +172,9 @@ impl GestureRecognizer {
     }
 
     fn velocity(&self) -> f32 {
-        if self.touch_history.len() < 2 { return 0.0; }
+        if self.touch_history.len() < 2 {
+            return 0.0;
+        }
         let n = self.touch_history.len();
         let (x1, y1, t1) = &self.touch_history[n - 2];
         let (x2, y2, t2) = &self.touch_history[n - 1];
@@ -148,8 +206,20 @@ pub struct Animation {
     pub elapsed_ms: u32,
 }
 
-#[derive(Debug, Clone)] pub enum AnimProp { X, Y, Alpha, Scale, CornerRadius }
-#[derive(Debug, Clone)] pub enum Easing { Linear, EaseOut, Spring }
+#[derive(Debug, Clone)]
+pub enum AnimProp {
+    X,
+    Y,
+    Alpha,
+    Scale,
+    CornerRadius,
+}
+#[derive(Debug, Clone)]
+pub enum Easing {
+    Linear,
+    EaseOut,
+    Spring,
+}
 
 impl Animation {
     pub fn current_value(&self) -> f32 {
@@ -159,8 +229,11 @@ impl Animation {
             Easing::EaseOut => 1.0 - (1.0 - t).powi(3),
             Easing::Spring => {
                 let overshoot = 1.1;
-                if t < 0.8 { t * overshoot / 0.8 }
-                else { overshoot - (t - 0.8) * (overshoot - 1.0) / 0.2 }
+                if t < 0.8 {
+                    t * overshoot / 0.8
+                } else {
+                    overshoot - (t - 0.8) * (overshoot - 1.0) / 0.2
+                }
             }
         };
         self.from + (self.to - self.from) * eased
@@ -187,8 +260,10 @@ impl Display {
     }
 }
 
+// ZethraShell protocol extension for mobile gestures + app lifecycle
+
 // Compositor main state
-pub struct AetherCompositor {
+pub struct ZethraCompositor {
     pub display: Display,
     pub windows: Vec<WindowState>,
     pub gestures: GestureRecognizer,
@@ -196,7 +271,7 @@ pub struct AetherCompositor {
     next_id: u32,
 }
 
-impl AetherCompositor {
+impl ZethraCompositor {
     pub fn new(display: Display) -> Self {
         Self {
             display,
@@ -216,20 +291,28 @@ impl AetherCompositor {
             id,
             app_id: app_id.to_string(),
             title: app_id.to_string(),
-            geometry: Rect { x: 0, y: 0, width: w, height: h },
+            geometry: Rect {
+                x: 0,
+                y: 0,
+                width: w,
+                height: h,
+            },
             layer,
             focused: false,
             visible: true,
         });
         // Animate window in
-        self.animations.push((id, Animation {
-            property: AnimProp::Y,
-            from: h as f32,
-            to: 0.0,
-            duration_ms: 280,
-            easing: Easing::Spring,
-            elapsed_ms: 0,
-        }));
+        self.animations.push((
+            id,
+            Animation {
+                property: AnimProp::Y,
+                from: h as f32,
+                to: 0.0,
+                duration_ms: 280,
+                easing: Easing::Spring,
+                elapsed_ms: 0,
+            },
+        ));
         info!(id, app_id, "window created");
         id
     }
@@ -264,8 +347,10 @@ impl AetherCompositor {
 }
 
 fn main() -> Result<()> {
-    tracing_subscriber::fmt().with_env_filter("aether_compositor=info").init();
-    info!("AetherShell compositor starting");
+    tracing_subscriber::fmt()
+        .with_env_filter("zethra_compositor=info")
+        .init();
+    info!("ZethraShell compositor starting");
 
     let display = Display {
         width: 1080,
@@ -275,10 +360,10 @@ fn main() -> Result<()> {
         hdr: true,
     };
 
-    let mut compositor = AetherCompositor::new(display);
-    compositor.add_window("aether.launcher", WindowLayer::Normal);
+    let mut compositor = ZethraCompositor::new(display);
+    compositor.add_window("zethra.launcher", WindowLayer::Normal);
 
-    info!("AetherShell ready — Wayland socket at /run/aether/wayland-0");
+    info!("ZethraShell ready — Wayland socket at /run/zethra/wayland-0");
     // Full Smithay event loop would start here
     Ok(())
 }

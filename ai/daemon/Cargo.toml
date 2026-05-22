@@ -1,11 +1,11 @@
 [package]
-name    = "aether-ai-daemon"
+name    = "zethra-ai-daemon"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "aether-ai-daemon"
+name = "zethra-ai-daemon"
 path = "src/main.rs"
 
 [dependencies]
@@ -17,4 +17,4 @@ tracing.workspace    = true
 tracing-subscriber.workspace = true
 chrono.workspace     = true
 uuid.workspace       = true
-reqwest              = { version = "=0.11.23", features = ["json", "rustls-tls"], default-features = false }
+reqwest              = { version = "0.12", features = ["json", "rustls-tls-native-roots"], default-features = false }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# qemu_boot.sh — Boot AetherOS in QEMU for local development and testing
+# qemu_boot.sh — Boot ZethraOS in QEMU for local development and testing
 # SPDX-License-Identifier: Apache-2.0
 #
 # Usage: bash build/scripts/qemu_boot.sh [--debug] [--no-kvm]
@@ -26,39 +26,39 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "==> AetherOS QEMU Boot"
+echo "==> ZethraOS QEMU Boot"
 echo "    Kernel: $KERNEL_IMAGE"
 echo "    Memory: $MEMORY, CPUs: $CPUS"
 
-# ─── Build minimal initramfs with aetherd ─────────────────────────────────────
+# ─── Build minimal initramfs with zethrad ─────────────────────────────────────
 echo "--> Building initramfs..."
-mkdir -p "$WORK_DIR"/{bin,sbin,etc/aether/units,proc,sys,run/aether,dev,tmp}
+mkdir -p "$WORK_DIR"/{bin,sbin,etc/zethra/units,proc,sys,run/zethra,dev,tmp}
 
-# Copy aetherd if built
-AETHERD="$REPO_ROOT/target/aarch64-unknown-linux-gnu/release/aetherd"
-if [[ -f "$AETHERD" ]]; then
-  cp "$AETHERD" "$WORK_DIR/sbin/aetherd"
+# Copy zethrad if built
+ZETHRAD="$REPO_ROOT/target/aarch64-unknown-linux-gnu/release/zethrad"
+if [[ -f "$ZETHRAD" ]]; then
+  cp "$ZETHRAD" "$WORK_DIR/sbin/zethrad"
 else
-  echo "    [WARN] aetherd not built — using stub init"
-  cat > "$WORK_DIR/sbin/aetherd" << 'STUB'
+  echo "    [WARN] zethrad not built — using stub init"
+  cat > "$WORK_DIR/sbin/zethrad" << 'STUB'
 #!/bin/sh
-echo "[aetherd-stub] AetherOS minimal init"
+echo "[zethrad-stub] ZethraOS minimal init"
 mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
-echo "[aetherd-stub] Filesystems mounted"
-echo "AetherOS Boot: OK"
+echo "[zethrad-stub] Filesystems mounted"
+echo "ZethraOS Boot: OK"
 exec /bin/sh
 STUB
-  chmod +x "$WORK_DIR/sbin/aetherd"
+  chmod +x "$WORK_DIR/sbin/zethrad"
 fi
 
 # Write a simple unit file for boot test
-cat > "$WORK_DIR/etc/aether/units/boot-complete.unit.toml" << 'EOF'
+cat > "$WORK_DIR/etc/zethra/units/boot-complete.unit.toml" << 'EOF'
 name = "boot-complete"
 description = "Boot completion marker"
 after = []
-exec_start = "/bin/sh -c 'echo AETHEROS_BOOT_OK > /run/aether/boot_status'"
+exec_start = "/bin/sh -c 'echo ZETHRAOS_BOOT_OK > /run/zethra/boot_status'"
 restart = "never"
 EOF
 
@@ -67,11 +67,11 @@ cat > "$WORK_DIR/init" << 'INITEOF'
 #!/bin/sh
 echo ""
 echo " ╔═══════════════════════════════╗"
-echo " ║       AetherOS v0.1.0        ║"
+echo " ║       ZethraOS v0.1.0        ║"
 echo " ║   AI-Native Mobile OS        ║"
 echo " ╚═══════════════════════════════╝"
 echo ""
-exec /sbin/aetherd
+exec /sbin/zethrad
 INITEOF
 chmod +x "$WORK_DIR/init"
 
@@ -87,7 +87,7 @@ if [[ ! -f "$KERNEL_IMAGE" ]]; then
   echo "       Run: bash build/scripts/build_kernel.sh first"
   echo ""
   echo "       Alternatively, download a pre-built ARM64 kernel for testing:"
-  echo "       wget https://github.com/aetheros/prebuilts/releases/latest/download/Image.gz"
+  echo "       wget https://github.com/ZethraOS/prebuilts/releases/latest/download/Image.gz"
   echo ""
   echo "Exiting (no kernel)."
   rm -rf "$WORK_DIR"

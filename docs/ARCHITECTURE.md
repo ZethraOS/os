@@ -1,8 +1,8 @@
-# AetherOS — Architecture Deep Dive
+# ZethraOS — Architecture Deep Dive
 
 ## Overview
 
-AetherOS is a mobile operating system built on four principles:
+ZethraOS is a mobile operating system built on four principles:
 
 1. **Legal clarity** — every component has a clear, permissive license
 2. **AI-native** — the OS heals itself using language models
@@ -13,7 +13,7 @@ AetherOS is a mobile operating system built on four principles:
 
 ## Layer 1: Linux Kernel
 
-AetherOS uses an unmodified upstream Linux 6.x kernel. We do not fork the kernel — we contribute patches upstream where possible, and carry a minimal set of out-of-tree patches for hardware support.
+ZethraOS uses an unmodified upstream Linux 6.x kernel. We do not fork the kernel — we contribute patches upstream where possible, and carry a minimal set of out-of-tree patches for hardware support.
 
 **Why not fork?**
 - Forks diverge quickly from security fixes
@@ -21,9 +21,9 @@ AetherOS uses an unmodified upstream Linux 6.x kernel. We do not fork the kernel
 - No legal complications with GPL-2 compliance
 
 **Our kernel patches (`kernel/patches/`):**
-- `0001-aether-crash-export.patch` — exports crash metadata to a `/proc/aether/crashes` pseudo-file for the AI daemon to read
-- `0002-aether-perf-counters.patch` — adds extended hardware performance counters for battery and thermal profiling
-- `0003-aether-seccomp-profiles.patch` — per-app syscall filtering with a JSON profile format
+- `0001-zethra-crash-export.patch` — exports crash metadata to a `/proc/zethra/crashes` pseudo-file for the AI daemon to read
+- `0002-zethra-perf-counters.patch` — adds extended hardware performance counters for battery and thermal profiling
+- `0003-zethra-seccomp-profiles.patch` — per-app syscall filtering with a JSON profile format
 
 **Key kernel config choices:**
 - `CONFIG_PREEMPT=y` — full kernel preemption for low UI latency
@@ -40,11 +40,11 @@ The HAL is a set of Rust `async trait` definitions in `hal/src/lib.rs`. Each har
 
 | Trait | Socket | Implementations |
 |-------|--------|-----------------|
-| `CameraHal` | `/run/aether/camera.sock` | `qcom-cam-hal`, `sim-cam-hal` |
-| `SensorHal` | `/run/aether/sensors.sock` | `iio-sensor-hal`, `sim-sensor-hal` |
-| `DisplayHal` | `/run/aether/display.sock` | `drm-display-hal` |
-| `BiometricHal` | `/run/aether/biometric.sock` | `fpc-fp-hal`, `sim-biometric-hal` |
-| `PowerHal` | `/run/aether/power.sock` | `qcom-power-hal` |
+| `CameraHal` | `/run/zethra/camera.sock` | `qcom-cam-hal`, `sim-cam-hal` |
+| `SensorHal` | `/run/zethra/sensors.sock` | `iio-sensor-hal`, `sim-sensor-hal` |
+| `DisplayHal` | `/run/zethra/display.sock` | `drm-display-hal` |
+| `BiometricHal` | `/run/zethra/biometric.sock` | `fpc-fp-hal`, `sim-biometric-hal` |
+| `PowerHal` | `/run/zethra/power.sock` | `qcom-power-hal` |
 
 Each HAL implementation runs in its own process for fault isolation. A crashing camera HAL does not crash the compositor.
 
@@ -54,43 +54,43 @@ Each HAL implementation runs in its own process for fault isolation. A crashing 
 
 ## Layer 3: System Services
 
-### aetherd (PID 1)
+### zethrad (PID 1)
 
-`aetherd` is our init system. It replaces both `systemd` and Android's `init`. Responsibilities:
+`zethrad` is our init system. It replaces both `systemd` and Android's `init`. Responsibilities:
 
 - Mount essential filesystems (`proc`, `sys`, `devtmpfs`, `tmpfs`)
-- Parse `.unit.toml` files from `/etc/aether/units/`
+- Parse `.unit.toml` files from `/etc/zethra/units/`
 - Topologically sort services by `after` dependency
 - Spawn processes and supervise them (restart on crash)
-- Write health JSON to `/run/aether/health.json` every 30 seconds
-- Expose a Unix socket for `aetherctl` (service control CLI)
+- Write health JSON to `/run/zethra/health.json` every 30 seconds
+- Expose a Unix socket for `zethractl` (service control CLI)
 
 Unit file example:
 ```toml
-name        = "aether-telephony"
-description = "AetherOS telephony stack"
-after       = ["aetherd-base", "aether-modem-hal"]
-exec_start  = "/usr/lib/aether/telephony/aether-telephonyd"
+name        = "zethra-telephony"
+description = "ZethraOS telephony stack"
+after       = ["zethrad-base", "zethra-modem-hal"]
+exec_start  = "/usr/lib/zethra/telephony/zethra-telephonyd"
 restart     = "on_failure"
 restart_delay_ms = 2000
 watchdog_sec = 30
 ```
 
-### Telephony (aether-telephonyd)
+### Telephony (zethra-telephonyd)
 
 Manages voice calls and SMS over a modem. Supports two backends:
 - `AtModem` — direct AT command interface over serial port (real hardware)
 - `SimulatedModem` — software simulator for development/CI
 
-All apps communicate via a typed JSON protocol over `/run/aether/telephony.sock`.
+All apps communicate via a typed JSON protocol over `/run/zethra/telephony.sock`.
 
-### Network (aether-networkd)
+### Network (zethra-networkd)
 
 Manages Wi-Fi (nl80211 netlink), mobile data, DNS-over-HTTPS, and hotspot. Uses `iwd` or `wpa_supplicant` for WPA authentication. DNS is proxied through a local DoH resolver (default: Cloudflare 1.1.1.1 or Quad9).
 
 ---
 
-## Layer 4: AetherShell (UI)
+## Layer 4: ZethraShell (UI)
 
 The compositor is built on [Smithay](https://github.com/Smithay/smithay) — a pure Rust Wayland compositor library. We chose Smithay because:
 
@@ -101,17 +101,17 @@ The compositor is built on [Smithay](https://github.com/Smithay/smithay) — a p
 **Rendering pipeline:**
 ```
 App (Wayland client)
-  → Wayland protocol (XDG shell + AetherShell protocol extensions)
-  → AetherCompositor (Smithay)
+  → Wayland protocol (XDG shell + ZethraShell protocol extensions)
+  → ZethraCompositor (Smithay)
   → OpenGL ES 3.x (Mesa/freedreno/panfrost)
   → DRM/KMS plane commit
   → Display panel
 ```
 
-**AetherShell protocol extensions** (custom Wayland protocol):
-- `aether_gesture` — mobile gesture events (swipe-up-to-home, back swipe, etc.)
-- `aether_app_lifecycle` — foreground/background/stop signals to apps
-- `aether_quick_settings` — status bar overlay protocol
+**ZethraShell protocol extensions** (custom Wayland protocol):
+- `zethra_gesture` — mobile gesture events (swipe-up-to-home, back swipe, etc.)
+- `zethra_app_lifecycle` — foreground/background/stop signals to apps
+- `zethra_quick_settings` — status bar overlay protocol
 
 **Animation system:**
 All animations go through the `Animation` struct with three easing modes:
@@ -123,30 +123,30 @@ Target: 120fps on 120Hz panels, 60fps minimum on all supported hardware.
 
 ---
 
-## Layer 5: AetherAI Daemon
+## Layer 5: ZethraAI Daemon
 
-This is the most novel part of AetherOS. The daemon runs continuously, watching for problems and fixing them.
+This is the most novel part of ZethraOS. The daemon runs continuously, watching for problems and fixing them.
 
 ### Data inputs
 
 | Source | Path | Update rate |
 |--------|------|-------------|
-| Crash logs | `/var/log/aether/crashes/` | On crash |
-| Kernel panic log | `/proc/aether/crashes` | On panic |
-| Service health | `/run/aether/health.json` | Every 30s |
+| Crash logs | `/var/log/zethra/crashes/` | On crash |
+| Kernel panic log | `/proc/zethra/crashes` | On panic |
+| Service health | `/run/zethra/health.json` | Every 30s |
 | CVE feed | NVD API | Every 6 hours |
-| Performance metrics | `/proc/aether/perf` | Every 5 min |
+| Performance metrics | `/proc/zethra/perf` | Every 5 min |
 
 ### Decision pipeline
 
 ```
 Issue detected
     ↓
-Claude API: analyze_issue()
+Configured AI provider (local or cloud): analyze_issue()
     → root cause, affected files, proposed patch, confidence, risk level
     ↓
 confidence > 0.7?
-    → YES: Claude API: review_patch() (second opinion)
+    → YES: provider review_patch() (second opinion)
     → NO: save to patches/needs-review/ for human
     ↓
 review.approved?
@@ -169,23 +169,23 @@ All CI jobs pass?
 | 0.70–0.92 | Trigger CI; require human merge approval |
 | >= 0.92 + Low/Medium risk | Full auto-merge + OTA to dev channel |
 
-### What Claude is NOT allowed to auto-merge
+### What the AI system is NOT allowed to auto-merge
 
 - `risk_level = Critical` or `High` — always human reviewed
-- Changes to `aetherd` (PID 1) — too risky to auto-update
+- Changes to `zethrad` (PID 1) — too risky to auto-update
 - Changes to HAL signing or key management
-- Changes to the AetherAI daemon itself (no self-modification)
+- Changes to the ZethraAI daemon itself (no self-modification)
 - Changes to the auto-merge confidence thresholds themselves
 
 ---
 
 ## Release Bot
 
-The release bot (`aether-release-bot`) runs alongside the AI daemon. It:
+The release bot (`zethra-release-bot`) runs alongside the AI daemon. It:
 
 1. Polls CI for successful builds
 2. Infers semver bump from risk level (Critical → minor, else patch)
-3. Generates human-readable changelogs with Claude
+3. Generates human-readable changelogs with a configured provider
 4. Builds and signs the OTA package
 5. Publishes to the OTA server with gradual rollout (1% → 10% → 100%)
 6. Monitors error rates post-rollout (5% threshold triggers auto-rollback)
@@ -206,7 +206,7 @@ The release bot (`aether-release-bot`) runs alongside the AI daemon. It:
 Apps run in a sandbox using:
 - Linux **namespaces** (PID, mount, network, IPC)
 - **cgroups v2** for CPU and memory limits
-- **seccomp-bpf** with per-app syscall profiles (JSON format in `/etc/aether/seccomp/`)
+- **seccomp-bpf** with per-app syscall profiles (JSON format in `/etc/zethra/seccomp/`)
 - **OverlayFS** for filesystem isolation (`/data/app/<id>/` as writable layer)
 
 Apps communicate with system services only through typed IPC sockets. There is no shared memory between apps and system services.
@@ -215,7 +215,7 @@ Apps communicate with system services only through typed IPC sockets. There is n
 
 ## OTA Update System
 
-AetherOS uses **A/B partition updates** (seamless updates):
+ZethraOS uses **A/B partition updates** (seamless updates):
 
 ```
 Partition layout:
@@ -249,7 +249,7 @@ Update payload format: `bsdiff` binary deltas over the full partition image, com
 | No AOSP code | ✅ | Clean-room implementation throughout |
 | Linux kernel GPL-2 compliance | ✅ | All kernel module source included |
 | Apache-2.0 patent grant | ✅ | Covers all userspace contributors |
-| No Android trademark use | ✅ | We use "AetherOS", never "Android" |
+| No Android trademark use | ✅ | We use "ZethraOS", never "Android" |
 | No Google API stubs | ✅ | No GMS, no Firebase, no Google Play |
 | Smithay (MIT) compatible | ✅ | MIT is compatible with Apache-2.0 |
 | Mesa (MIT) compatible | ✅ | Same |
@@ -257,6 +257,6 @@ Update payload format: `bsdiff` binary deltas over the full partition image, com
 
 **Recommended next steps for legal hardening:**
 1. Join [Open Invention Network (OIN)](https://openinventionnetwork.com) at v1.0
-2. Get a trademark on "AetherOS" before public launch
+2. Get a trademark on "ZethraOS" before public launch
 3. Commission a formal IP audit before seeking VC funding
 4. Consider [Software Freedom Conservancy](https://sfconservancy.org) for fiscal sponsorship

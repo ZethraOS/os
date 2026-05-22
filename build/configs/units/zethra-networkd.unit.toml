@@ -1,0 +1,8 @@
+# zethra-networkd.unit.toml
+name        = "zethra-networkd"
+description = "ZethraOS Network Manager (Wi-Fi, BT, mobile data)"
+after       = ["zethrad-base"]
+exec_start  = "/usr/lib/zethra/networkd/zethra-networkd"
+restart     = "on_failure"
+restart_delay_ms = 1000
+watchdog_sec = 30

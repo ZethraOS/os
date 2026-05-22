@@ -1,8 +1,0 @@
-# ─── aetherd-base.unit.toml ──────────────────────────────────────────────────
-# Sentinel unit — no exec, just a dependency anchor for first-boot setup
-
-name        = "aetherd-base"
-description = "AetherOS base system initialisation"
-after       = []
-exec_start  = "/usr/lib/aether/init/aether-base-setup"
-restart     = "never"

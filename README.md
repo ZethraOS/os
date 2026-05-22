@@ -1,20 +1,20 @@
-# AetherOS
+# ZethraOS
 
 > An open, AI-native mobile operating system — built on Linux, beyond Android.
 
-[![Build](https://github.com/aetheros/aetheros/actions/workflows/ci.yml/badge.svg)](https://github.com/aetheros/aetheros/actions)
+[![CI](https://github.com/ZethraOS/os/actions/workflows/ci.yml/badge.svg)](https://github.com/ZethraOS/os/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Kernel](https://img.shields.io/badge/kernel-Linux%206.x-orange)](kernel/)
 
 ---
 
-## What is AetherOS?
+## What is ZethraOS?
 
-AetherOS is a mobile operating system built from scratch on the Linux kernel. It is:
+ZethraOS is a mobile operating system built from scratch on the Linux kernel. It is:
 
 - **Legal** — zero AOSP code, clean-room design, Apache 2.0 + GPL-2
 - **Open source** — everything except signing keys is public
-- **AI-native** — the AetherAI daemon autonomously patches bugs, fixes CVEs, and ships OTA updates with minimal human intervention
+- **AI-native** — the ZethraAI daemon autonomously patches bugs, fixes CVEs, and ships OTA updates with minimal human intervention
 - **Privacy-first** — no Google Play Services, no mandatory telemetry, on-device AI inference
 - **Performance-first** — Rust userspace, Wayland compositor, sub-2s cold boot target
 
@@ -24,14 +24,14 @@ AetherOS is a mobile operating system built from scratch on the Linux kernel. It
 
 ```
 ┌─────────────────────────────────────────────┐
-│            AetherAI Daemon                  │  ← Self-healing brain
+│            ZethraAI Daemon                  │  ← Self-healing brain
 │  crash analysis · patch gen · auto-release  │
 ├─────────────────────────────────────────────┤
-│            AetherShell (UI)                 │  ← Wayland compositor (Rust/Smithay)
+│            ZethraShell (UI)                 │  ← Wayland compositor (Rust/Smithay)
 │  compositor · toolkit · launcher            │
 ├─────────────────────────────────────────────┤
 │           System Services                   │  ← All written in Rust
-│  aetherd (init) · telephony · network       │
+│  zethrad (init) · telephony · network       │
 ├─────────────────────────────────────────────┤
 │    Hardware Abstraction Layer (HAL)         │  ← Modular, Treble-inspired
 │  camera · sensors · display · modem         │
@@ -45,11 +45,11 @@ AetherOS is a mobile operating system built from scratch on the Linux kernel. It
 
 ## AI Self-Healing Pipeline
 
-The core differentiator of AetherOS is the `aether-ai-daemon`:
+The core differentiator of ZethraOS is the `zethra-ai-daemon`:
 
-1. **Monitor** — watches `/var/log/aether/crashes/` and CVE feeds
-2. **Analyze** — sends crash data + stack traces to Claude API for root cause analysis
-3. **Patch** — Claude generates a unified diff patch + regression tests
+1. **Monitor** — watches `/var/log/zethra/crashes/` and CVE feeds
+2. **Analyze** — sends crash data + stack traces to a configured AI provider (cloud or local) for root cause analysis
+3. **Patch** — the provider generates a unified diff patch + regression tests
 4. **Test** — CI boots a QEMU image with the patch and runs test suite
 5. **Release** — if confidence ≥ 0.92 and risk ≤ Medium, auto-merges and triggers OTA
 
@@ -60,11 +60,11 @@ Human maintainers receive a Slack notification but are not required to act.
 ## Repository Layout
 
 ```
-aetheros/
+zethraos/
 ├── kernel/               # Kernel defconfig, patches, modules
 ├── hal/                  # Hardware abstraction layer
 ├── services/
-│   ├── aetherd/          # PID 1 init & service manager (Rust)
+│   ├── zethrad/          # PID 1 init & service manager (Rust)
 │   ├── telephony/        # Phone / SMS stack
 │   ├── network/          # Wi-Fi, BT, cellular data
 │   └── sensors/          # Sensor HAL bridge
@@ -73,7 +73,7 @@ aetheros/
 │   ├── toolkit/          # UI toolkit
 │   └── launcher/         # Home screen
 ├── ai/
-│   ├── daemon/           # AetherAI self-healing daemon
+│   ├── daemon/           # ZethraAI self-healing daemon
 │   ├── analyzer/         # Issue classification
 │   ├── patcher/          # Patch generation helpers
 │   └── release-bot/      # OTA release automation
@@ -116,18 +116,29 @@ bash build/scripts/build_kernel.sh
 bash build/scripts/qemu_boot.sh
 ```
 
-### Run AetherAI daemon locally (for development)
+### Run ZethraAI daemon locally (for development)
 
 ```bash
-export ANTHROPIC_API_KEY=your_key_here
-cargo run --bin aether-ai-daemon
+# Option A: local-first edge mode (no cloud key)
+export ZETHRA_AI_PROVIDER=ollama
+# optional: export OLLAMA_HOST=localhost:11434
+
+# Option B: cloud-assisted mode (auto-detects provider from key)
+# export GROQ_API_KEY=...
+# export OPENROUTER_API_KEY=...
+# export OPENAI_API_KEY=...
+# export GOOGLE_API_KEY=...
+# export XAI_API_KEY=...
+# export ANTHROPIC_API_KEY=...
+
+cargo run --bin zethra-ai-daemon
 ```
 
 ---
 
 ## Legal
 
-AetherOS is built to be fully legally clean:
+ZethraOS is built to be fully legally clean:
 
 | Component | License | Notes |
 |-----------|---------|-------|
@@ -145,9 +156,9 @@ AetherOS is built to be fully legally clean:
 
 | Phase | Timeline | Milestone |
 |-------|----------|-----------|
-| 1 | 0–6 months | Bootable QEMU image, aetherd, AetherAI scaffold, CI |
+| 1 | 0–6 months | Bootable QEMU image, zethrad, ZethraAI scaffold, CI |
 | 2 | 6–12 months | Phone/SMS, Wi-Fi/BT, app sandbox, OTA system |
-| 3 | 12–18 months | AetherAI live on device, auto-patch + auto-release |
+| 3 | 12–18 months | ZethraAI live on device, auto-patch + auto-release |
 | 4 | 18–24 months | Reference device port, community launch, v1.0 stable |
 
 ---
