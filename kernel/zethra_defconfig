@@ -1,11 +1,20 @@
-# ZethraOS Kernel Configuration — ARM64 (Qualcomm Snapdragon primary target)
-# Based on Linux 6.x — legal, GPL-2 licensed
-# Build with: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
+# ZethraOS Kernel Configuration — ARM64
+# Primary Target: Nokia 6.1 Plus (TA-1103)
+#   SoC:    Qualcomm Snapdragon 636 (SDM636)
+#   CPU:    Kryo 260 — 4x Cortex-A73 @ 1.8GHz + 4x Cortex-A53 @ 1.6GHz
+#   RAM:    4GB LPDDR4
+#   GPU:    Adreno 509
+#   Wi-Fi:  Qualcomm WCN3680 (wcn36xx)
+#   Audio:  Qualcomm WCD9335 codec
+#   Flash:  64GB eMMC
+# Based on Linux 6.x mainline — GPL-2 licensed
+# Build: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
 
 # ─── Core ─────────────────────────────────────────────────────────────────────
 CONFIG_AARCH64=y
 CONFIG_SMP=y
-CONFIG_NR_CPUS=16
+CONFIG_NR_CPUS=8                 # SDM636: 4x A73 + 4x A53 = 8 cores
+CONFIG_SCHED_MC=y                # Multi-core scheduler aware of big.LITTLE
 CONFIG_PREEMPT=y
 CONFIG_HZ_250=y
 CONFIG_NO_HZ_IDLE=y
@@ -60,17 +69,21 @@ CONFIG_USER_NS=y
 # ─── I/O ─────────────────────────────────────────────────────────────────────
 CONFIG_IO_URING=y
 CONFIG_BLOCK=y
-CONFIG_BLK_DEV_NVME=y
+CONFIG_BLK_DEV_NVME=n            # Nokia 6.1 Plus uses eMMC, not NVMe
 CONFIG_MMC=y
 CONFIG_MMC_SDHCI=y
+CONFIG_MMC_SDHCI_MSM=y          # Qualcomm SDHCI controller (eMMC)
 CONFIG_SCSI=y
-CONFIG_SCSI_UFS=y               # UFS storage (modern phones)
+CONFIG_SCSI_UFS=n               # SDM636 uses eMMC, not UFS
 
 # ─── Graphics ─────────────────────────────────────────────────────────────────
 CONFIG_DRM=y
-CONFIG_DRM_PANFROST=y           # ARM Mali (open driver)
-CONFIG_DRM_ADRENO=y             # Qualcomm Adreno (open driver via freedreno)
+CONFIG_DRM_PANFROST=n           # Mali — not present on SDM636
+CONFIG_DRM_MSM=y                # Qualcomm MSM DRM (freedreno Adreno 509)
+CONFIG_DRM_ADRENO=y             # Adreno 509 open driver
 CONFIG_DRM_KMS_HELPER=y
+CONFIG_DRM_PANEL_TRULY_NT35597_WQXGA=y  # Nokia 6.1 Plus display panel
+CONFIG_BACKLIGHT_QCOM_WLED=y    # Qualcomm WLED backlight
 CONFIG_FRAMEBUFFER_CONSOLE=n    # No fbcon on phone; Wayland direct
 
 # ─── Networking ────────────────────────────────────────────────────────────────
@@ -80,15 +93,35 @@ CONFIG_IPV6=y
 CONFIG_CFG80211=y
 CONFIG_MAC80211=y
 CONFIG_WIFI=y
-CONFIG_WCN36XX=y                # Qualcomm Wi-Fi
+CONFIG_WCN36XX=y                # Qualcomm WCN3680 Wi-Fi (Nokia 6.1 Plus)
+CONFIG_QCOM_WCNSS_CTRL=y       # WCN subsystem control
 CONFIG_BLUETOOTH=y
 CONFIG_BT_HCIUART=y
+CONFIG_BT_HCIUART_QCA=y        # Qualcomm BT HCI
 CONFIG_BT_LE=y
-CONFIG_NFC=y
+CONFIG_NFC=n                   # Nokia 6.1 Plus has no NFC
 
 # ─── Telephony ───────────────────────────────────────────────────────────────
+# ─── Qualcomm Platform (SDM636 specific) ────────────────────────────────────
+CONFIG_ARCH_QCOM=y
+CONFIG_ARCH_SDM845=n
 CONFIG_MSM_IPC_ROUTER=y
 CONFIG_QCOM_MDM_SUBSYSTEM=y
+CONFIG_QCOM_SMEM=y              # Shared memory between processors
+CONFIG_QCOM_SMD=y               # Qualcomm SMD transport
+CONFIG_QCOM_SMD_RPM=y           # RPM over SMD
+CONFIG_QCOM_RPMPD=y             # RPM power domains
+CONFIG_QCOM_RPMCC=y             # RPM clock controller
+CONFIG_QCOM_APCS_IPC=y         # AP-to-MSS IPC
+CONFIG_QCOM_SMEM_STATE=y
+CONFIG_SPMI=y                   # SPMI bus for PMIC
+CONFIG_MFD_SPMI_PMIC=y         # Qualcomm SPMI PMIC (PM8953)
+CONFIG_REGULATOR_QCOM_SPMI=y   # PMIC voltage regulators
+CONFIG_QCOM_PM8953=y           # PM8953 PMIC (Nokia 6.1 Plus)
+CONFIG_SND_SOC_WCD9335=y       # WCD9335 audio codec (Nokia 6.1 Plus)
+CONFIG_SND_SOC_MSM8996=y       # Qualcomm ASoC machine driver
+CONFIG_IOMMU_SUPPORT=y
+CONFIG_ARM_SMMU=y               # SMMU for DMA protection
 
 # ─── Power ───────────────────────────────────────────────────────────────────
 CONFIG_PM=y
@@ -119,9 +152,13 @@ CONFIG_MEDIA_CAMERA_SUPPORT=y
 # ─── USB ─────────────────────────────────────────────────────────────────────
 CONFIG_USB=y
 CONFIG_USB_DWC3=y
+CONFIG_USB_DWC3_QCOM=y         # Qualcomm DWC3 glue driver
 CONFIG_USB_GADGET=y
 CONFIG_USB_CONFIGFS=y
 CONFIG_USB_TYPEC=y
+CONFIG_TYPEC_QCOM_PMIC=y       # Qualcomm PMIC USB Type-C
+CONFIG_USB_ROLE_SWITCH=y
+CONFIG_CHARGER_QCOM_SMBB=y     # Qualcomm charger (PM8953)
 
 # ─── Filesystems ─────────────────────────────────────────────────────────────
 CONFIG_EXT4_FS=y
