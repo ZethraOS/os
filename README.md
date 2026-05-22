@@ -1,6 +1,6 @@
 # ZethraOS
 
-> An open, AI-native mobile operating system — built on Linux, beyond Android.
+> An open, AI-native operating system for every screen that is built on Linux 6.x with Rust-first architecture. Beyond Android. Beyond mobile.
 
 [![CI](https://github.com/ZethraOS/os/actions/workflows/ci.yml/badge.svg)](https://github.com/ZethraOS/os/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -176,3 +176,9 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md). All contributions require:
 
 - Userspace: [Apache-2.0](LICENSE-APACHE)
 - Kernel modules: GPL-2.0
+
+## Connect
+- Website: https://zethraos.com
+- LinkedIn: https://linkedin.com/company/zethraos
+- Email: help@zethraos.com
+  
