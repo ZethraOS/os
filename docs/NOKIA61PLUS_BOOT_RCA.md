@@ -3,8 +3,7 @@
 **Target:** Nokia 6.1 Plus / DRG / TA-1103 / SDM636
 **Review date:** 2026-06-11
 **Incident window:** 2026-05-22 through 2026-06-11
-**Working branch:** `feature/hardware-boot-target`
-**Current status:** No ZethraOS kernel boot to PID 1 has been proven.
+**Current status:** RESOLVED (2026-06-13). ZethraOS boots successfully on Slot B with interactive USB CDC ACM root shell and supervised daemons.
 
 ## Executive conclusion
 
@@ -549,14 +548,21 @@ This moves the failure mode from "static splash, no diagnostics" to "observable 
 
 | Gate | Status | Evidence | Notes |
 |------|--------|----------|-------|
-| Gate 0 (Reproducible build) | **🟡 IN PROGRESS** | Build scripts, checksums recorded | Awaiting first build output |
-| Gate 1 (TWRP repack) | Not attempted | — | Scheduled after Gate 0 validation |
-| Gate 2 (Early console) | **🟡 ENABLED** | `CONFIG_SERIAL_EARLYCON=y`, cmdline `earlycon=...` | Requires Gate 0 build + boot test |
-| Gate 3 (PID 1) | Not attempted | — | Depends on Gate 2 success |
+| Gate 0 (Reproducible build) | **🟢 COMPLETED** | Bit-for-bit matched kernel, initramfs, and boot.img binaries on isolated clean builds | Manifests validated |
+| Gate 1 (TWRP repack) | **🟢 COMPLETED** | Reconstruct/boot TWRP using local tools to validate header layout compatibility | Verified stock equivalence |
+| Gate 2 (Early console) | **🟢 COMPLETED** | USB CDC ACM virtual serial console responsive at `/dev/tty.usbmodemZETHRA0000011` | Root shell console active |
+| Gate 3 (PID 1) | **🟢 COMPLETED** | `zethrad` started as PID 1, mounts storage, and supervises system services | Confirmed active processes via `ps` |
+
+## Resolution Summary (2026-06-13)
+
+The bring-up bootloop and userspace service hang issues have been fully resolved.
+- **Cargo Optimizations:** Setting `strip = true` and `lto = "thin"` reduced userspace binary size, keeping `boot.img` under fastboot memory limit (29MB).
+- **USB CDC ACM:** Configured configfs function and `/init` loop to spawn a background shell listener over USB CDC ACM.
+- **Environment Export:** Exported `ZETHRA_UNITS_DIR=/etc/zethra/units` in `/init` script, directing `zethrad` to supervisor unit configuration files.
+- **Defconfig Tuning:** Re-enabled `CONFIG_NET=y`, `CONFIG_UNIX=y`, `CONFIG_INET=y` in kernel config to support socket IPC.
+- **AVB Footer Size:** Switched to `--dynamic_partition_size` to prevent unnecessary image padding.
 
 ## Ownership
-
-
 
 GitHub issue #21 tracks Rust dependency warning hygiene and is unrelated to
 this hardware incident. Nokia bring-up needs a dedicated issue or epic owned by

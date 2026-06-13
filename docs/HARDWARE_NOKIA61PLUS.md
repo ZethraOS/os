@@ -14,11 +14,11 @@
 | **GPU** | Adreno 509 |
 | **RAM** | 4GB LPDDR4 |
 | **Storage** | 64GB eMMC 5.1 |
-| **Display** | 5.8" IPS LCD, 1080×2280, NT35597 controller |
+| **Display** | 5.8" IPS LCD, 1080×2280, OTM1911A controller |
 | **Wi-Fi** | Qualcomm WCN3680 (wcn36xx) — 802.11 a/b/g/n/ac |
 | **Bluetooth** | Bluetooth 5.0 (QCA BT HCI UART) |
 | **Audio** | Qualcomm WCD9335 codec |
-| **PMIC** | Qualcomm PM8953 (SPMI bus) |
+| **PMIC** | Qualcomm PM660/PM660L |
 | **USB** | USB-C 2.0, DWC3 controller |
 | **Camera** | Dual (16MP + 5MP), Qualcomm CAMSS |
 | **Sensors** | Accelerometer, Gyro, Proximity, Ambient Light |
@@ -75,7 +75,7 @@ These are the exact `mkbootimg` parameters for Nokia 6.1 Plus, extracted from st
 | Parameter | Value |
 | :--- | :--- |
 | `--pagesize` | `4096` |
-| `--base` | `0x80000000` |
+| `--base` | `0x00000000` |
 | `--kernel_offset` | `0x00008000` |
 | `--ramdisk_offset` | `0x01000000` |
 | `--tags_offset` | `0x00000100` |
@@ -113,16 +113,20 @@ Nokia 6.1 Plus uses A/B (seamless) partitions. ZethraOS's OTA service (`zethra-o
 
 ## Serial Debug Console
 
-The kernel boots with UART console enabled:
+The kernel boots with virtual USB CDC ACM serial console enabled. The host computer detects it at:
 ```
-console=ttyMSM0,115200n8
+/dev/tty.usbmodemZETHRA0000011
 ```
 
-To read kernel logs via USB (no UART adapter needed — uses USB debugging):
+To connect to the interactive console:
 ```bash
-adb shell dmesg -w              # live kernel ring buffer
-adb logcat -s zethrad           # zethrad service logs
-adb shell cat /run/zethra/boot_status  # boot completion marker
+screen /dev/tty.usbmodemZETHRA0000011 115200
+```
+*(If the terminal hangs or is stuck in an echo state, send a reset sequence: `\n\x03\n\x04\n\n\n` to recover the `~ # ` prompt.)*
+
+System supervisor logs can be checked via:
+```bash
+cat /mnt/persist/zethrad.log
 ```
 
 ---
