@@ -87,10 +87,10 @@ ls -la /sys/fs/pstore/ 2>/dev/null || echo "  (no pstore)"
 echo "[diag] Saving kernel dmesg to /tmp/boot_dmesg.log..."
 dmesg > /tmp/boot_dmesg.log 2>/dev/null || echo "[diag] dmesg not available"
 
-# Save dmesg to the physical persist partition as a fallback for TWRP extraction
+# Save dmesg and console-ramoops to the physical persist partition as a fallback for TWRP extraction
 echo "[diag] Waiting for eMMC devices to populate..."
 sleep 2
-echo "[diag] Attempting to save dmesg to persist partition..."
+echo "[diag] Attempting to save dmesg and pstore to persist partition..."
 mkdir -p /mnt/persist
 if mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk0p73 /mnt/persist 2>/dev/null || \
@@ -98,6 +98,12 @@ if mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
   echo "[diag] Mounted persist partition! Saving boot log..."
   dmesg > /mnt/persist/zethra_boot.log 2>&1
+  if [ -f /sys/fs/pstore/console-ramoops ]; then
+    echo "[diag] Found console-ramoops! Saving to /persist/console-ramoops.log..."
+    cat /sys/fs/pstore/console-ramoops > /mnt/persist/console-ramoops.log 2>&1
+  else
+    echo "[diag] No console-ramoops found in pstore"
+  fi
   sync
   umount /mnt/persist
   echo "[diag] Boot log successfully written to /persist/zethra_boot.log"
@@ -109,34 +115,31 @@ fi
 echo "[diag] Attempting to bring up USB gadget for ADB..."
 
 # Configure USB ConfigFS gadget (ADB function)
-if [ -d /sys/kernel/config ]; then
-  echo "[diag] ConfigFS already mounted"
-elif mount -t configfs configfs /sys/kernel/config 2>/dev/null; then
+mkdir -p /sys/kernel/config
+if mount -t configfs configfs /sys/kernel/config 2>/dev/null; then
   echo "[diag] ConfigFS mounted"
+elif [ -d /sys/kernel/config/usb_gadget ]; then
+  echo "[diag] ConfigFS already mounted"
 else
   echo "[diag] WARNING: Cannot mount ConfigFS"
 fi
 
-# Try to configure ADB gadget
+# Try to configure CDC ACM USB serial gadget
 if [ -d /sys/kernel/config/usb_gadget ]; then
   GADGET=/sys/kernel/config/usb_gadget/g1
   mkdir -p "$GADGET"
   echo 0x18D1 > "$GADGET/idVendor"    # Google
-  echo 0x4EE7 > "$GADGET/idProduct"   # ADB
+  echo 0x0001 > "$GADGET/idProduct"   # CDC ACM Serial (non-standard Google PID)
   mkdir -p "$GADGET/strings/0x409"
   echo "ZethraOS" > "$GADGET/strings/0x409/manufacturer"
   echo "Nokia 6.1 Plus (Debug)" > "$GADGET/strings/0x409/product"
   echo "ZETHRA000001" > "$GADGET/strings/0x409/serialnumber"
 
-  # ADB function
-  mkdir -p "$GADGET/functions/ffs.adb"
+  # ACM function
+  mkdir -p "$GADGET/functions/acm.usb0"
   mkdir -p "$GADGET/configs/c.1/strings/0x409"
-  echo "ADB" > "$GADGET/configs/c.1/strings/0x409/configuration"
-  ln -sf "$GADGET/functions/ffs.adb" "$GADGET/configs/c.1/ffs.adb" 2>/dev/null || true
-
-  # Mount functionfs for adbd
-  mkdir -p /dev/usb-ffs/adb
-  mount -t functionfs adb /dev/usb-ffs/adb 2>/dev/null && echo "[diag] FunctionFS mounted" || echo "[diag] FunctionFS mount failed"
+  echo "CDC ACM Serial" > "$GADGET/configs/c.1/strings/0x409/configuration"
+  ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
 
   # Find the UDC (USB Device Controller)
   UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
@@ -162,7 +165,23 @@ echo "--- regulator lines ---"
 dmesg | grep -i "regulator" || echo "no regulator lines"
 echo "--- sdhci/sdhc/mmc lines ---"
 dmesg | grep -i -E "sdhci|sdhc|mmc" || echo "no sdhci lines"
+echo "--- dwc3/usb/irq lines ---"
+dmesg | grep -i -E "dwc3|usb|irq" | tail -60 || echo "no usb/irq lines"
+if [ -f /sys/fs/pstore/console-ramoops ]; then
+  echo "--- console-ramoops (last 50 lines) ---"
+  tail -50 /sys/fs/pstore/console-ramoops
+fi
 echo "========================================"
+
+# Spawn root shell on the USB serial port in the background
+echo "[diag] Spawning root shell on /dev/ttyGS0..."
+while true; do
+  if [ -c /dev/ttyGS0 ]; then
+    /bin/sh </dev/ttyGS0 >/dev/ttyGS0 2>&1
+  fi
+  sleep 1
+done &
+
 echo "[diag] Done printing. Sleeping forever..."
 while true; do
   sleep 60

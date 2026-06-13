@@ -87,7 +87,7 @@ success "Rust userspace compiled successfully."
 info "Assembling initramfs structure..."
 
 # Create core directory layout
-mkdir -p "$STAGE_DIR"/{bin,sbin,etc/zethra/units,proc,sys,run/zethra,dev,tmp,usr/bin,usr/lib/zethra/init}
+mkdir -p "$STAGE_DIR"/{bin,sbin,etc/zethra/units,proc,sys,run/zethra,dev,tmp,usr/bin,usr/lib/zethra/init,mnt/persist}
 
 # Copy busybox and create standard shell symlinks
 if [[ -f "$OUT_DIR/busybox" ]]; then
@@ -190,6 +190,8 @@ mount -t sysfs sys /sys
 mount -t devtmpfs dev /dev
 mount -t tmpfs tmp /run
 mount -t debugfs debug /sys/kernel/debug 2>/dev/null || true
+mkdir -p /sys/kernel/config
+mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
 
 echo ""
 echo " ╔═══════════════════════════════╗"
@@ -204,10 +206,52 @@ echo "[init] Kernel cmdline: $(cat /proc/cmdline)"
 echo "[init] Kernel log (last 50 lines):"
 dmesg | tail -50 2>/dev/null || true
 
-# Start ADB daemon for early kernel debugging (RCA requirement)
-if [[ -f /etc/adb/adbd_init ]]; then
-  /etc/adb/adbd_init
+# Save early dmesg to persist partition (diagnostic fallback for bootloops)
+echo "[init] Waiting for storage devices to populate..."
+sleep 2
+mkdir -p /mnt/persist
+if mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
+   mount -t ext4 /dev/mmcblk0p73 /mnt/persist 2>/dev/null || \
+   mount -t ext4 /dev/block/mmcblk1p73 /mnt/persist 2>/dev/null || \
+   mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
+  echo "[init] Mounted persist partition. Saving boot log..."
+  dmesg > /mnt/persist/zethra_boot.log 2>&1
+  sync
+  umount /mnt/persist
+  echo "[init] Boot log written to /persist/zethra_boot.log"
+else
+  echo "[init] WARNING: Could not mount persist partition to save boot log"
 fi
+
+# Configure CDC ACM USB serial gadget for emergency debugging shell
+if [ -d /sys/kernel/config/usb_gadget ]; then
+  GADGET=/sys/kernel/config/usb_gadget/g1
+  mkdir -p "$GADGET"
+  echo 0x18D1 > "$GADGET/idVendor"
+  echo 0x0001 > "$GADGET/idProduct"
+  mkdir -p "$GADGET/strings/0x409"
+  echo "ZethraOS" > "$GADGET/strings/0x409/manufacturer"
+  echo "Nokia 6.1 Plus" > "$GADGET/strings/0x409/product"
+  echo "ZETHRA000001" > "$GADGET/strings/0x409/serialnumber"
+
+  mkdir -p "$GADGET/functions/acm.usb0"
+  mkdir -p "$GADGET/configs/c.1/strings/0x409"
+  echo "CDC ACM Serial" > "$GADGET/configs/c.1/strings/0x409/configuration"
+  ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
+
+  UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
+  if [ -n "$UDC" ]; then
+    echo "$UDC" > "$GADGET/UDC" 2>/dev/null
+  fi
+fi
+
+# Spawn root shell on the USB serial port in the background
+while true; do
+  if [ -c /dev/ttyGS0 ]; then
+    /bin/sh </dev/ttyGS0 >/dev/ttyGS0 2>&1
+  fi
+  sleep 1
+done &
 
 echo "[init] Launching PID 1: zethrad..."
 exec /sbin/zethrad
