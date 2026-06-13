@@ -25,8 +25,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BOOT_IMG="$REPO_ROOT/build/out/boot.img"
-KERNEL_IMAGE="$REPO_ROOT/build/out/Image.gz"
-DTB="$REPO_ROOT/build/out/sdm636-nokia-frt.dtb"
+KERNEL_IMAGE="$REPO_ROOT/build/out/Image.gz-dtb"
 INITRAMFS="$REPO_ROOT/build/out/initramfs.cpio.gz"
 
 # Defaults
@@ -79,7 +78,7 @@ echo ""
 info "Checking prerequisites..."
 
 command -v fastboot &>/dev/null || error "fastboot not found. Install with: brew install android-platform-tools"
-command -v mkbootimg &>/dev/null || warn "mkbootimg not found — boot.img must be pre-built. Install: pip3 install mkbootimg"
+# We use python3 tools/mkbootimg directly
 
 # ─── Check build artefacts ───────────────────────────────────────────────────
 info "Checking build artefacts..."
@@ -87,27 +86,34 @@ info "Checking build artefacts..."
 if [[ ! -f "$BOOT_IMG" ]]; then
   warn "boot.img not found at $BOOT_IMG — attempting to build it now..."
 
-  [[ ! -f "$KERNEL_IMAGE" ]] && error "Kernel image not found at $KERNEL_IMAGE. Run: bash build/scripts/build_kernel.sh first"
-  [[ ! -f "$DTB" ]]          && error "DTB not found at $DTB. Run: bash build/scripts/build_kernel.sh first"
+  [[ ! -f "$KERNEL_IMAGE" ]] && error "Kernel-DTB image not found at $KERNEL_IMAGE. Run: bash build/scripts/build_kernel.sh first"
   [[ ! -f "$INITRAMFS" ]]    && error "Initramfs not found at $INITRAMFS. Run: bash build/scripts/build_initramfs.sh first"
 
   info "Packing boot.img with mkbootimg..."
   # Nokia 6.1 Plus boot image parameters (from stock boot.img analysis)
-  run mkbootimg \
+  run python3 "$REPO_ROOT/tools/mkbootimg" \
+    --header_version 0 \
     --kernel         "$KERNEL_IMAGE" \
     --ramdisk        "$INITRAMFS" \
-    --dtb            "$DTB" \
     --pagesize       4096 \
-    --base           0x80000000 \
+    --base           0x00000000 \
     --kernel_offset  0x00008000 \
     --ramdisk_offset 0x01000000 \
     --second_offset  0x00f00000 \
     --tags_offset    0x00000100 \
-    --dtb_offset     0x01f00000 \
-    --cmdline        "console=ttyMSM0,115200n8 earlycon=msm_serial_dm,0xc170000 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci loop.max_part=7 buildvariant=eng" \
+    --os_version     10.0.0 \
+    --os_patch_level 2021-08 \
+    --cmdline        "console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=eng" \
     --output         "$BOOT_IMG"
 
-  success "boot.img packed → $BOOT_IMG ($(du -sh "$BOOT_IMG" | cut -f1))"
+  run python3 "$REPO_ROOT/tools/avbtool" add_hash_footer \
+    --image          "$BOOT_IMG" \
+    --partition_name boot \
+    --partition_size 67108864 \
+    --algorithm      SHA256_RSA2048 \
+    --key            "$REPO_ROOT/tools/test_key.pem"
+
+  success "boot.img packed & signed → $BOOT_IMG ($(du -sh "$BOOT_IMG" | cut -f1))"
 else
   success "boot.img found → $BOOT_IMG ($(du -sh "$BOOT_IMG" | cut -f1))"
 fi
@@ -121,7 +127,9 @@ echo -e "  Then connect via USB-C."
 echo ""
 
 if [[ "$DRY_RUN" == "false" ]]; then
-  fastboot wait-for-device
+  if ! fastboot devices | grep -q "fastboot"; then
+    error "Device not found in fastboot mode. Make sure it is in Download Mode / Fastboot and plugged in."
+  fi
   success "Device detected"
 fi
 
