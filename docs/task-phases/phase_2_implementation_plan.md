@@ -32,6 +32,8 @@ CONFIG_DRM_MSM=y
 CONFIG_DRM_MSM_DSI=y
 CONFIG_DRM_MSM_ADRENO=y
 CONFIG_DRM_MSM_REGISTER_LOGGING=y
+CONFIG_DRM_FBDEV_EMULATION=y
+CONFIG_SYNC_FILE=y
 
 # Panel Selection
 CONFIG_DRM_PANEL_ORISETECH_OTM1911A=y
@@ -43,10 +45,12 @@ CONFIG_FB_SIMPLE=y
 CONFIG_LOGO=y
 CONFIG_FB=y
 
-# GPU & Clock controllers
+# GPU, Clock, and IOMMU controllers
 CONFIG_DRM_MSM_GPU_STATE=y
 CONFIG_QCOM_CLK_RPM=y
 CONFIG_QCOM_CLK_RPMH=y
+CONFIG_IOMMU_SUPPORT=y
+CONFIG_ARM_SMMU=y
 ```
 
 ### B. Device Tree (DTS) Mapping
@@ -86,6 +90,13 @@ We must specify the display panel routing, regulator dependencies, and clock con
 - **IOMMU Binding**: GPU memory management requires `CONFIG_QCOM_IOMMU` or `CONFIG_ARM_SMMU` on the SDM636 platform. Without valid IOMMU mappings, command submissions will fault, triggering a watchdog reset.
 - Bind the GPU power domain controls (`PM_OPP` and `PM_GENERIC_DOMAINS`) to prevent device hangs or watchdog resets when the GPU powers up.
 
+### D. Firmware Sourcing & Loading
+Adreno 509 requires runtime microcode firmware blobs (specifically `a530_pfp.fw` and `a530_pm4.fw` or SoC-specific equivalents) to load. Without them, the GPU probe will fail silently or log `firmware request failed` in `dmesg`.
+
+- **Kernel Configuration**: Ensure `CONFIG_FW_LOADER=y` is set.
+- **Sourcing**: Firmware blobs will be extracted from the official upstream `linux-firmware` repository (`qcom/` folder).
+- **Packaging**: Place the blobs inside the ZethraOS rootfs at `/lib/firmware/qcom/` during the initramfs assembly process in `build_initramfs.sh`.
+
 ---
 
 ## 3. Phased Rollout Gates
@@ -102,7 +113,9 @@ To manage risk and enforce reproducibility, Phase 2 is structured into four sequ
   ```
   [drm] Panel orisetech,otm1911a registered successfully
   ```
-  *Risks*: Watch for regulator name mismatches and reset GPIO polarity deferred probe hangs.
+  *Risks & Deferred Probes*: Watch for regulator name mismatches and reset GPIO polarity deferred probe hangs.
+  - **Debug Path**: If the panel fails to probe, check `/sys/kernel/debug/devices_deferred` to trace pending dependencies. Filter `dmesg` for `-EPROBE_DEFER` to identify failing clock/regulator bindings.
+  - **Hardware Fallback**: Fallback to `simplefb` (Simple Framebuffer) to drive basic LCD backlight and display functions to verify electrical line health.
 
 ### Gate 2.2: LCD Console Output (`fbcon` / `simplefb`)
 * **Target**: Graphics console validation.
@@ -112,6 +125,10 @@ To manage risk and enforce reproducibility, Phase 2 is structured into four sequ
 * **Target**: Wayland GUI Shell rendering.
 * **Verification**: Launch `zethra-compositor`. Confirm that the compositor opens `/dev/dri/card0`, initiates Wayland protocols, and renders the user interface launcher onto the display.
   *Risks*: Handle `ENODEV` errors gracefully if `renderD128` isn't ready. Diagnose DMA-BUF import or format modifier mismatches.
+  - **Wayland Runtime Environment**: 
+    - Set `XDG_RUNTIME_DIR=/run/zethra` (must be writable and secure).
+    - Ensure the compositor process has proper permissions: `/dev/dri/card0` and `/dev/dri/renderD128` must belong to the `video` group, and the running user must be added to that group.
+    - Core Userspace Libraries: Verify `libwayland`, `libdrm`, `mesa` (for GBM/EGL), and `wayland-protocols` are packaged in the rootfs.
 
 ### Gate 2.4: Stress & Stability Verification
 * **Target**: Sustained GPU load test.
@@ -130,7 +147,7 @@ To manage risk and enforce reproducibility, Phase 2 is structured into four sequ
 * **Total Timeline**: **8.0 – 11.0 Hours**
 
 ### B. AI Token Estimates
-* **Estimated Conversation Turns**: 15 – 25 turns.
-* **Estimated Input Tokens**: 2.0M – 3.2M tokens.
-* **Estimated Output Tokens**: 60k – 90k tokens.
+* **Estimated Conversation Turns**: 25 – 40 turns.
+* **Estimated Input Tokens**: 3.0M – 5.0M tokens.
+* **Estimated Output Tokens**: 100k – 150k tokens.
 * **Token Saving Strategy**: Offload deep file searches of the kernel source tree (`linux-6.9/`) to the isolated `research` subagent to keep the main developer context light.
