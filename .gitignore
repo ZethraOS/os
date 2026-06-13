@@ -2,6 +2,7 @@
 /patches/staged/
 /patches/tests/
 **/*.patch
+!/kernel/patches/*.patch
 Cargo.lock
 .env
 *.key
@@ -9,3 +10,10 @@ Cargo.lock
 .DS_Store
 /tmp/
 .aider*
+
+# ZethraOS Build & Source artifacts
+/build/out/
+/build/tmp/
+/linux-*/
+*.tar.xz
+
