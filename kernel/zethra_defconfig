@@ -140,10 +140,12 @@ CONFIG_USB_DWC3=y              # Qualcomm DWC3 controller (SDM636)
 CONFIG_USB_DWC3_QCOM=y         # Qualcomm DWC3 glue layer
 CONFIG_USB_GADGET=y
 CONFIG_USB_CONFIGFS=y
-CONFIG_USB_CONFIGFS_F_ADB=y    # ADB over USB for early kernel debugging
+CONFIG_USB_CONFIGFS_ACM=y      # CDC ACM USB Serial function
 CONFIG_USB_TYPEC=y
 CONFIG_TYPEC_QCOM_PMIC=y       # Qualcomm PMIC USB Type-C
 CONFIG_USB_ROLE_SWITCH=y
+CONFIG_GENERIC_PHY=y
+CONFIG_PHY_QCOM_QUSB2=y
 CONFIG_CHARGER_QCOM_SMBB=y     # Qualcomm charger (PM660)
 
 # ─── Filesystems ─────────────────────────────────────────────────────────────
@@ -222,6 +224,10 @@ CONFIG_MMC_SDHCI_PLTFM=y
 # Level 9: Additional Qualcomm platform support
 CONFIG_QCOM_GENI_SE=y
 CONFIG_QCOM_WCNSS_PIL=y
+
+# NVMEM / eFuse
+CONFIG_NVMEM=y
+CONFIG_NVMEM_QCOM_QFPROM=y
 
 # ─── PSTORE and Ramoops Debugging ────────────────────────────────────────────
 CONFIG_PSTORE=y
