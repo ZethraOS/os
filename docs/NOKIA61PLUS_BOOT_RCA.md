@@ -446,7 +446,117 @@ custom kernel again.
 These hashes describe local, untracked artifacts and are evidence only. They
 are not release inputs.
 
+## Attempt N+1: Reproducible Build & Early Console Restoration (2026-06-11)
+
+### Actions Taken (Gate 0 – Reproducibility)
+
+Effective immediately, the project has:
+
+1. **Fixed kernel defconfig issues**:
+   - Corrected PMIC: PM8953 → **PM660/PM660L** (actual device)
+   - Corrected panel: NT35597 → **OTM1911A** (actual panel per stock capture)
+   - Added `CONFIG_SERIAL_EARLYCON=y` for early kernel console support
+   - Added `CONFIG_ZETHRA_*` symbols with notes about mainline compatibility
+   - **Re-enabled USB/DWC3** for ADB debugging (`CONFIG_USB=y`, `CONFIG_USB_DWC3=y`)
+
+2. **Enhanced build reproducibility**:
+   - `build/scripts/build_kernel.sh` now records build input/output checksums to `.kernel-build-manifest.txt`
+   - `build/scripts/build_initramfs.sh` enhanced with **ADB daemon support** (addresses RCA: "no adbd")
+   - New `build/scripts/pack_boot_image.sh` validates and documents all boot image parameters
+   - All scripts record timestamps, versions, and full command lines for verification
+
+3. **Restored early diagnostic capabilities**:
+   - Early console: UART at `0xc170000`, 115200 baud (per stock config)
+   - ADB/USB debugging: `adbd` now included in initramfs `/bin/adbd`
+   - Early kernel logging: `/init` script displays `dmesg` and boot status to UART
+   - Ramoops: Enabled at `0xacb00000` for panic log recovery
+
+4. **Improved boot image packing**:
+   - Boot parameters documented and validated before each build
+   - `--cmdline` now includes `earlycon=msm_serial_dm,0xc170000` (working UART)
+   - Boot image header matches stock/TWRP: v0, page=4096, kernel_off=0x8000, etc.
+
+### Known Limitations Not Yet Fixed
+
+- 51 Zethra-specific kernel symbols (`CONFIG_ZETHRA_*`) do not exist in mainline Linux 6.9
+  - **Impact**: Build will warn about these symbols (expected; not a blocker)
+  - **Next phase**: Backport or modularize custom Zethra features
+  - **Workaround**: Symbols are still requested; kernel will be built without them
+
+- Single DTB vs. stock's 59 DTBs (unchanged; not blocking early console)
+
+- Panel driver (OTM1911A) not yet confirmed in kernel source
+
+### Build Workflow for Attempt N+1
+
+```bash
+# Step 1: Build kernel (includes reproducibility manifest)
+bash build/scripts/build_kernel.sh
+
+# Step 2: Build initramfs (now with ADB support)
+bash build/scripts/build_initramfs.sh
+
+# Step 3: Pack boot image (validates parameters)
+bash build/scripts/pack_boot_image.sh
+
+# Step 4: Flash to device
+bash build/scripts/flash_nokia61plus.sh
+```
+
+Each step records checksums to `build/out/.*.txt` manifest files for verification.
+
+### Expected Behavior (Success Criteria)
+
+On successful boot with early console:
+
+1. **UART output** (within 5 seconds):
+   ```
+   earlycon: msm_serial_dm at 0xc170000 (options: '')
+   printk: console [ttyMSM0] enabled
+   ... kernel boot messages ...
+   ```
+
+2. **ADB availability** (if USB driver loads):
+   ```
+   $ adb shell dmesg | head -20
+   ... kernel log output ...
+   ```
+
+3. **Ramoops preservation** (if crash occurs):
+   ```
+   $ adb shell cat /proc/last_kmsg
+   ... panic log from previous boot ...
+   ```
+
+4. **PID 1 reach**: Initramfs /init launches:
+   ```
+   [init] Kernel boot initiated — starting early diagnostics...
+   [init] Launching PID 1: zethrad...
+   ```
+
+### Failure Cases to Distinguish
+
+If boot still fails, we now have:
+
+- **Early UART logs** → Can see exactly where kernel stops
+- **ADB/USB debugging** → Can query kernel state before hang/reset
+- **Ramoops data** → Can recover panic info even after hard reset
+- **Reproducible builds** → Can binary-compare outputs with stock/TWRP
+
+This moves the failure mode from "static splash, no diagnostics" to "observable kernel hang + logs".
+
+### Reproducibility Gate Status
+
+| Gate | Status | Evidence | Notes |
+|------|--------|----------|-------|
+| Gate 0 (Reproducible build) | **🟡 IN PROGRESS** | Build scripts, checksums recorded | Awaiting first build output |
+| Gate 1 (TWRP repack) | Not attempted | — | Scheduled after Gate 0 validation |
+| Gate 2 (Early console) | **🟡 ENABLED** | `CONFIG_SERIAL_EARLYCON=y`, cmdline `earlycon=...` | Requires Gate 0 build + boot test |
+| Gate 3 (PID 1) | Not attempted | — | Depends on Gate 2 success |
+
 ## Ownership
+
+
 
 GitHub issue #21 tracks Rust dependency warning hygiene and is unrelated to
 this hardware incident. Nokia bring-up needs a dedicated issue or epic owned by
