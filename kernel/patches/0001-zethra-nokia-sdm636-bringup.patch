@@ -1,0 +1,269 @@
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index 7d40ec5e7..4e3c600c3 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -183,6 +183,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= sdm630-sony-xperia-nile-voyager.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sdm632-fairphone-fp3.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sdm632-motorola-ocean.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sdm636-sony-xperia-ganges-mermaid.dtb
++dtb-$(CONFIG_ARCH_QCOM)	+= sdm636-nokia-frt.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sdm660-xiaomi-lavender.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sdm670-google-sargo.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= sdm845-cheza-r1.dtb
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index fa50db0c3..e3cd4d36a 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -607,12 +607,24 @@ static unsigned int gpiochip_count_reserved_ranges(struct gpio_chip *gc)
+ {
+ 	struct device *dev = &gc->gpiodev->dev;
+ 	int size;
++	int parent_size = -1;
++
++	if (gc->parent)
++		parent_size = device_property_count_u32(gc->parent, "gpio-reserved-ranges");
+ 
+-	/* Format is "start, count, ..." */
+ 	size = device_property_count_u32(dev, "gpio-reserved-ranges");
++
++	pr_info("ANTIGRAVITY: gpiochip_count_reserved_ranges for label=%s: dev=%s, size=%d, parent_size=%d\n",
++		gc->label ?: "unknown", dev_name(dev), size, parent_size);
++
+ 	if (size > 0 && size % 2 == 0)
+ 		return size;
+ 
++	if (parent_size > 0 && parent_size % 2 == 0) {
++		pr_info("ANTIGRAVITY: using parent_size=%d for reserved ranges\n", parent_size);
++		return parent_size;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -633,6 +645,13 @@ static int gpiochip_apply_reserved_ranges(struct gpio_chip *gc)
+ 
+ 	ret = device_property_read_u32_array(dev, "gpio-reserved-ranges",
+ 					     ranges, size);
++	if (ret) {
++		if (gc->parent) {
++			pr_info("ANTIGRAVITY: reading reserved ranges from parent device instead\n");
++			ret = device_property_read_u32_array(gc->parent, "gpio-reserved-ranges",
++							     ranges, size);
++		}
++	}
+ 	if (ret) {
+ 		kfree(ranges);
+ 		return ret;
+@@ -646,6 +665,7 @@ static int gpiochip_apply_reserved_ranges(struct gpio_chip *gc)
+ 			continue;
+ 
+ 		bitmap_clear(gc->valid_mask, start, count);
++		pr_info("ANTIGRAVITY: cleared valid mask for reserved range [%u, %u]\n", start, start + count - 1);
+ 	}
+ 
+ 	kfree(ranges);
+@@ -879,6 +899,8 @@ int gpiochip_add_data_with_key(struct gpio_chip *gc, void *data,
+ 	int base = 0;
+ 	int ret = 0;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_add_data_with_key entry\n");
++
+ 	/*
+ 	 * First: allocate and populate the internal stat container, and
+ 	 * set up the struct device.
+@@ -1010,39 +1032,55 @@ int gpiochip_add_data_with_key(struct gpio_chip *gc, void *data,
+ 	if (ret)
+ 		goto err_cleanup_desc_srcu;
+ 
++	pr_info("ANTIGRAVITY: starting get_direction loop for %d gpios\n", gc->ngpio);
+ 	for (desc_index = 0; desc_index < gc->ngpio; desc_index++) {
+ 		struct gpio_desc *desc = &gdev->descs[desc_index];
+ 
+ 		if (gc->get_direction && gpiochip_line_is_valid(gc, desc_index)) {
++			pr_info("ANTIGRAVITY: calling get_direction for gpio %d\n", desc_index);
+ 			assign_bit(FLAG_IS_OUT,
+ 				   &desc->flags, !gc->get_direction(gc, desc_index));
++			pr_info("ANTIGRAVITY: get_direction returned for gpio %d\n", desc_index);
+ 		} else {
+ 			assign_bit(FLAG_IS_OUT,
+ 				   &desc->flags, !gc->direction_input);
+ 		}
+ 	}
++	pr_info("ANTIGRAVITY: finished get_direction loop\n");
+ 
++	pr_info("ANTIGRAVITY: of_gpiochip_add start\n");
+ 	ret = of_gpiochip_add(gc);
++	pr_info("ANTIGRAVITY: of_gpiochip_add returned %d\n", ret);
+ 	if (ret)
+ 		goto err_free_valid_mask;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_add_pin_ranges start\n");
+ 	ret = gpiochip_add_pin_ranges(gc);
++	pr_info("ANTIGRAVITY: gpiochip_add_pin_ranges returned %d\n", ret);
+ 	if (ret)
+ 		goto err_remove_of_chip;
+ 
++	pr_info("ANTIGRAVITY: acpi_gpiochip_add start\n");
+ 	acpi_gpiochip_add(gc);
+ 
++	pr_info("ANTIGRAVITY: machine_gpiochip_add start\n");
+ 	machine_gpiochip_add(gc);
+ 
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start\n");
+ 	ret = gpiochip_irqchip_init_valid_mask(gc);
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned %d\n", ret);
+ 	if (ret)
+ 		goto err_free_hogs;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_hw start\n");
+ 	ret = gpiochip_irqchip_init_hw(gc);
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_hw returned %d\n", ret);
+ 	if (ret)
+ 		goto err_remove_irqchip_mask;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_add_irqchip start\n");
+ 	ret = gpiochip_add_irqchip(gc, lock_key, request_key);
++	pr_info("ANTIGRAVITY: gpiochip_add_irqchip returned %d\n", ret);
+ 	if (ret)
+ 		goto err_remove_irqchip_mask;
+ 
+diff --git a/drivers/hwspinlock/qcom_hwspinlock.c b/drivers/hwspinlock/qcom_hwspinlock.c
+index 814dfe869..85a2e77a1 100644
+--- a/drivers/hwspinlock/qcom_hwspinlock.c
++++ b/drivers/hwspinlock/qcom_hwspinlock.c
+@@ -183,6 +183,9 @@ static int qcom_hwspinlock_probe(struct platform_device *pdev)
+ 	u32 stride;
+ 	u32 base;
+ 	int i;
++	int ret;
++
++	pr_info("ANTIGRAVITY [%llu ns]: hwspinlock probe START for %s\n", ktime_get_ns(), dev_name(&pdev->dev));
+ 
+ 	regmap = qcom_hwspinlock_probe_syscon(pdev, &base, &stride);
+ 	if (IS_ERR(regmap) && PTR_ERR(regmap) == -ENODEV)
+@@ -209,8 +212,11 @@ static int qcom_hwspinlock_probe(struct platform_device *pdev)
+ 			return PTR_ERR(bank->lock[i].priv);
+ 	}
+ 
+-	return devm_hwspin_lock_register(&pdev->dev, bank, &qcom_hwspinlock_ops,
++	ret = devm_hwspin_lock_register(&pdev->dev, bank, &qcom_hwspinlock_ops,
+ 					 0, QCOM_MUTEX_NUM_LOCKS);
++
++	pr_info("ANTIGRAVITY [%llu ns]: hwspinlock probe DONE for %s, ret=%d\n", ktime_get_ns(), dev_name(&pdev->dev), ret);
++	return ret;
+ }
+ 
+ static struct platform_driver qcom_hwspinlock_driver = {
+diff --git a/drivers/pinctrl/qcom/pinctrl-msm.c b/drivers/pinctrl/qcom/pinctrl-msm.c
+index aeaf0d195..ef29cb9f8 100644
+--- a/drivers/pinctrl/qcom/pinctrl-msm.c
++++ b/drivers/pinctrl/qcom/pinctrl-msm.c
+@@ -1397,6 +1397,8 @@ static int msm_gpio_init(struct msm_pinctrl *pctrl)
+ 	struct device_node *np;
+ 	bool skip;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_gpio_init enter, ngpios=%d\n", ktime_get_ns(), ngpio);
++
+ 	if (WARN_ON(ngpio > MAX_NR_GPIO))
+ 		return -EINVAL;
+ 
+@@ -1441,7 +1443,9 @@ static int msm_gpio_init(struct msm_pinctrl *pctrl)
+ 	girq->handler = handle_bad_irq;
+ 	girq->parents[0] = pctrl->irq;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_gpio_init calling gpiochip_add_data\n", ktime_get_ns());
+ 	ret = gpiochip_add_data(&pctrl->chip, pctrl);
++	pr_info("ANTIGRAVITY [%llu ns]: msm_gpio_init gpiochip_add_data returned %d\n", ktime_get_ns(), ret);
+ 	if (ret) {
+ 		dev_err(pctrl->dev, "Failed register gpiochip\n");
+ 		return ret;
+@@ -1492,10 +1496,12 @@ static void msm_pinctrl_setup_pm_reset(struct msm_pinctrl *pctrl)
+ 	int i;
+ 	const struct pinfunction *func = pctrl->soc->functions;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: setup_pm_reset enter\n", ktime_get_ns());
+ 	for (i = 0; i < pctrl->soc->nfunctions; i++)
+ 		if (!strcmp(func[i].name, "ps_hold")) {
+ 			pctrl->restart_nb.notifier_call = msm_ps_hold_restart;
+ 			pctrl->restart_nb.priority = 128;
++			pr_info("ANTIGRAVITY [%llu ns]: setup_pm_reset registering handler\n", ktime_get_ns());
+ 			if (register_restart_handler(&pctrl->restart_nb))
+ 				dev_err(pctrl->dev,
+ 					"failed to setup restart handler.\n");
+@@ -1503,6 +1509,7 @@ static void msm_pinctrl_setup_pm_reset(struct msm_pinctrl *pctrl)
+ 			pm_power_off = msm_ps_hold_poweroff;
+ 			break;
+ 		}
++	pr_info("ANTIGRAVITY [%llu ns]: setup_pm_reset exit\n", ktime_get_ns());
+ }
+ 
+ static __maybe_unused int msm_pinctrl_suspend(struct device *dev)
+@@ -1532,6 +1539,8 @@ int msm_pinctrl_probe(struct platform_device *pdev,
+ 	int ret;
+ 	int i;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_pinctrl_probe start for %s\n", ktime_get_ns(), dev_name(&pdev->dev));
++
+ 	pctrl = devm_kzalloc(&pdev->dev, sizeof(*pctrl), GFP_KERNEL);
+ 	if (!pctrl)
+ 		return -ENOMEM;
+@@ -1549,11 +1558,13 @@ int msm_pinctrl_probe(struct platform_device *pdev,
+ 		for (i = 0; i < soc_data->ntiles; i++) {
+ 			res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+ 							   soc_data->tiles[i]);
++			pr_info("ANTIGRAVITY [%llu ns]: mapping tile %s\n", ktime_get_ns(), soc_data->tiles[i]);
+ 			pctrl->regs[i] = devm_ioremap_resource(&pdev->dev, res);
+ 			if (IS_ERR(pctrl->regs[i]))
+ 				return PTR_ERR(pctrl->regs[i]);
+ 		}
+ 	} else {
++		pr_info("ANTIGRAVITY [%llu ns]: mapping single resource\n", ktime_get_ns());
+ 		pctrl->regs[0] = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
+ 		if (IS_ERR(pctrl->regs[0]))
+ 			return PTR_ERR(pctrl->regs[0]);
+@@ -1561,8 +1572,10 @@ int msm_pinctrl_probe(struct platform_device *pdev,
+ 		pctrl->phys_base[0] = res->start;
+ 	}
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: setting up PM reset notifier...\n", ktime_get_ns());
+ 	msm_pinctrl_setup_pm_reset(pctrl);
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: requesting IRQ...\n", ktime_get_ns());
+ 	pctrl->irq = platform_get_irq(pdev, 0);
+ 	if (pctrl->irq < 0)
+ 		return pctrl->irq;
+@@ -1575,18 +1588,21 @@ int msm_pinctrl_probe(struct platform_device *pdev,
+ 	pctrl->desc.pins = pctrl->soc->pins;
+ 	pctrl->desc.npins = pctrl->soc->npins;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: registering pinctrl descriptor...\n", ktime_get_ns());
+ 	pctrl->pctrl = devm_pinctrl_register(&pdev->dev, &pctrl->desc, pctrl);
+ 	if (IS_ERR(pctrl->pctrl)) {
+ 		dev_err(&pdev->dev, "Couldn't register pinctrl driver\n");
+ 		return PTR_ERR(pctrl->pctrl);
+ 	}
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: initializing GPIO chip...\n", ktime_get_ns());
+ 	ret = msm_gpio_init(pctrl);
+ 	if (ret)
+ 		return ret;
+ 
+ 	platform_set_drvdata(pdev, pctrl);
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_pinctrl_probe success for %s\n", ktime_get_ns(), dev_name(&pdev->dev));
+ 	dev_dbg(&pdev->dev, "Probed Qualcomm pinctrl driver\n");
+ 
+ 	return 0;
+diff --git a/drivers/pmdomain/qcom/Kconfig b/drivers/pmdomain/qcom/Kconfig
+index 3d3948eab..0a41309ba 100644
+--- a/drivers/pmdomain/qcom/Kconfig
++++ b/drivers/pmdomain/qcom/Kconfig
+@@ -32,6 +32,7 @@ config QCOM_RPMPD
+ 	depends on QCOM_SMD_RPM
+ 	select PM_GENERIC_DOMAINS
+ 	select PM_GENERIC_DOMAINS_OF
++	select PM_OPP
+ 	help
+ 	  QCOM RPM Power domain driver to support power-domains with
+ 	  performance states. The driver communicates a performance state
+
