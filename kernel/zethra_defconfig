@@ -1,17 +1,29 @@
-# ZethraOS Kernel Configuration — ARM64 (Qualcomm Snapdragon primary target)
-# Based on Linux 6.x — legal, GPL-2 licensed
-# Build with: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
+# ZethraOS Kernel Configuration — ARM64
+# Primary Target: Nokia 6.1 Plus (TA-1103)
+#   SoC:    Qualcomm Snapdragon 636 (SDM636)
+#   CPU:    Kryo 260 — 4x Cortex-A73 @ 1.8GHz + 4x Cortex-A53 @ 1.6GHz
+#   RAM:    4GB LPDDR4
+#   GPU:    Adreno 509
+#   Wi-Fi:  Qualcomm WCN3680 (wcn36xx)
+#   Audio:  Qualcomm WCD9335 codec
+#   Flash:  64GB eMMC
+# Based on Linux 6.x mainline — GPL-2 licensed
+# Build: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
 
 # ─── Core ─────────────────────────────────────────────────────────────────────
 CONFIG_AARCH64=y
 CONFIG_SMP=y
-CONFIG_NR_CPUS=16
+# SDM636: 4x A73 + 4x A53 = 8 cores
+CONFIG_NR_CPUS=8
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_SCHED_MC=y                # Multi-core scheduler aware of big.LITTLE
 CONFIG_PREEMPT=y
 CONFIG_HZ_250=y
 CONFIG_NO_HZ_IDLE=y
 CONFIG_HIGH_RES_TIMERS=y
 
 # ─── Memory ──────────────────────────────────────────────────────────────────
+CONFIG_ARM64_VA_BITS_39=y
 CONFIG_TRANSPARENT_HUGEPAGE=y
 CONFIG_MEMORY_HOTPLUG=y
 CONFIG_ZRAM=y
@@ -27,7 +39,7 @@ CONFIG_SECURITY_SELINUX_BOOTPARAM=y
 CONFIG_STACKPROTECTOR_STRONG=y
 CONFIG_STRICT_KERNEL_RWX=y
 CONFIG_STRICT_MODULE_RWX=y
-CONFIG_RANDOMIZE_BASE=y         # KASLR
+CONFIG_RANDOMIZE_BASE=y
 CONFIG_RANDOMIZE_MEMORY=y
 CONFIG_CC_STACKPROTECTOR_STRONG=y
 CONFIG_FORTIFY_SOURCE=y
@@ -37,12 +49,7 @@ CONFIG_PAGE_TABLE_ISOLATION=y   # Meltdown mitigation
 CONFIG_SPECULATION_MITIGATIONS=y
 
 # ─── eBPF (for ZethraAI monitoring) ─────────────────────────────────────────
-CONFIG_BPF=y
-CONFIG_BPF_SYSCALL=y
-CONFIG_BPF_JIT=y
-CONFIG_BPF_JIT_ALWAYS_ON=y
-CONFIG_BPF_LSM=y
-CONFIG_DEBUG_INFO_BTF=y
+# CONFIG_BPF is not set
 
 # ─── cgroups v2 (for process isolation) ─────────────────────────────────────
 CONFIG_CGROUPS=y
@@ -60,35 +67,51 @@ CONFIG_USER_NS=y
 # ─── I/O ─────────────────────────────────────────────────────────────────────
 CONFIG_IO_URING=y
 CONFIG_BLOCK=y
-CONFIG_BLK_DEV_NVME=y
+CONFIG_BLK_DEV_NVME=n            # Nokia 6.1 Plus uses eMMC, not NVMe
 CONFIG_MMC=y
 CONFIG_MMC_SDHCI=y
+CONFIG_MMC_SDHCI_MSM=y          # Qualcomm SDHCI controller (eMMC)
 CONFIG_SCSI=y
-CONFIG_SCSI_UFS=y               # UFS storage (modern phones)
+CONFIG_SCSI_UFS=n               # SDM636 uses eMMC, not UFS
 
 # ─── Graphics ─────────────────────────────────────────────────────────────────
-CONFIG_DRM=y
-CONFIG_DRM_PANFROST=y           # ARM Mali (open driver)
-CONFIG_DRM_ADRENO=y             # Qualcomm Adreno (open driver via freedreno)
-CONFIG_DRM_KMS_HELPER=y
-CONFIG_FRAMEBUFFER_CONSOLE=n    # No fbcon on phone; Wayland direct
+# CONFIG_DRM is not set
+CONFIG_BACKLIGHT_QCOM_WLED=y    # Qualcomm WLED backlight
+CONFIG_FRAMEBUFFER_CONSOLE=y    # ENABLED for debugging
+CONFIG_FB=y                     # Enable core framebuffer support
+CONFIG_FB_DEVICE=y              # Enable /dev/fb0 interface
+CONFIG_FB_SIMPLE=y              # simplefb for bootloader splash
 
 # ─── Networking ────────────────────────────────────────────────────────────────
 CONFIG_NET=y
+CONFIG_UNIX=y
 CONFIG_INET=y
-CONFIG_IPV6=y
-CONFIG_CFG80211=y
-CONFIG_MAC80211=y
-CONFIG_WIFI=y
-CONFIG_WCN36XX=y                # Qualcomm Wi-Fi
-CONFIG_BLUETOOTH=y
-CONFIG_BT_HCIUART=y
-CONFIG_BT_LE=y
-CONFIG_NFC=y
 
 # ─── Telephony ───────────────────────────────────────────────────────────────
+# ─── Qualcomm Platform (SDM636 specific) ────────────────────────────────────
+CONFIG_ARCH_QCOM=y
+CONFIG_ARCH_SDM845=n
 CONFIG_MSM_IPC_ROUTER=y
 CONFIG_QCOM_MDM_SUBSYSTEM=y
+CONFIG_QCOM_SMEM=y              # Shared memory between processors
+CONFIG_QCOM_SMD=y               # Qualcomm SMD transport
+CONFIG_QCOM_SMD_RPM=y           # RPM over SMD
+CONFIG_QCOM_RPMPD=y             # RPM power domains
+CONFIG_QCOM_RPMCC=y             # RPM clock controller
+CONFIG_QCOM_APCS_IPC=y         # AP-to-MSS IPC
+CONFIG_QCOM_SMEM_STATE=y
+CONFIG_SPMI=y                   # SPMI bus for PMIC
+CONFIG_MFD_SPMI_PMIC=y         # Qualcomm SPMI PMIC (PM660/PM660L)
+CONFIG_REGULATOR=y
+CONFIG_REGULATOR_FIXED_VOLTAGE=y
+CONFIG_REGULATOR_QCOM_SPMI=y   # PMIC voltage regulators
+# CONFIG_QCOM_PM8953 is not set # NOT the actual PMIC
+CONFIG_QCOM_PM660=y            # PM660 PMIC (Nokia 6.1 Plus)
+CONFIG_QCOM_PM660L=y           # PM660L secondary PMIC
+# CONFIG_SND_SOC_WCD9335 is not set
+# CONFIG_SND_SOC_MSM8996 is not set
+CONFIG_IOMMU_SUPPORT=y
+CONFIG_ARM_SMMU=y
 
 # ─── Power ───────────────────────────────────────────────────────────────────
 CONFIG_PM=y
@@ -107,31 +130,117 @@ CONFIG_I2C=y
 CONFIG_SPI=y
 CONFIG_IIO=y
 CONFIG_IIO_BUFFER=y
-CONFIG_INV_MPU6050_IIO=y        # Accelerometer/gyro
-CONFIG_SENSORS_BME280=y
+# CONFIG_INV_MPU6050_IIO is not set
+# CONFIG_SENSORS_BME280 is not set
 
 # ─── Camera ──────────────────────────────────────────────────────────────────
-CONFIG_MEDIA_SUPPORT=y
-CONFIG_V4L_PLATFORM_DRIVERS=y
-CONFIG_VIDEO_QCOM_CAMSS=y
-CONFIG_MEDIA_CAMERA_SUPPORT=y
+# CONFIG_MEDIA_SUPPORT is not set
 
 # ─── USB ─────────────────────────────────────────────────────────────────────
-CONFIG_USB=y
-CONFIG_USB_DWC3=y
+CONFIG_USB=y                   # Enable USB host/device (re-enabled for early debugging)
+CONFIG_USB_DWC3=y              # Qualcomm DWC3 controller (SDM636)
+CONFIG_USB_DWC3_QCOM=y         # Qualcomm DWC3 glue layer
 CONFIG_USB_GADGET=y
 CONFIG_USB_CONFIGFS=y
+CONFIG_USB_CONFIGFS_ACM=y      # CDC ACM USB Serial function
 CONFIG_USB_TYPEC=y
+CONFIG_TYPEC_QCOM_PMIC=y       # Qualcomm PMIC USB Type-C
+CONFIG_USB_ROLE_SWITCH=y
+CONFIG_GENERIC_PHY=y
+CONFIG_PHY_QCOM_QUSB2=y
+CONFIG_CHARGER_QCOM_SMBB=y     # Qualcomm charger (PM660)
 
 # ─── Filesystems ─────────────────────────────────────────────────────────────
 CONFIG_EXT4_FS=y
-CONFIG_F2FS_FS=y                # Flash-friendly FS for /data
-CONFIG_EROFS_FS=y               # Read-only rootfs (like Android system.img)
+# CONFIG_F2FS_FS is not set
+# CONFIG_EROFS_FS is not set
 CONFIG_TMPFS=y
 CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_OVERLAY_FS=y             # For app sandboxing
+# CONFIG_OVERLAY_FS is not set
 
 # ─── ZethraOS specific ───────────────────────────────────────────────────────
-CONFIG_ZETHRA_CRASH_REPORTER=y  # In-kernel crash metadata export
-CONFIG_ZETHRA_PERF_COUNTERS=y   # Extended perf events for AI monitoring
-CONFIG_ZETHRA_SECCOMP_PROFILES=y # Per-app syscall filtering
+# NOTE: The following symbols are Zethra custom and may not exist in Linux 6.9 mainline.
+# They are kept here as configuration intent for eventual integration.
+CONFIG_ZETHRA_CRASH_REPORTER=y  # In-kernel crash metadata export (custom)
+CONFIG_ZETHRA_PERF_COUNTERS=y   # Extended perf events for AI monitoring (custom)
+CONFIG_ZETHRA_SECCOMP_PROFILES=y # Per-app syscall filtering (custom)
+
+# ─── devtmpfs ────────────────────────────────────────────────────────────────
+CONFIG_DEVTMPFS=y
+CONFIG_DEVTMPFS_MOUNT=y
+
+# ─── MSM Serial Console ──────────────────────────────────────────────────────
+# CONFIG_SERIAL_MSM is not set
+# CONFIG_SERIAL_MSM_CONSOLE is not set
+# CONFIG_SERIAL_EARLYCON is not set
+# CONFIG_SERIAL_AMBA is not set
+# CONFIG_SERIAL_AMBA_CONSOLE is not set
+
+# ─── Qualcomm SoC Infrastructure (dependency chain, bottom-up) ──────────────
+# Level 0: Bus primitives needed by everything
+CONFIG_HWSPINLOCK=y
+CONFIG_HWSPINLOCK_QCOM=y
+CONFIG_MAILBOX=y
+
+# Level 1: Shared memory (needs HWSPINLOCK)
+CONFIG_QCOM_SMP2P=y
+CONFIG_QCOM_SMSM=y
+
+# Level 2: RPMSG transport (needs MAILBOX + QCOM_SMEM)
+CONFIG_RPMSG_QCOM_SMD=y
+CONFIG_RPMSG_QCOM_GLINK_RPM=y
+
+# Level 3: RPM power manager (needs RPMSG_QCOM_SMD)
+
+# Level 4: Pin controller (needs PINCTRL_MSM base)
+CONFIG_PINCTRL_MSM=y
+CONFIG_PINCTRL_SDM660=y
+CONFIG_PINCTRL_QCOM_SPMI_PMIC=y
+
+# Level 5: Clock controllers (needs COMMON_CLK_QCOM + QCOM_SMD_RPM)
+CONFIG_COMMON_CLK_QCOM=y
+CONFIG_QCOM_CLK_SMD_RPM=y
+CONFIG_QCOM_A53PLL=y
+CONFIG_QCOM_CLK_APCS_MSM8916=y
+CONFIG_SDM_GCC_660=y
+CONFIG_SDM_GPUCC_660=y
+CONFIG_SDM_MMCC_660=y
+
+# Level 6: Regulators (needs QCOM_SMD_RPM)
+CONFIG_REGULATOR_QCOM_SMD_RPM=y
+
+# Level 7: Interconnect & reset
+CONFIG_INTERCONNECT=y
+CONFIG_INTERCONNECT_QCOM=y
+CONFIG_INTERCONNECT_QCOM_SMD_RPM=y
+CONFIG_INTERCONNECT_QCOM_SDM660=y
+CONFIG_PM_GENERIC_DOMAINS=y
+CONFIG_PM_OPP=y
+CONFIG_RESET_QCOM_AOSS=y
+CONFIG_RESET_QCOM_PDC=y
+CONFIG_POWER_RESET_QCOM_PON=y
+
+# Level 8: MMC/eMMC storage (needs SDHCI platform + MSM driver)
+CONFIG_MMC_SDHCI_PLTFM=y
+
+# Level 9: Additional Qualcomm platform support
+CONFIG_QCOM_GENI_SE=y
+CONFIG_QCOM_WCNSS_PIL=y
+
+# NVMEM / eFuse
+CONFIG_NVMEM=y
+CONFIG_NVMEM_QCOM_QFPROM=y
+
+# ─── PSTORE and Ramoops Debugging ────────────────────────────────────────────
+CONFIG_PSTORE=y
+CONFIG_PSTORE_CONSOLE=y
+CONFIG_PSTORE_PMSG=y
+CONFIG_PSTORE_RAM=y
+CONFIG_PANIC_TIMEOUT=10
+CONFIG_WATCHDOG=y
+CONFIG_QCOM_WDT=y
+# CONFIG_DEBUG_KERNEL is not set
+CONFIG_PRINTK_TIME=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_PANIC_ON_OOPS=y
+CONFIG_DEBUG_BUGVERBOSE=y
