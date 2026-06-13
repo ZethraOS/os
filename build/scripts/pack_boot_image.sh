@@ -201,7 +201,7 @@ if [[ "$SIGN_BOOT" == true ]]; then
       python3 "$AVBTOOL" add_hash_footer \
         --image "$BOOT_OUTPUT" \
         --partition_name boot \
-        --partition_size 67108864 \
+        --dynamic_partition_size \
         --algorithm SHA256_RSA2048 \
         --key "$TEST_KEY" \
         --salt c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00 2>&1 | grep -v "^$" || true

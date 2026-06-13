@@ -83,7 +83,9 @@ CONFIG_FB_DEVICE=y              # Enable /dev/fb0 interface
 CONFIG_FB_SIMPLE=y              # simplefb for bootloader splash
 
 # ─── Networking ────────────────────────────────────────────────────────────────
-# CONFIG_NET is not set
+CONFIG_NET=y
+CONFIG_UNIX=y
+CONFIG_INET=y
 
 # ─── Telephony ───────────────────────────────────────────────────────────────
 # ─── Qualcomm Platform (SDM636 specific) ────────────────────────────────────

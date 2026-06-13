@@ -40,6 +40,36 @@ for cmd in sh ls cat mkdir mount umount mknod echo chmod dmesg sleep reboot powe
   ln -sf busybox "$STAGE_DIR/bin/$cmd"
 done
 
+# Copy Rust services and configurations if they exist
+ZETHRAD_BIN="$REPO_ROOT/target/aarch64-unknown-linux-musl/release/zethrad"
+if [[ -f "$ZETHRAD_BIN" ]]; then
+  mkdir -p "$STAGE_DIR/sbin"
+  cp "$ZETHRAD_BIN" "$STAGE_DIR/sbin/zethrad"
+  chmod +x "$STAGE_DIR/sbin/zethrad"
+  success "Copied zethrad init to /sbin/zethrad"
+fi
+
+for svc in zethra-networkd zethra-sensord zethra-otad zethra-telephonyd zethra-compositor zethra-sandbox zethra-ai-daemon; do
+  SVC_BIN="$REPO_ROOT/target/aarch64-unknown-linux-musl/release/$svc"
+  if [[ -f "$SVC_BIN" ]]; then
+    mkdir -p "$STAGE_DIR/usr/bin"
+    cp "$SVC_BIN" "$STAGE_DIR/usr/bin/$svc"
+    chmod +x "$STAGE_DIR/usr/bin/$svc"
+    
+    clean_name="${svc#zethra-}"
+    mkdir -p "$STAGE_DIR/usr/lib/zethra/$clean_name"
+    cp "$SVC_BIN" "$STAGE_DIR/usr/lib/zethra/$clean_name/$svc"
+    chmod +x "$STAGE_DIR/usr/lib/zethra/$clean_name/$svc"
+    success "Copied service $svc"
+  fi
+done
+
+if [[ -d "$REPO_ROOT/build/configs/units" ]]; then
+  mkdir -p "$STAGE_DIR/etc/zethra/units"
+  cp "$REPO_ROOT/build/configs/units"/*.toml "$STAGE_DIR/etc/zethra/units/"
+  success "Copied unit configurations"
+fi
+
 # Create a comprehensive diagnostic /init script
 cat > "$STAGE_DIR/init" << 'INITEOF'
 #!/bin/sh

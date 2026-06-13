@@ -214,11 +214,14 @@ if mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/block/mmcblk1p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
-  echo "[init] Mounted persist partition. Saving boot log..."
-  dmesg > /mnt/persist/zethra_boot.log 2>&1
-  sync
-  umount /mnt/persist
-  echo "[init] Boot log written to /persist/zethra_boot.log"
+  echo "[init] Mounted persist partition. Starting background boot log daemon..."
+  (
+    while true; do
+      dmesg > /mnt/persist/zethra_boot.log 2>&1
+      sync
+      sleep 1
+    done
+  ) &
 else
   echo "[init] WARNING: Could not mount persist partition to save boot log"
 fi
@@ -254,7 +257,12 @@ while true; do
 done &
 
 echo "[init] Launching PID 1: zethrad..."
-exec /sbin/zethrad
+export ZETHRA_UNITS_DIR=/etc/zethra/units
+if [ -d /mnt/persist ] && grep -q "/mnt/persist" /proc/mounts; then
+  exec /sbin/zethrad >/mnt/persist/zethrad.log 2>&1
+else
+  exec /sbin/zethrad
+fi
 EOF
 chmod +x "$STAGE_DIR/init"
 
