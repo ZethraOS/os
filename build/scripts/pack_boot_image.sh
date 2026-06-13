@@ -211,7 +211,9 @@ if [[ "$SIGN_BOOT" == true ]]; then
       # Also create unsigned vbmeta for testing
       python3 "$AVBTOOL" make_vbmeta_image \
         --output "$VBMETA_OUTPUT" \
-        --chain_partition boot:1:"$TEST_KEY.pub" 2>&1 | grep -v "^$" || true
+        --chain_partition boot:1:"$TEST_KEY.pub" \
+        --set_hashtree_disabled_flag \
+        --set_verification_disabled_flag 2>&1 | grep -v "^$" || true
       
       if [[ -f "$VBMETA_OUTPUT" ]]; then
         success "VBMeta: $VBMETA_OUTPUT (for --disable-verity testing)"

@@ -233,14 +233,15 @@ if [[ "$SKIP_FLASH" != true ]]; then
   fi
   success "Device in fastboot mode"
   
-  info "Flashing boot partition..."
+  info "Flashing boot and vbmeta partitions..."
   FLASH_LOG="$OUT_DIR/flash.log"
-  if ! run fastboot flash boot "$OUT_DIR/boot.img" > "$FLASH_LOG" 2>&1; then
+  if ! run fastboot flash vbmeta "$OUT_DIR/vbmeta.img" > "$FLASH_LOG" 2>&1 || \
+     ! run fastboot flash boot "$OUT_DIR/boot.img" >> "$FLASH_LOG" 2>&1; then
     error "Flash FAILED"
     cat "$FLASH_LOG" >&2
     fail "See full log: $FLASH_LOG"
   fi
-  success "Boot partition flashed"
+  success "Boot and VBMeta partitions flashed"
   
   info "Rebooting device..."
   run fastboot reboot

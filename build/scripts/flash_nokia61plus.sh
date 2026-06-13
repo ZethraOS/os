@@ -25,6 +25,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BOOT_IMG="$REPO_ROOT/build/out/boot.img"
+VBMETA_IMG="$REPO_ROOT/build/out/vbmeta.img"
 KERNEL_IMAGE="$REPO_ROOT/build/out/Image.gz-dtb"
 INITRAMFS="$REPO_ROOT/build/out/initramfs.cpio.gz"
 
@@ -157,7 +158,11 @@ if [[ "$DRY_RUN" == "false" ]]; then
   info "Current active slot: $CURRENT_SLOT → flashing to slot: $SLOT"
 fi
 
-# ─── Flash boot partition ─────────────────────────────────────────────────────
+# ─── Flash boot and vbmeta partitions ─────────────────────────────────────────
+info "Flashing vbmeta.img to slot ${SLOT}..."
+run fastboot flash "vbmeta_${SLOT}" "$VBMETA_IMG"
+success "vbmeta_${SLOT} flashed"
+
 info "Flashing boot.img to slot ${SLOT}..."
 run fastboot flash "boot_${SLOT}" "$BOOT_IMG"
 success "boot_${SLOT} flashed"
