@@ -126,7 +126,7 @@ build_in_docker() {
           python3 tools/avbtool add_hash_footer \
           --image          build/out/boot.img \
           --partition_name boot \
-          --partition_size 67108864 \
+          --dynamic_partition_size \
           --algorithm      SHA256_RSA2048 \
           --key            tools/test_key.pem \
           --salt           c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00 && \
@@ -173,7 +173,7 @@ else
       python3 "$REPO_ROOT/tools/avbtool" add_hash_footer \
         --image          "$OUT_DIR/boot.img" \
         --partition_name boot \
-        --partition_size 67108864 \
+        --dynamic_partition_size \
         --algorithm      SHA256_RSA2048 \
         --key            "$REPO_ROOT/tools/test_key.pem" \
         --salt           c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00

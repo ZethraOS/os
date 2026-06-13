@@ -110,7 +110,7 @@ if [[ ! -f "$BOOT_IMG" ]]; then
   run python3 "$REPO_ROOT/tools/avbtool" add_hash_footer \
     --image          "$BOOT_IMG" \
     --partition_name boot \
-    --partition_size 67108864 \
+    --dynamic_partition_size \
     --algorithm      SHA256_RSA2048 \
     --key            "$REPO_ROOT/tools/test_key.pem"
 
