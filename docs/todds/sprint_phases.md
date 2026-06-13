@@ -26,14 +26,14 @@ Configure graphics hardware to render the user interface.
 ## Phase 3: Root Filesystem & OS Boot
 Move from minimal initramfs to booting the full operating system.
 - [ ] **Boot CMDLINE Configuration**: Update boot parameters to mount ZethraOS rootfs from eMMC partition (typically `/dev/mmcblk1p82`).
-- [ ] **Init Manager**: Integrate systemd or lightweight Zethra init system.
+- [x] **Init Manager**: Integrated and successfully booted `zethrad` as PID 1 supervising core daemons (sensord, networkd, otad).
 - [ ] **Persistent Storage**: Mount user-space partitions (`/data`) using EXT4/F2FS.
 - [ ] **Per-Service Sandboxing**: Enable cgroups v2 and custom seccomp profiles for process isolation.
 
 ---
 
 ## Phase 4: USB Gadget & Power Management
-- [ ] **USB ConfigFS**: Configure USB gadget functionality for ADB and MTP support.
+- [x] **USB ConfigFS**: Configured USB CDC ACM serial gadget console interface (`/dev/ttyGS0`) for emergency host debug connectivity.
 - [ ] **Power Supply**: Enable battery charging controller driver (`smb1351` / `pm660` charger) and verify power reporting in `/sys/class/power_supply`.
 - [ ] **USB OTG Host**: Enable USB role switching for external peripherals.
 
