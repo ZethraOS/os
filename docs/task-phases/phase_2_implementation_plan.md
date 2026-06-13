@@ -49,8 +49,13 @@ CONFIG_FB=y
 CONFIG_DRM_MSM_GPU_STATE=y
 CONFIG_QCOM_CLK_RPM=y
 CONFIG_QCOM_CLK_RPMH=y
+CONFIG_COMMON_CLK_QCOM=y
 CONFIG_IOMMU_SUPPORT=y
 CONFIG_ARM_SMMU=y
+
+# Firmware Loader
+CONFIG_FW_LOADER=y
+CONFIG_FW_LOADER_USER_HELPER=n
 ```
 
 ### B. Device Tree (DTS) Mapping
@@ -133,6 +138,22 @@ To manage risk and enforce reproducibility, Phase 2 is structured into four sequ
 ### Gate 2.4: Stress & Stability Verification
 * **Target**: Sustained GPU load test.
 * **Verification**: Execute a 10-minute GPU benchmark burn-in test (e.g. `glmark2-es2-drm`) to confirm the watchdog and power domain bindings hold under sustained load.
+* **Pass/Fail Criteria**:
+  - **GPU Resets**: Verify that `cat /sys/kernel/debug/dri/0/gpu-reset-count` remains at `0`.
+  - **Thermals & Logs**: Verify `dmesg` contains zero thermal throttling alerts, driver timeout errors, or Out-Of-Memory (OOM) killer events during or after the test run.
+
+### E. Rollback & Recovery Procedure
+If a kernel flash produces a bootloop, a black screen, or a lost serial console (a partial brick scenario), the following recovery paths are established:
+
+1. **A/B Slot Rollback**:
+   - Boot to fastboot mode (Hold Volume Down + Power).
+   - Switch back to the known-good slot containing the verified Phase 1 build:
+     ```bash
+     fastboot set_active a   # Switch to the other slot
+     fastboot reboot
+     ```
+2. **EDL (Emergency Download) Mode**:
+   - If the bootloader itself fails or the device is completely unresponsive, force the device into EDL mode (Qualcomm HS-USB QDLoader 9008) via hardware test points or a deep flash cable to re-flash the stock boot image.
 
 ---
 
