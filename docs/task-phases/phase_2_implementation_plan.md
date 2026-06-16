@@ -1,7 +1,7 @@
 # Phase 2 Implementation Plan: Display, GPU, and Graphics Shell Bring-Up
 
 **Target Hardware**: Nokia 6.1 Plus (DRG / TA-1103) / SDM636  
-**Status**: Draft / Proposed  
+**Status**: Proposed  
 **Output Path**: `docs/task-phases/phase_2_implementation_plan.md`
 
 ---
@@ -96,10 +96,12 @@ We must specify the display panel routing, regulator dependencies, and clock con
 - Bind the GPU power domain controls (`PM_OPP` and `PM_GENERIC_DOMAINS`) to prevent device hangs or watchdog resets when the GPU powers up.
 
 ### D. Firmware Sourcing & Loading
-Adreno 509 requires runtime microcode firmware blobs (specifically `a530_pfp.fw` and `a530_pm4.fw` or SoC-specific equivalents) to load. Without them, the GPU probe will fail silently or log `firmware request failed` in `dmesg`.
+Adreno 509 requires runtime microcode firmware blobs to load. Without them, the GPU probe will fail silently or log `firmware request failed` in `dmesg`.
 
 - **Kernel Configuration**: Ensure `CONFIG_FW_LOADER=y` is set.
 - **Sourcing**: Firmware blobs will be extracted from the official upstream `linux-firmware` repository (`qcom/` folder).
+  - *Verification Note*: Adreno 509 utilizes shared A5xx firmware components (`a530_pfp.fw` and `a530_pm4.fw`) and requires the `a512_zap.mdt` ZAP shader (with its associated `.b00`, `.b01`, etc., files) for the boot process.
+  - Prior to assembly, run a validation check (`ls linux-firmware/qcom/ | grep -E "a530|a512"`) to verify correct filenames.
 - **Packaging**: Place the blobs inside the ZethraOS rootfs at `/lib/firmware/qcom/` during the initramfs assembly process in `build_initramfs.sh`.
 
 ---
@@ -137,23 +139,10 @@ To manage risk and enforce reproducibility, Phase 2 is structured into four sequ
 
 ### Gate 2.4: Stress & Stability Verification
 * **Target**: Sustained GPU load test.
-* **Verification**: Execute a 10-minute GPU benchmark burn-in test (e.g. `glmark2-es2-drm`) to confirm the watchdog and power domain bindings hold under sustained load.
+* **Verification**: Execute a 10-minute GPU benchmark burn-in test using `glmark2-es2-drm` (cross-compiled from upstream `glmark2` using Meson `-Dflavors=drm-glesv2`) to confirm the watchdog and power domain bindings hold under sustained load.
 * **Pass/Fail Criteria**:
   - **GPU Resets**: Verify that `cat /sys/kernel/debug/dri/0/gpu-reset-count` remains at `0`.
   - **Thermals & Logs**: Verify `dmesg` contains zero thermal throttling alerts, driver timeout errors, or Out-Of-Memory (OOM) killer events during or after the test run.
-
-### E. Rollback & Recovery Procedure
-If a kernel flash produces a bootloop, a black screen, or a lost serial console (a partial brick scenario), the following recovery paths are established:
-
-1. **A/B Slot Rollback**:
-   - Boot to fastboot mode (Hold Volume Down + Power).
-   - Switch back to the known-good slot containing the verified Phase 1 build:
-     ```bash
-     fastboot set_active a   # Switch to the other slot
-     fastboot reboot
-     ```
-2. **EDL (Emergency Download) Mode**:
-   - If the bootloader itself fails or the device is completely unresponsive, force the device into EDL mode (Qualcomm HS-USB QDLoader 9008) via hardware test points or a deep flash cable to re-flash the stock boot image.
 
 ---
 
@@ -172,3 +161,18 @@ If a kernel flash produces a bootloop, a black screen, or a lost serial console 
 * **Estimated Input Tokens**: 3.0M – 5.0M tokens.
 * **Estimated Output Tokens**: 100k – 150k tokens.
 * **Token Saving Strategy**: Offload deep file searches of the kernel source tree (`linux-6.9/`) to the isolated `research` subagent to keep the main developer context light.
+
+---
+
+## 5. Recovery Procedures
+If a kernel flash produces a bootloop, a black screen, or a lost serial console (a partial brick scenario), the following recovery paths are established:
+
+1. **A/B Slot Rollback**:
+   - Boot to fastboot mode (Hold Volume Down + Power).
+   - Switch back to the known-good slot containing the verified Phase 1 build:
+     ```bash
+     fastboot set_active a   # Switch to the other slot
+     fastboot reboot
+     ```
+2. **EDL (Emergency Download) Mode**:
+   - If the bootloader itself fails or the device is completely unresponsive, force the device into EDL mode (Qualcomm HS-USB QDLoader 9008) via hardware test points or a deep flash cable to re-flash the stock boot image.
