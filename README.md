@@ -1,10 +1,10 @@
 # ZethraOS
 
-> An open, AI-native operating system for every screen that is built on Linux 6.x with Rust-first architecture. Beyond Android. Beyond mobile.
+> An open, AI-native operating system for every screen that is built on Linux 7.1 with Rust-first architecture. Beyond Android. Beyond mobile.
 
 [![CI](https://github.com/ZethraOS/os/actions/workflows/ci.yml/badge.svg)](https://github.com/ZethraOS/os/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Kernel](https://img.shields.io/badge/kernel-Linux%206.x-orange)](kernel/)
+[![Kernel](https://img.shields.io/badge/kernel-Linux%207.1-orange)](kernel/)
 
 ---
 
@@ -36,7 +36,7 @@ ZethraOS is a mobile operating system built from scratch on the Linux kernel. It
 │    Hardware Abstraction Layer (HAL)         │  ← Modular, Treble-inspired
 │  camera · sensors · display · modem         │
 ├─────────────────────────────────────────────┤
-│          Linux Kernel 6.x                   │  ← GPL-2, upstream base + reviewed patches
+│          Linux Kernel 7.1                   │  ← GPL-2, upstream base + reviewed patches
 │  ARM64 · eBPF · cgroups v2 · io_uring       │
 └─────────────────────────────────────────────┘
 ```
@@ -109,7 +109,7 @@ rustup target add aarch64-unknown-linux-gnu
 # Cross-compile all Rust crates for ARM64
 cargo build --release --target aarch64-unknown-linux-gnu
 
-# Build kernel (downloads Linux 6.x source)
+# Build kernel (downloads Linux 7.1 source)
 bash build/scripts/build_kernel.sh
 
 # Boot in QEMU for testing
