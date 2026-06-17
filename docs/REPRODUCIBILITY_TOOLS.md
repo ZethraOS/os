@@ -521,10 +521,14 @@ From RCA: [NOKIA61PLUS_BOOT_RCA.md](../docs/NOKIA61PLUS_BOOT_RCA.md)
 
 | Gate | Status | Check | Evidence |
 |------|--------|-------|----------|
-| **Gate 0** | IN PROGRESS | Build reproducible | `verify_reproducibility.sh` |
-| **Gate 1** | Planned | Boot tooling w/ known-good control | `parse_bootimg.py` comparison |
-| **Gate 2** | Planned | Early UART console | UART logs from device |
-| **Gate 3** | Planned | PID 1 reach | Kernel boot messages |
+| **Gate 0** | Passed 2026-06-13 | Build reproducible | Local `build/out/.reproducibility-report.txt` |
+| **Gate 1** | Recorded complete | Boot tooling w/ known-good control | Phase 1 completion record and RCA |
+| **Gate 2** | Passed 2026-06-13 | Observable device console | Captured boot log plus recorded ACM session |
+| **Gate 3** | Passed 2026-06-13 | PID 1 reach | Recorded `zethrad` log and process list |
+
+The generated evidence under `build/out/` is Git-ignored. See
+[task-phases/phase_1_verification_matrix.md](task-phases/phase_1_verification_matrix.md)
+before treating these results as independently reproducible release evidence.
 
 ---
 

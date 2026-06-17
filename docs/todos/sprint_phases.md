@@ -10,13 +10,18 @@ This document details the tasks and roadmap for bringing up ZethraOS on the Noki
 - [x] **Power Domain Framework**: Enabled `CONFIG_PM_GENERIC_DOMAINS` and matched dependencies to select `PM_OPP`, allowing the power domains to probe successfully.
 - [x] **eMMC Storage Detection**: Configured and successfully probed `sdhci` storage to expose `/dev/mmcblk1`.
 - [x] **Persistence Logging**: Mounted persist partition `/dev/mmcblk1p73` to save kernel boot dmesg directly on physical storage.
+- [x] **Initramfs Hand-off**: Reached `/init` and launched `zethrad` as PID 1.
+- [x] **Recovery Console**: Verified an interactive USB CDC ACM root shell.
+
+Canonical evidence status:
+[Phase 1 Verification Matrix](../task-phases/phase_1_verification_matrix.md).
 
 ---
 
 ## Phase 2: Display & Graphics (Next Sprint)
 Configure graphics hardware to render the user interface.
-- [ ] **MSM DRM Driver**: Enable `CONFIG_DRM_MSM` in defconfig.
-- [ ] **Display Panel Driver**: Configure panel-specific driver for the Truly NT35597 display panel.
+- [ ] **MSM DRM Driver**: Validate the enabled `CONFIG_DRM_MSM` stack on Nokia hardware.
+- [ ] **Display Panel Driver**: Implement and review OTM1911A support; Linux 6.9 has no matching upstream panel driver.
 - [ ] **Adreno 509 GPU**: Initialize graphics clock controller and power domains.
 - [ ] **Console Mapping**: Enable DRM/KMS framebuffer console (`fbcon`) to print boot logs directly on the LCD panel.
 - [ ] **Surface Rendering**: Verify GUI shell or raw framebuffer test rendering.

@@ -2,10 +2,17 @@
 
 **Date**: 2026-06-13  
 **Target Hardware**: Nokia 6.1 Plus (DRG / TA-1103) / SDM636  
-**Status**: Approved & Verified On-Device  
+**Status**: Completed and verified on-device on 2026-06-13
 **Branch**: `feature/hardware-boot-target`
 
 ---
+
+> [!IMPORTANT]
+> This report records the Phase 1 completion session. The canonical gate status,
+> evidence strength, and re-verification requirements are maintained in
+> [phase_1_verification_matrix.md](phase_1_verification_matrix.md). Generated
+> evidence under `build/out/` is Git-ignored, and the raw ACM terminal transcript
+> was not committed separately.
 
 ## 1. Production Code Quality & Architecture Review
 
@@ -32,7 +39,9 @@ fi
 ```
 
 ### C. Kernel Defconfig Discipline
-obsolete and incorrect configs were eliminated from [zethra_defconfig](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/kernel/zethra_defconfig) (such as obsolete PM8953 and display panel options). We enabled core Linux systems required for socket-based IPC:
+Obsolete and incorrect configs were removed from
+[`kernel/zethra_defconfig`](../../kernel/zethra_defconfig). We enabled core Linux
+systems required for socket-based IPC:
 ```ini
 CONFIG_NET=y
 CONFIG_UNIX=y
@@ -45,7 +54,8 @@ CONFIG_INET=y
 
 Due to the Nokia 6.1 Plus's 32MB boot partition limit and fastboot memory fragmentation constraints, we implemented binary optimizations to prevent flashing failures:
 
-* **Rust musl Stripping & Optimization**: Added profile configurations to [Cargo.toml](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/Cargo.toml) to shrink cross-compiled musl binaries:
+* **Rust musl Stripping & Optimization**: Added profile configurations to
+  [`Cargo.toml`](../../Cargo.toml) to shrink cross-compiled musl binaries:
   ```toml
   [profile.release]
   strip = true
@@ -53,7 +63,11 @@ Due to the Nokia 6.1 Plus's 32MB boot partition limit and fastboot memory fragme
   lto = "thin"
   ```
   This reduced the production `initramfs.cpio.gz` size from **31MB to 25MB**.
-* **Dynamic AVB Partition Sizing**: Modified [pack_boot_image.sh](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/build/scripts/pack_boot_image.sh) to sign the boot image using `--dynamic_partition_size` instead of hardcoding `--partition_size 67108864`. This prevents padding the final payload to 64MB, resolving the fastboot limit error:
+* **Dynamic AVB Partition Sizing**: Modified
+  [`pack_boot_image.sh`](../../build/scripts/pack_boot_image.sh) to sign the boot
+  image using `--dynamic_partition_size` instead of hardcoding
+  `--partition_size 67108864`. This prevents padding the final payload to 64MB,
+  resolving the fastboot limit error:
   ```
   Requested download size is more than max allowed
   ```
@@ -63,13 +77,17 @@ Due to the Nokia 6.1 Plus's 32MB boot partition limit and fastboot memory fragme
 
 ## 3. Build Reproducibility
 
-We established absolute reproducibility of the compilation pipeline:
+The recorded 2026-06-13 verification run produced byte-identical artifacts from
+two builds at the same commit:
 
 * **Manifest Tracking**: The build scripts output strict manifests containing SHA-256 hashes of all input files, compilation scripts, and final artifacts:
   - `.kernel-build-manifest.txt`
   - `.boot-image-params.txt`
   - `.boot-pack-manifest.txt`
-* **Clean Repository Guarantee**: The reproducibility check script ([quick_reproducibility_check.sh](file:///Users/nomad/workstation/work/code/OS/Mobile/zethraos/build/scripts/quick_reproducibility_check.sh)) validates that there are zero uncommitted modifications and that the compiler outputs match the recorded manifest digests:
+* **Clean Repository Check**: The reproducibility check script
+  ([`quick_reproducibility_check.sh`](../../build/scripts/quick_reproducibility_check.sh))
+  reports repository modifications and compares compiler outputs with recorded
+  manifest digests:
   ```bash
   $ bash build/scripts/quick_reproducibility_check.sh
   ==================================================
@@ -87,6 +105,11 @@ We established absolute reproducibility of the compilation pipeline:
 ## 4. Verified On-Device Status
 
 The system was flashed and booted on Slot B. We verified the interactive serial console responsiveness and the system daemon status.
+
+The kernel boot, eMMC discovery, `/init`, and persist mount are also present in
+the local captured log `build/out/zethra_boot.log`. The console, supervisor-log,
+and process-list excerpts below were recorded during the device session, but
+their complete raw terminal transcript is not preserved in Git.
 
 ### A. Active Console Response
 Sending a reset sequence (`\n\x03\n\x04\n\n\n`) over the host port `/dev/tty.usbmodemZETHRA0000011` recovers a fully responsive root console:

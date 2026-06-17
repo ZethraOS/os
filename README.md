@@ -36,7 +36,7 @@ ZethraOS is a mobile operating system built from scratch on the Linux kernel. It
 │    Hardware Abstraction Layer (HAL)         │  ← Modular, Treble-inspired
 │  camera · sensors · display · modem         │
 ├─────────────────────────────────────────────┤
-│          Linux Kernel 6.x                   │  ← GPL-2, unmodified upstream
+│          Linux Kernel 6.x                   │  ← GPL-2, upstream base + reviewed patches
 │  ARM64 · eBPF · cgroups v2 · io_uring       │
 └─────────────────────────────────────────────┘
 ```

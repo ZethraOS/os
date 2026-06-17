@@ -170,6 +170,19 @@ if [[ -d "$REPO_ROOT/build/configs/units" ]]; then
   success "Copied system unit configs"
 fi
 
+# Copy GPU firmware files
+if [[ -d "$REPO_ROOT/kernel/firmware/qcom" ]]; then
+  info "Packaging GPU firmware blobs..."
+  mkdir -p "$STAGE_DIR/lib/firmware/qcom"
+  cp "$REPO_ROOT"/kernel/firmware/qcom/a530* "$STAGE_DIR/lib/firmware/qcom/"
+  cp "$REPO_ROOT"/kernel/firmware/qcom/a512* "$STAGE_DIR/lib/firmware/qcom/"
+  # Run validation
+  (cd "$STAGE_DIR/lib/firmware/qcom" && ls | grep -E "a530|a512" > /dev/null)
+  success "GPU firmware blobs packaged successfully"
+else
+  warn "kernel/firmware/qcom not found, GPU acceleration may fail at boot"
+fi
+
 # Create base-setup helper script
 cat > "$STAGE_DIR/usr/lib/zethra/init/zethra-base-setup" << 'EOF'
 #!/bin/sh

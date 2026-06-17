@@ -1,7 +1,7 @@
 # ZethraOS — Nokia 6.1 Plus Hardware Target
 
 **Device**: Nokia 6.1 Plus (TA-1103)  
-**Status**: Primary reference hardware target for ZethraOS v0.3.0
+**Status**: Primary reference hardware target; Phase 1 boot baseline verified on 2026-06-13
 
 ---
 
@@ -85,12 +85,16 @@ These are the exact `mkbootimg` parameters for Nokia 6.1 Plus, extracted from st
 
 ## Device Tree (DTB)
 
-The Nokia 6.1 Plus device tree is available in mainline Linux 6.x:
+ZethraOS carries a project-maintained Nokia 6.1 Plus device tree at:
 ```
-arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dts
+kernel/dts/sdm636-nokia-frt.dts
 ```
 
-Build alongside the kernel:
+The build script copies it into the extracted Linux 6.9 source tree before
+compilation. It must not be described as an unmodified upstream/mainline board
+file.
+
+Build the DTB alongside the kernel:
 ```bash
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- dtbs
 # Output: arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dtb
@@ -136,14 +140,14 @@ cat /mnt/persist/zethrad.log
 | Subsystem | Mainline Status |
 | :--- | :--- |
 | CPU / SMP | ✅ Full |
-| GPU (Adreno 509 / freedreno) | ✅ Full (DRM_MSM) |
-| Display (DSI / NT35597) | 🟡 Partial — needs DTS tuning |
+| GPU (Adreno 509 / freedreno) | 🟡 Upstream driver family exists; not yet verified on this device |
+| Display (DSI / OTM1911A) | 🔴 No matching upstream Linux 6.9 panel driver; requires a verified binding/driver and vendor command data |
 | Wi-Fi (WCN36xx) | ✅ Full |
 | Bluetooth (QCA HCI) | ✅ Full |
 | Audio (WCD9335) | 🟡 Partial — driver present, DAI links need config |
 | eMMC (SDHCI-MSM) | ✅ Full |
 | USB (DWC3-QCOM) | ✅ Full |
-| PMIC / Regulators (PM8953) | 🟡 Partial — basic regulator support |
+| PMIC / Regulators (PM660/PM660L) | 🟡 Phase 1 boot path works; full subsystem coverage is not verified |
 | Modem / Telephony | 🔴 Requires Qualcomm proprietary firmware blobs |
 | Camera (CAMSS) | 🟡 Partial |
 

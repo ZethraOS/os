@@ -1,0 +1,12 @@
+# Qualcomm ZAP shader — proprietary, device-specific, Qualcomm-signed blobs.
+# Must NOT be committed to the repository.
+# Extract from device: adb pull /vendor/firmware/a512_zap.* kernel/firmware/qcom/
+# See README.md for full extraction procedure.
+a512_zap.mdt
+a512_zap.elf
+a512_zap.b00
+a512_zap.b01
+a512_zap.b02
+
+# sha256 manifests (machine-generated, not version controlled)
+*.sha256
