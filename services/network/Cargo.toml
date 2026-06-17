@@ -20,5 +20,5 @@ futures-util = "0.3"
 tokio-util = { version = "0.7", features = ["codec"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-rtnetlink = "0.18"
+rtnetlink = "0.21"
 netlink-packet-core = "0.8.1"
