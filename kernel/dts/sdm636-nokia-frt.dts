@@ -487,3 +487,27 @@
 	gpio-reserved-ranges = <8 4>;
 };
 
+&pm660l_wled {
+	status = "okay";
+	label = "backlight";
+};
+
+&mdss_dsi0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	panel@0 {
+		compatible = "orisetech,otm1911a";
+		reg = <0>;
+		vdda-supply = <&vreg_l1a_1p225>;
+		vddi-supply = <&vreg_l2a_1p0>;
+		reset-gpios = <&tlmm 82 GPIO_ACTIVE_LOW>;
+		backlight = <&pm660l_wled>;
+	};
+};
+
+&mdss_dsi0_phy {
+	status = "okay";
+};
+

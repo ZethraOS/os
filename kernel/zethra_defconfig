@@ -30,7 +30,7 @@ CONFIG_ZRAM=y
 CONFIG_ZSMALLOC=y
 CONFIG_SWAP=y
 CONFIG_MEMCG=y
-CONFIG_MEMCG_SWAP=y
+# CONFIG_MEMCG_SWAP is not set  # Removed upstream in Linux 6.10 — swap accounting is now automatic under MEMCG
 
 # ─── Security ────────────────────────────────────────────────────────────────
 CONFIG_SECURITY=y
@@ -55,7 +55,7 @@ CONFIG_SPECULATION_MITIGATIONS=y
 CONFIG_CGROUPS=y
 CONFIG_CGROUP_V2=y
 CONFIG_CGROUP_CPUACCT=y
-CONFIG_CGROUP_MEM_RES_CTLR=y
+# CONFIG_CGROUP_MEM_RES_CTLR is not set  # Removed in kernel 3.x — use CONFIG_MEMCG=y (line 32)
 CONFIG_CGROUP_SCHED=y
 CONFIG_NAMESPACES=y
 CONFIG_UTS_NS=y
@@ -75,12 +75,41 @@ CONFIG_SCSI=y
 CONFIG_SCSI_UFS=n               # SDM636 uses eMMC, not UFS
 
 # ─── Graphics ─────────────────────────────────────────────────────────────────
-# CONFIG_DRM is not set
+CONFIG_DRM=y
+CONFIG_DRM_MSM=y
+# Note: DRM_MSM auto-selects: SYNC_FILE, DRM_KMS_HELPER, DRM_SCHED, DRM_PANEL,
+#       DRM_BRIDGE, QCOM_MDT_LOADER, QCOM_SCM, PM_GENERIC_DOMAINS, IOMMU_IO_PGTABLE
+CONFIG_DRM_MSM_DSI=y
+CONFIG_DRM_MSM_DSI_10NM_PHY=y   # SDM636 uses 10nm DSI PHY generation
+# Removed: CONFIG_DRM_MSM_ADRENO — phantom symbol, does not exist in Linux 7.1.
+#   Adreno (all generations A2xx-A7xx) is built unconditionally when DRM_MSM=y.
+CONFIG_DRM_MSM_REGISTER_LOGGING=y  # Valid debug symbol — enables register trace logging
+CONFIG_DRM_FBDEV_EMULATION=y
+CONFIG_SYNC_FILE=y               # Redundant (auto-selected by DRM_MSM) but explicit
+CONFIG_QCOM_LLCC=y               # Last-Level Cache Controller — soft-dep of DRM_MSM on SDM660-class
+
+# Panel Selection
+# Removed: CONFIG_DRM_PANEL_ORISETECH_OTM1911A — phantom symbol.
+#   No OTM1911A driver exists in mainline Linux (any version through 7.1).
+#   The panel node in sdm636-nokia-frt.dts is commented out pending Track B
+#   (see docs/task-phases/phase_2_gpu_track.md).
+
+# Framebuffer & Console Support
+CONFIG_FRAMEBUFFER_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+CONFIG_FB_SIMPLE=y
+CONFIG_LOGO=y
+CONFIG_FB=y
+CONFIG_FB_DEVICE=y
+
+# GPU State Capture — hidden auto-config (no menuconfig prompt).
+# Auto-enabled when DEBUG_FS or DEV_COREDUMP is set.
+# Covers ALL Adreno generations (A5xx and A6xx) via DRM_MSM_GPU_STATE guards
+# in a5xx_gpu_state.c and a6xx_gpu_state.c.
+CONFIG_DRM_MSM_GPU_STATE=y
+CONFIG_FW_LOADER=y
+CONFIG_FW_LOADER_USER_HELPER=n
 CONFIG_BACKLIGHT_QCOM_WLED=y    # Qualcomm WLED backlight
-CONFIG_FRAMEBUFFER_CONSOLE=y    # ENABLED for debugging
-CONFIG_FB=y                     # Enable core framebuffer support
-CONFIG_FB_DEVICE=y              # Enable /dev/fb0 interface
-CONFIG_FB_SIMPLE=y              # simplefb for bootloader splash
 
 # ─── Networking ────────────────────────────────────────────────────────────────
 CONFIG_NET=y
@@ -200,6 +229,8 @@ CONFIG_PINCTRL_QCOM_SPMI_PMIC=y
 # Level 5: Clock controllers (needs COMMON_CLK_QCOM + QCOM_SMD_RPM)
 CONFIG_COMMON_CLK_QCOM=y
 CONFIG_QCOM_CLK_SMD_RPM=y
+CONFIG_QCOM_CLK_RPM=y
+CONFIG_QCOM_CLK_RPMH=y
 CONFIG_QCOM_A53PLL=y
 CONFIG_QCOM_CLK_APCS_MSM8916=y
 CONFIG_SDM_GCC_660=y

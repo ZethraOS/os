@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build_kernel.sh — Download, configure, and compile Linux 6.9 kernel for Nokia 6.1 Plus
+# build_kernel.sh — Download, configure, and compile Linux 7.1 kernel for Nokia 6.1 Plus
 # SPDX-License-Identifier: Apache-2.0
 #
 # REPRODUCIBILITY: This script now tracks all build inputs and outputs for verification.
@@ -9,7 +9,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 OUT_DIR="$REPO_ROOT/build/out"
-KERNEL_VERSION="6.9"
+KERNEL_VERSION="7.1"
 KERNEL_DIR="$REPO_ROOT/linux-$KERNEL_VERSION"
 KERNEL_TARBALL="$REPO_ROOT/linux-$KERNEL_VERSION.tar.xz"
 
@@ -31,7 +31,7 @@ if [[ ! -d "$KERNEL_DIR" ]]; then
   
   if [[ ! -f "$KERNEL_TARBALL" ]]; then
     info "Downloading Linux $KERNEL_VERSION source tarball..."
-    curl -L -o "$KERNEL_TARBALL" "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-$KERNEL_VERSION.tar.xz"
+    curl -L -o "$KERNEL_TARBALL" "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$KERNEL_VERSION.tar.xz"
   fi
   
   info "Extracting kernel source..."

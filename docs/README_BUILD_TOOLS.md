@@ -1,7 +1,7 @@
 # ZethraOS Nokia 6.1 Plus Boot Bring-Up: Complete Implementation Summary
 
 **Date**: 2026-06-11  
-**Status**: Gate 0 Reproducibility Implementation Complete ✅  
+**Status**: Historical build-tool implementation summary; Phase 1 completed on 2026-06-13
 **Target Device**: Nokia 6.1 Plus (TA-1103) / SDM636  
 **Working Branch**: `feature/hardware-boot-target`
 
@@ -16,7 +16,9 @@
 **Fixes Applied**:
 1. **Device References Corrected**:
    - PMIC: `CONFIG_QCOM_PM8953` → `CONFIG_QCOM_PM660` + `CONFIG_QCOM_PM660L` (actual device)
-   - Panel: `CONFIG_DRM_PANEL_TRULY_NT35597_WQXGA` → `CONFIG_DRM_PANEL_OTM1911A_FHD` (actual panel)
+   - Panel identification corrected from NT35597 to OTM1911A based on vendor
+     metadata. Linux 6.9 does not provide a matching OTM1911A panel config
+     symbol or driver.
    - Added notes explaining Zethra custom symbols don't exist in mainline
 
 2. **Early Console & Diagnostics Restored**:
@@ -421,11 +423,14 @@ $ adb shell dmesg | head
 ## Production Readiness Checklist
 
 - [x] Gate 0: Reproducible build (scripts + documentation created)
-- [ ] Gate 1: TWRP repack validation (next)
-- [ ] Gate 2: Early console proven (test on device)
-- [ ] Gate 3: PID 1 reach proven (test on device)
+- [x] Gate 1: Boot tooling control recorded complete
+- [x] Gate 2: Device console proven on 2026-06-13
+- [x] Gate 3: `zethrad` PID 1 and core daemons recorded on-device
 - [ ] Gate 4: Basic hardware subsystems (incremental)
-- [ ] Gate 5: Rust services bootable
+- [x] Gate 5: Initial Rust services booted under `zethrad`
+
+Evidence strength and remaining repeat-boot work are tracked in
+[task-phases/phase_1_verification_matrix.md](task-phases/phase_1_verification_matrix.md).
 - [ ] Production release
 
 ---
@@ -538,7 +543,6 @@ git push origin v0.2.0
 ---
 
 **Document Created**: 2026-06-11  
-**Status**: Complete ✅  
-**Next**: Attempt N+1 boot test (Gate 2 - Early Console Validation)
-
-🚀 **Ready to proceed with reproducible boot test!**
+**Status**: Superseded as a live status page by the
+[Phase 1 verification matrix](task-phases/phase_1_verification_matrix.md).
+**Next**: Re-capture durable `v0.3.0` device evidence before flashing Phase 2.

@@ -13,7 +13,10 @@ ZethraOS is a mobile operating system built on four principles:
 
 ## Layer 1: Linux Kernel
 
-ZethraOS uses an unmodified upstream Linux 6.x kernel. We do not fork the kernel — we contribute patches upstream where possible, and carry a minimal set of out-of-tree patches for hardware support.
+ZethraOS uses an upstream Linux 6.x base plus a minimal, reviewable set of
+out-of-tree patches and board files for hardware enablement. The project should
+upstream generally useful changes where possible and keep every carried patch
+traceable while it remains downstream.
 
 **Why not fork?**
 - Forks diverge quickly from security fixes

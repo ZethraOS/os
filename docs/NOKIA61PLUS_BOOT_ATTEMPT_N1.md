@@ -6,6 +6,12 @@
 
 ---
 
+> [!WARNING]
+> This is a historical attempt procedure, not the current Phase 1 status or a
+> safe copy-and-paste flashing guide. Phase 1 completed on 2026-06-13. Consult
+> [task-phases/phase_1_verification_matrix.md](task-phases/phase_1_verification_matrix.md)
+> and explicitly identify the active and rollback slots before any device write.
+
 ## Pre-Boot Checklist
 
 ### Device Setup (First Time Only)

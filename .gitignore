@@ -3,7 +3,6 @@
 /patches/tests/
 **/*.patch
 !/kernel/patches/*.patch
-Cargo.lock
 .env
 *.key
 *.pem
