@@ -1,0 +1,29 @@
+# ZethraOS Boot Image Parameters — 2026-06-19T17:25:09Z
+# Device: Nokia 6.1 Plus (TA-1103) / SDM636
+# Purpose: Reproducible boot image generation
+
+## Android Boot Header (v0)
+header_version:      0
+page_size:           4096
+base:                0x0
+kernel_offset:       0x8000
+ramdisk_offset:      0x01000000
+second_offset:       0x00f00000
+tags_offset:         0x100
+
+## OS Parameters
+os_version:          10.0.0
+os_patch_level:      2021-08
+
+## Kernel Command Line
+cmdline:             earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 panic=10 buildvariant=userdebug panel_orisetech_otm1911a.mock_attach=1 msm.debug_checkpoint=14
+
+## Input Artifacts
+kernel_sha256:       5e7a1e69df3aeb8404f3c42e2a3887e96e89292ae49373472fbb6a2f4a8aa47a
+initramfs_sha256:    4133c02f08a189d91d43ba36ac3457fcba3cc75f905c93e6cf033f56f49d4539
+
+## Reference: Stock/TWRP Parameters (from RCA)
+# Stock:  header=0, page=4096, base=0, kernel_off=0x8000
+#         ramdisk_off=0x01000000, second_off=0x00f00000, tags_off=0x100
+# TWRP:   same as stock
+# Custom: should match above for compatibility

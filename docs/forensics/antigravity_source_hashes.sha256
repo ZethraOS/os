@@ -1,0 +1,13 @@
+# SHA-256 of ignored source files preserved on 2026-06-21
+f77ef8c8c46b46668e7ea1df572b14e428b19fd592957f2541a2b91462f0fc01  drivers/gpio/gpiolib.c
+7769c67d11b87740623fa33cb423b625b1e5856cc28ed2005a0357f5a16414aa  drivers/hwspinlock/qcom_hwspinlock.c
+716e013d16db999a108450663421917afc0f040bcb52505800d222b8a5684789  drivers/pinctrl/qcom/pinctrl-msm.c
+bd8d213ca3d777c7d8fcafd59e62a4ea4b69c6c138d3bc39625cbea2a24e0c36  drivers/gpu/drm/clients/drm_client_setup.c
+b9d4a24939ace268c12d79359a7384f803122fcf7bf5bf61a7c86a1e26dbd2c0  drivers/gpu/drm/clients/drm_fbdev_client.c
+7ce36440c75c7513d68e33a529bca0a230e21e32b640384c591c32b0dd7ed9b9  drivers/gpu/drm/drm_client.c
+f749d6dd9bbf95ea3d1dee5ef0a925b30d48f14edcf3a0613a631b069d269fe6  drivers/gpu/drm/drm_drv.c
+04bba3a8a81f95db668456ece4244b7150832aac1a1f23fe71325a0e39e47456  drivers/gpu/drm/drm_fb_helper.c
+1af14c5ceddbca38b8e1ff5fd5b3ff55eb627d1c742b48da5c6da40c32a5941f  drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
+b8cb0cd1721ba1c99f625a279df3d8e02198a57822772ce0b0a9f184ff391455  drivers/gpu/drm/msm/msm_drv.c
+1dfc780c6b41519485a52c2f2610b16e6a36c6c612e0cdbfa9ccac8b2348d670  drivers/gpu/drm/msm/msm_kms.c
+a0e56a18747f137ed1c6382ab905c4f42b70108af2af556c3effd586758c0e58  drivers/gpu/drm/panel/panel-orisetech-otm1911a.c

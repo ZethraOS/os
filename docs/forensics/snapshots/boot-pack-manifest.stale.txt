@@ -1,0 +1,26 @@
+# ZethraOS Boot Image Packaging Manifest
+Timestamp:       2026-06-19T17:25:09Z
+Target:          Nokia 6.1 Plus (TA-1103) / SDM636
+
+## Generated Artifacts
+boot.img:        82ca6b67606b0c8eef646c72648052f2961e0e959b8bab3666d52f02a8484fa2 ( 31M)
+vbmeta.img:      0c587b1aec21570f3dba8c4d3460ab2b9e3ba02dd91f4cae0bbb288b6dc0bb15 (4.0K)
+
+## Flash Instructions (RCA Attempt N+1)
+Device setup:
+  1. Enable OEM Unlocking in Developer Options
+  2. Enable USB Debugging
+  3. Connect device via USB
+
+Flash command:
+  fastboot flash boot /Users/nomad/workstation/work/code/OS/Mobile/zethraos/build/out/boot.img
+  fastboot reboot
+
+Recovery logs will be at: /proc/last_kmsg or /proc/kmsg
+Early kernel logs: Run 'adb shell dmesg' after boot
+
+## Known Limitations (RCA Reference)
+- First 51 Zethra symbols may not be in kernel config (custom symbols)
+- ADB over USB requires USB driver to load (part of kernel)
+- Early console via UART at 0xc170000 (115200 baud)
+- Ramoops at 0xacb00000 (records panic logs to /proc/last_kmsg)

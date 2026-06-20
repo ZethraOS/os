@@ -1,0 +1,268 @@
+--- a/drivers/gpu/drm/clients/drm_client_setup.c
++++ b/drivers/gpu/drm/clients/drm_client_setup.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: MIT
+ 
+ #include <linux/export.h>
++#include <linux/delay.h>
+ 
+ #include <drm/clients/drm_client_setup.h>
+ #include <drm/drm_device.h>
+@@ -34,6 +35,16 @@
+  */
+ void drm_client_setup(struct drm_device *dev, const struct drm_format_info *format)
+ {
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 30) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 30 reached (drm_client_setup entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
+ 		drm_dbg(dev, "driver does not support mode-setting, skipping DRM clients\n");
+ 		return;
+@@ -43,6 +54,15 @@
+ 	if (!strcmp(drm_client_default, "fbdev")) {
+ 		int ret;
+ 
++		if (msm_debug_checkpoint == 31) {
++			int i;
++			pr_err("ANTIGRAVITY: Checkpoint 31 reached (pre-fbdev-client-setup)! Stalling...\n");
++			for (i = 0; i < 10; i++) {
++				pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++				ssleep(1);
++			}
++		}
++
+ 		ret = drm_fbdev_client_setup(dev, format);
+ 		if (ret)
+ 			drm_warn(dev, "Failed to set up DRM client; error %d\n", ret);
+--- a/drivers/gpu/drm/clients/drm_fbdev_client.c
++++ b/drivers/gpu/drm/clients/drm_fbdev_client.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: MIT
+ 
++#include <linux/delay.h>
+ #include <drm/drm_client.h>
+ #include <drm/drm_crtc_helper.h>
+ #include <drm/drm_drv.h>
+@@ -49,6 +50,16 @@
+ 
+ static int drm_fbdev_client_hotplug(struct drm_client_dev *client)
+ {
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 36) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 36 reached (drm_fbdev_client_hotplug entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
+ 	struct drm_device *dev = client->dev;
+ 	int ret;
+@@ -63,6 +74,15 @@
+ 	if (!drm_drv_uses_atomic_modeset(dev))
+ 		drm_helper_disable_unused_functions(dev);
+ 
++	if (msm_debug_checkpoint == 37) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 37 reached (pre-fb-helper-initial-config)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	ret = drm_fb_helper_initial_config(fb_helper);
+ 	if (ret)
+ 		goto err_drm_fb_helper_fini;
+@@ -125,6 +145,16 @@
+  */
+ int drm_fbdev_client_setup(struct drm_device *dev, const struct drm_format_info *format)
+ {
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 32) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 32 reached (drm_fbdev_client_setup entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	struct drm_fb_helper *fb_helper;
+ 	unsigned int color_mode;
+ 	int ret;
+@@ -165,6 +195,15 @@
+ 		goto err_drm_client_init;
+ 	}
+ 
++	if (msm_debug_checkpoint == 33) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 33 reached (pre-client-register)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	drm_client_register(&fb_helper->client);
+ 
+ 	return 0;
+--- a/drivers/gpu/drm/drm_client.c
++++ b/drivers/gpu/drm/drm_client.c
+@@ -4,6 +4,7 @@
+  */
+ 
+ #include <linux/export.h>
++#include <linux/delay.h>
+ #include <linux/iosys-map.h>
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+@@ -123,6 +124,16 @@
+  */
+ void drm_client_register(struct drm_client_dev *client)
+ {
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 34) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 34 reached (drm_client_register entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	struct drm_device *dev = client->dev;
+ 	int ret;
+ 
+@@ -140,6 +151,15 @@
+ 		 * Hold the clientlist_mutex as for a regular hotplug
+ 		 * event.
+ 		 */
++		if (msm_debug_checkpoint == 35) {
++			int i;
++			pr_err("ANTIGRAVITY: Checkpoint 35 reached (pre-client-hotplug-call)! Stalling...\n");
++			for (i = 0; i < 10; i++) {
++				pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++				ssleep(1);
++			}
++		}
++
+ 		ret = client->funcs->hotplug(client);
+ 		if (ret)
+ 			drm_dbg_kms(dev, "client hotplug ret=%d\n", ret);
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -30,6 +30,7 @@
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+ #include <linux/console.h>
++#include <linux/delay.h>
+ #include <linux/export.h>
+ 
+ #include <drm/drm_atomic.h>
+@@ -1616,6 +1617,7 @@
+ static int
+ __drm_fb_helper_initial_config_and_unlock(struct drm_fb_helper *fb_helper)
+ {
++	extern int msm_debug_checkpoint;
+ 	struct drm_device *dev = fb_helper->dev;
+ 	struct fb_info *info;
+ 	unsigned int width, height;
+@@ -1623,15 +1625,42 @@
+ 
+ 	width = dev->mode_config.max_width;
+ 	height = dev->mode_config.max_height;
++
++	if (msm_debug_checkpoint == 38) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 38 reached (pre-modeset-probe)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
+ 
+ 	drm_client_modeset_probe(&fb_helper->client, width, height);
+ 
++	if (msm_debug_checkpoint == 39) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 39 reached (pre-alloc-info)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	info = drm_fb_helper_alloc_info(fb_helper);
+ 	if (IS_ERR(info)) {
+ 		mutex_unlock(&fb_helper->lock);
+ 		return PTR_ERR(info);
+ 	}
+ 
++	if (msm_debug_checkpoint == 40) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 40 reached (pre-single-fb-probe)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	ret = drm_fb_helper_single_fb_probe(fb_helper);
+ 	if (ret < 0) {
+ 		if (ret == -EAGAIN) {
+@@ -1642,6 +1671,16 @@
+ 
+ 		goto err_drm_fb_helper_release_info;
+ 	}
++
++	if (msm_debug_checkpoint == 41) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 41 reached (pre-setup-crtcs-fb)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	drm_setup_crtcs_fb(fb_helper);
+ 
+ 	fb_helper->deferred_setup = false;
+@@ -1653,10 +1692,28 @@
+ 	 * register the fbdev emulation instance in kernel_fb_helper_list. */
+ 	mutex_unlock(&fb_helper->lock);
+ 
++	if (msm_debug_checkpoint == 42) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 42 reached (pre-register-framebuffer)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0)
+ 		return ret;
+ 
++	if (msm_debug_checkpoint == 43) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 43 reached (post-register-framebuffer)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	drm_info(dev, "fb%d: %s frame buffer device\n",
+ 		 info->node, info->fix.id);
+ 

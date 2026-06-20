@@ -1,0 +1,7 @@
+# SHA-256 of local generated artifacts preserved on 2026-06-21
+08a1bc63c7a803216e22981b9a8abfa809832db8488643bb8913588e749617ec  build/out/Image.gz
+0cd1f1b96c9f47286dc720b618dd0133f6c0443c62318f9cb243beb15e56e689  build/out/Image.gz-dtb
+7e97af1b385c89e39cfb62e6cab2e1c385432024ece30b284ae9140283086947  build/out/sdm636-nokia-frt.dtb
+0add849ec0f9bce84c121845ea124707dc8e72fcaf2703aff84e9e97826a5c97  build/out/boot.img
+5a26b8fa4258dc7f2a8ef7683ef1acac9b2ed332d802d9ea4f46255643a3a7f0  build/out/.boot-image-params.txt
+223716e23abc2b9c49fbd0d0538c67b8438bf90707c62a6217bc52b738b07fe3  build/out/.boot-pack-manifest.txt
