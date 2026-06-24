@@ -2,8 +2,9 @@
 # build_kernel.sh — Download, configure, and compile Linux 7.1 kernel for Nokia 6.1 Plus
 # SPDX-License-Identifier: Apache-2.0
 #
-# REPRODUCIBILITY: This script now tracks all build inputs and outputs for verification.
+# REPRODUCIBILITY: This script tracks all build inputs and outputs for verification.
 # Build metadata is recorded in build/out/.kernel-build-manifest.txt
+# Per-experiment JSON records are written to build/out/experiments/<experiment-id>.json
 
 set -euo pipefail
 
@@ -19,6 +20,21 @@ info()    { echo -e "${CYAN}==>${RESET} $*"; }
 success() { echo -e "${GREEN}✓${RESET}  $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${RESET} $*"; }
 error()   { echo -e "${RED}[ERROR]${RESET} $*"; exit 1; }
+
+# ─── Build environment image ─────────────────────────────────────────────────
+BUILD_IMAGE="zethra-build-env:1"
+
+ensure_build_image() {
+  if ! docker image inspect "$BUILD_IMAGE" &>/dev/null; then
+    warn "Build image '$BUILD_IMAGE' not found. Building it now (one-time, ~5-10 min)..."
+    bash "$REPO_ROOT/build/docker/build_image.sh"
+    success "Build image ready: $BUILD_IMAGE"
+  fi
+}
+
+# ─── Persistent cache volumes ─────────────────────────────────────────────────
+CCACHE_DIR="${CCACHE_DIR:-$HOME/.ccache}"
+mkdir -p "$CCACHE_DIR"
 
 echo "=================================================="
 echo "    ZethraOS Linux Kernel Builder"
@@ -141,26 +157,17 @@ EXP_JSON="$MIFE_DIR/${EXPERIMENT_ID}.json"
 } > "$MANIFEST_FILE"
 success "Manifest started: $MANIFEST_FILE"
 
-# ─── Step 3: Compile Kernel ───────────────────────────────────────────────
+# ─── Step 3: Compile Kernel ─────────────────────────────────────────────────────
 build_in_docker() {
-  info "Compiling inside Docker container (ubuntu:24.04)..."
-  
-  # Ensure docker is running
+  info "Compiling inside Docker container ($BUILD_IMAGE)..."
+
   if ! docker ps &>/dev/null; then
-    echo "Error: Docker is not running or not accessible."
-    exit 1
+    error "Docker is not running or not accessible."
   fi
 
-  # F-09 FIX: Verify mkbootimg binary SHA-256 before running it.
-  # This binary has full control over the boot image layout — must be trusted.
-  MKBOOTIMG_SHA256_EXPECTED="b09ac0a84e4dc06a77c7eb5c2d551440f36ef0f02d3f87a8c7ed246fcfe00abc"
+  ensure_build_image
 
-  # F-14 FIX: Mount a persistent ccache directory to speed up rebuilds.
-  # First build ~35 min; subsequent builds with ccache ~3-5 min.
-  CCACHE_DIR="${CCACHE_DIR:-$HOME/.ccache}"
-  mkdir -p "$CCACHE_DIR"
-
-  # Capture FULL_CMDLINE for Docker interpolation (escape for bash -c heredoc)
+  # Capture FULL_CMDLINE for Docker interpolation
   DOCKER_CMDLINE="$FULL_CMDLINE"
 
   docker run --rm \
@@ -169,27 +176,20 @@ build_in_docker() {
     -e CCACHE_DIR=/ccache \
     -e EXPERIMENT_ID="$EXPERIMENT_ID" \
     -w /workspace \
-    ubuntu:24.04 bash -c "
-      apt-get update -qq && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-        ccache wget xz-utils gcc-aarch64-linux-gnu bc libssl-dev flex bison make python3 python3-pip && \
-      wget -q -O /usr/bin/mkbootimg https://launchpadlibrarian.net/810765814/mkbootimg && \
-      chmod +x /usr/bin/mkbootimg && \
-      ACTUAL_MKBOOTIMG_SHA256=\"\$(sha256sum /usr/bin/mkbootimg | awk '{print \$1}')\" && \
-      if [ \"\$ACTUAL_MKBOOTIMG_SHA256\" != \"$MKBOOTIMG_SHA256_EXPECTED\" ]; then \
-        echo 'ERROR: mkbootimg SHA-256 MISMATCH' && exit 1; \
-      fi && \
-      echo \"mkbootimg SHA-256 verified: \$ACTUAL_MKBOOTIMG_SHA256\" && \
+    "$BUILD_IMAGE" bash -c "
       cd linux-$KERNEL_VERSION && \
       make ARCH=arm64 zethra_defconfig && \
-      make ARCH=arm64 CROSS_COMPILE=\"ccache aarch64-linux-gnu-\" KBUILD_BUILD_USER=zethra KBUILD_BUILD_HOST=zethra-build KBUILD_BUILD_TIMESTAMP=\"Fri Jun 12 17:00:00 UTC 2026\" KBUILD_BUILD_VERSION=1 -j\$(nproc) Image.gz dtbs && \
+      make ARCH=arm64 CROSS_COMPILE='ccache aarch64-linux-gnu-' \
+           KBUILD_BUILD_USER=zethra KBUILD_BUILD_HOST=zethra-build \
+           KBUILD_BUILD_TIMESTAMP='Fri Jun 12 17:00:00 UTC 2026' \
+           KBUILD_BUILD_VERSION=1 -j\$(nproc) Image.gz dtbs && \
       cp arch/arm64/boot/Image.gz /workspace/build/out/ && \
       cp arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dtb /workspace/build/out/ && \
       cp arch/arm64/boot/Image.gz /workspace/build/out/Image.gz-dtb && \
       cat arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dtb >> /workspace/build/out/Image.gz-dtb && \
       cd /workspace && \
       if [ -f 'build/out/initramfs.cpio.gz' ]; then \
-        echo 'Packing boot.img inside Docker...' && \
+        echo 'Packing boot.img...' && \
         mkbootimg \
           --header_version 0 \
           --kernel         build/out/Image.gz-dtb \
@@ -204,7 +204,7 @@ build_in_docker() {
           --os_patch_level 2021-08 \
           --cmdline        '$DOCKER_CMDLINE' \
           --output         build/out/boot.img && \
-          python3 tools/avbtool add_hash_footer \
+        python3 tools/avbtool add_hash_footer \
           --image          build/out/boot.img \
           --partition_name boot \
           --dynamic_partition_size \
