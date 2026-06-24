@@ -18,6 +18,12 @@ Exit codes:
   0  — Timed out (device stayed up, did not return to fastboot)
   1  — Device returned to fastboot (crash-loop or clean reboot)
   2  — Error (fastboot not found, device not detected)
+
+Notes:
+  - Requires Python 3.11+ (uses datetime.UTC for timezone-aware timestamps)
+  - Must be run AFTER the device has been rebooted (fastboot reboot). The script
+    first waits for the device to DISAPPEAR from fastboot (confirming reboot started),
+    then measures how long until it REAPPEARS (crash-loop) or times out (booted).
 """
 
 import subprocess
@@ -26,6 +32,7 @@ import sys
 import json
 import argparse
 import datetime
+from datetime import UTC
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 CRASH_LOOP_THRESHOLD_S = 20.0   # < 20s = crash-loop (watchdog fires at ~10s)
@@ -61,9 +68,24 @@ def main():
     print(f"[time_reboot_cycle] Experiment: {experiment_id}")
     print(f"[time_reboot_cycle] Polling for fastboot return. Timeout: {timeout}s.")
     print(f"[time_reboot_cycle] Crash-loop threshold: {CRASH_LOOP_THRESHOLD_S}s.")
-    print(f"[time_reboot_cycle] Started at: {datetime.datetime.utcnow().isoformat()}Z")
+    print(f"[time_reboot_cycle] Started at: {datetime.datetime.now(UTC).isoformat()}")
     print()
 
+    # Phase 1: Wait for the device to DISAPPEAR from fastboot (confirms reboot started).
+    # This prevents a false crash-loop=0.0s result when the device is already in fastboot
+    # at script start (e.g., immediately after 'fastboot reboot' is issued).
+    print("[time_reboot_cycle] Phase 1: Waiting for device to leave fastboot...")
+    disappear_deadline = time.monotonic() + 30  # 30s to leave fastboot
+    while time.monotonic() < disappear_deadline:
+        if not device_in_fastboot():
+            print("[time_reboot_cycle] Device has left fastboot. Reboot confirmed.")
+            break
+        time.sleep(POLL_INTERVAL_S)
+    else:
+        print("[time_reboot_cycle] WARNING: Device did not leave fastboot within 30s.")
+        print("[time_reboot_cycle] Was 'fastboot reboot' issued before running this script?")
+
+    print("[time_reboot_cycle] Phase 2: Measuring time until device returns to fastboot...")
     start = time.monotonic()
 
     while True:
@@ -97,7 +119,7 @@ def _write_result(output_path: str, experiment_id: str, elapsed: float,
                   category: str, timeout: int):
     record = {
         "experiment_id":  experiment_id,
-        "timestamp":      datetime.datetime.utcnow().isoformat() + "Z",
+        "timestamp":      datetime.datetime.now(UTC).isoformat(),
         "timeout_s":      timeout,
         "elapsed_s":      round(elapsed, 2),
         "outcome":        category,
