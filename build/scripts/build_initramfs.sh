@@ -170,17 +170,27 @@ if [[ -d "$REPO_ROOT/build/configs/units" ]]; then
   success "Copied system unit configs"
 fi
 
-# Copy GPU firmware files
+# Copy GPU firmware files (non-fatal: missing blobs are acceptable for headless/DRM-off builds)
 if [[ -d "$REPO_ROOT/kernel/firmware/qcom" ]]; then
   info "Packaging GPU firmware blobs..."
   mkdir -p "$STAGE_DIR/lib/firmware/qcom"
-  cp "$REPO_ROOT"/kernel/firmware/qcom/a530* "$STAGE_DIR/lib/firmware/qcom/"
-  cp "$REPO_ROOT"/kernel/firmware/qcom/a512* "$STAGE_DIR/lib/firmware/qcom/"
-  # Run validation
-  (cd "$STAGE_DIR/lib/firmware/qcom" && ls | grep -E "a530|a512" > /dev/null)
-  success "GPU firmware blobs packaged successfully"
+  FW_COUNT=0
+  for pattern in a530 a512 a509; do
+    if ls "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* &>/dev/null 2>&1; then
+      cp "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* "$STAGE_DIR/lib/firmware/qcom/"
+      FW_COUNT=$((FW_COUNT + $(ls "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* | wc -l)))
+    else
+      warn "No ${pattern}* firmware blobs found in kernel/firmware/qcom/ (non-fatal for DRM=n builds)"
+    fi
+  done
+  if [[ "$FW_COUNT" -gt 0 ]]; then
+    success "GPU firmware blobs packaged: $FW_COUNT file(s)"
+  else
+    warn "No GPU firmware blobs found — GPU acceleration will not work at boot"
+    warn "This is expected and harmless for headless (Image 01) and drm-nodisp (Image 02) experiments"
+  fi
 else
-  warn "kernel/firmware/qcom not found, GPU acceleration may fail at boot"
+  warn "kernel/firmware/qcom not found — GPU acceleration may fail at boot"
 fi
 
 # Create base-setup helper script
