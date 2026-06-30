@@ -230,7 +230,7 @@ try:
     rec["result"]["flash_timestamp"] = "$FLASH_TIMESTAMP"
     rec["result"]["timing_seconds"]  = "$TIMING_SEC"
     rec["result"]["outcome"]         = "$OUTCOME"
-    rec["result"]["acm_alive"]       = $([[ "$ACM_ALIVE" == "true" ]] && echo "true" || echo "false")
+    rec["result"]["acm_alive"]       = $([[ "$ACM_ALIVE" == "true" ]] && echo "True" || echo "False")
     rec["result"]["preflash_log"]    = "$(basename "$PREFLASH_LOG")"
     rec["result"]["slot_b_retries_before"] = "$RETRY_B"
     with open(path, "w") as f:
