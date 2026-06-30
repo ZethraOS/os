@@ -63,7 +63,10 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
 # If kernel.org ever changes this binary, the build fails loudly here — not at
 # runtime inside a flash loop.
 ARG MKBOOTIMG_URL=https://launchpadlibrarian.net/810765814/mkbootimg
-ARG MKBOOTIMG_SHA256=b09ac0a84e4dc06a77c7eb5c2d551440f36ef0f02d3f87a8c7ed246fcfe00abc
+# SHA-256 verified 2026-06-30 by direct download and inspection.
+# File is a Python 3 script (AOSP copyright 2015) — architecture-independent.
+# If this ever mismatches, re-verify at: https://launchpad.net/ubuntu/+source/android-sdk-meta
+ARG MKBOOTIMG_SHA256=b682574d42fd5c5cb852e7e76996b0e460808f10f47d81fc01e7f6db1697da4e
 
 RUN curl -fsSL -o /usr/local/bin/mkbootimg "${MKBOOTIMG_URL}" && \
     ACTUAL="$(sha256sum /usr/local/bin/mkbootimg | awk '{print $1}')" && \
