@@ -121,9 +121,10 @@ if [[ -n "$CONFIG_FRAGMENT" ]]; then
   docker run --rm \
     -v "$REPO_ROOT:/workspace" \
     -e ARCH=arm64 \
-    -w /workspace \
+    -e CROSS_COMPILE=aarch64-linux-gnu- \
+    -w /workspace/linux-7.1 \
     "$BUILD_IMAGE" bash -c "
-      linux-7.1/scripts/kconfig/merge_config.sh \
+      scripts/kconfig/merge_config.sh \
         -O /workspace/build/tmp \
         /workspace/${DEFCONFIG_REL} \
         /workspace/${FRAG_REL}
