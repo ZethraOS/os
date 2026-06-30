@@ -17,3 +17,4 @@
 *.tar.xz
 
 tools/test_key.pem
+build/scripts/__pycache__/
