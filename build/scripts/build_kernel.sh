@@ -101,19 +101,19 @@ else
 fi
 
 # F-13 / CONFIG_FRAGMENT: Merge per-experiment config fragment into defconfig.
-# IMPORTANT: merge_config.sh uses 'readlink -m' (GNU coreutils) which does NOT exist on
-# macOS (BSD readlink). We therefore run it inside the zethra-build-env:1 Docker container
-# where GNU coreutils are available. This is the only HOST-OS-safe approach.
+# Approach: use -m flag (merge only, skip make) + write .config directly into
+# linux-7.1/ (no -O flag) to avoid the 'source tree not clean' error that
+# occurs when -O specifies an out-of-tree dir on an already-built source tree.
+# We then run 'make olddefconfig' to fill in any missing symbol defaults.
 CONFIG_FRAGMENT="${CONFIG_FRAGMENT:-}"
+FRAGMENT_MERGED=0
 if [[ -n "$CONFIG_FRAGMENT" ]]; then
   if [[ ! -f "$CONFIG_FRAGMENT" ]]; then
     error "CONFIG_FRAGMENT set but file not found: $CONFIG_FRAGMENT"
   fi
   info "Merging config fragment: $(basename "$CONFIG_FRAGMENT")"
-  MERGED_DEFCONFIG="$REPO_ROOT/build/tmp/zethra_defconfig_merged"
-  mkdir -p "$REPO_ROOT/build/tmp"
 
-  # Compute container-relative paths (all paths under $REPO_ROOT → /workspace/...)
+  # Compute container-relative paths
   FRAG_REL="${CONFIG_FRAGMENT#$REPO_ROOT/}"
   DEFCONFIG_REL="kernel/zethra_defconfig"
 
@@ -124,15 +124,13 @@ if [[ -n "$CONFIG_FRAGMENT" ]]; then
     -e CROSS_COMPILE=aarch64-linux-gnu- \
     -w /workspace/linux-7.1 \
     "$BUILD_IMAGE" bash -c "
-      scripts/kconfig/merge_config.sh \
-        -O /workspace/build/tmp \
+      scripts/kconfig/merge_config.sh -m \
         /workspace/${DEFCONFIG_REL} \
-        /workspace/${FRAG_REL}
+        /workspace/${FRAG_REL} && \
+      make ARCH=arm64 olddefconfig
     "
-  cp "$REPO_ROOT/build/tmp/.config" "$MERGED_DEFCONFIG"
-  # Install merged result as the effective defconfig for this build
-  cp "$MERGED_DEFCONFIG" "$KERNEL_DIR/arch/arm64/configs/zethra_defconfig"
-  success "Config fragment merged: $(basename "$CONFIG_FRAGMENT")"
+  FRAGMENT_MERGED=1
+  success "Config fragment merged into linux-7.1/.config"
 fi
 
 # F-EXPERIMENT-ID: Generate a unique build identifier for this run.
@@ -210,12 +208,17 @@ build_in_docker() {
     -e EXPERIMENT_ID="$EXPERIMENT_ID" \
     -w /workspace \
     "$BUILD_IMAGE" bash -c "
-      cd linux-$KERNEL_VERSION && \
-      make ARCH=arm64 zethra_defconfig && \
-      make ARCH=arm64 CROSS_COMPILE='ccache aarch64-linux-gnu-' \
-           KBUILD_BUILD_USER=zethra KBUILD_BUILD_HOST=zethra-build \
-           KBUILD_BUILD_TIMESTAMP='Fri Jun 12 17:00:00 UTC 2026' \
-           KBUILD_BUILD_VERSION=1 -j\$(nproc) Image.gz dtbs && \
+       cd linux-$KERNEL_VERSION && \
+       if [ \"$FRAGMENT_MERGED\" = \"1\" ]; then \
+         echo 'Using pre-merged .config — running olddefconfig...' && \
+         make ARCH=arm64 olddefconfig; \
+       else \
+         make ARCH=arm64 zethra_defconfig; \
+       fi && \
+       make ARCH=arm64 CROSS_COMPILE='ccache aarch64-linux-gnu-' \
+            KBUILD_BUILD_USER=zethra KBUILD_BUILD_HOST=zethra-build \
+            KBUILD_BUILD_TIMESTAMP='Fri Jun 12 17:00:00 UTC 2026' \
+            KBUILD_BUILD_VERSION=1 -j\$(nproc) Image.gz dtbs && \
       cp arch/arm64/boot/Image.gz /workspace/build/out/ && \
       cp arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dtb /workspace/build/out/ && \
       cp arch/arm64/boot/Image.gz /workspace/build/out/Image.gz-dtb && \
