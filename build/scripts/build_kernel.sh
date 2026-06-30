@@ -100,25 +100,36 @@ else
   info "Kernel source found at $KERNEL_DIR"
 fi
 
-# F-13 / CONFIG_FRAGMENT: If a per-experiment config fragment is provided via env var,
-# merge it on top of the base defconfig now — before copying into the kernel tree.
-# merge_config.sh only exists after tarball extraction (above), so this is safe here.
+# F-13 / CONFIG_FRAGMENT: Merge per-experiment config fragment into defconfig.
+# IMPORTANT: merge_config.sh uses 'readlink -m' (GNU coreutils) which does NOT exist on
+# macOS (BSD readlink). We therefore run it inside the zethra-build-env:1 Docker container
+# where GNU coreutils are available. This is the only HOST-OS-safe approach.
 CONFIG_FRAGMENT="${CONFIG_FRAGMENT:-}"
 if [[ -n "$CONFIG_FRAGMENT" ]]; then
   if [[ ! -f "$CONFIG_FRAGMENT" ]]; then
     error "CONFIG_FRAGMENT set but file not found: $CONFIG_FRAGMENT"
   fi
   info "Merging config fragment: $(basename "$CONFIG_FRAGMENT")"
-  # Use the kernel's own merge_config.sh to correctly handle =n overrides.
-  # Output goes to a temp file; we then use that as the effective defconfig.
   MERGED_DEFCONFIG="$REPO_ROOT/build/tmp/zethra_defconfig_merged"
   mkdir -p "$REPO_ROOT/build/tmp"
-  ARCH=arm64 "$KERNEL_DIR/scripts/kconfig/merge_config.sh" \
-    -O "$REPO_ROOT/build/tmp" \
-    "$REPO_ROOT/kernel/zethra_defconfig" \
-    "$CONFIG_FRAGMENT"
+
+  # Compute container-relative paths (all paths under $REPO_ROOT → /workspace/...)
+  FRAG_REL="${CONFIG_FRAGMENT#$REPO_ROOT/}"
+  DEFCONFIG_REL="kernel/zethra_defconfig"
+
+  ensure_build_image
+  docker run --rm \
+    -v "$REPO_ROOT:/workspace" \
+    -e ARCH=arm64 \
+    -w /workspace \
+    "$BUILD_IMAGE" bash -c "
+      linux-7.1/scripts/kconfig/merge_config.sh \
+        -O /workspace/build/tmp \
+        /workspace/${DEFCONFIG_REL} \
+        /workspace/${FRAG_REL}
+    "
   cp "$REPO_ROOT/build/tmp/.config" "$MERGED_DEFCONFIG"
-  # Copy merged result as a pre-set .config instead of using defconfig target.
+  # Install merged result as the effective defconfig for this build
   cp "$MERGED_DEFCONFIG" "$KERNEL_DIR/arch/arm64/configs/zethra_defconfig"
   success "Config fragment merged: $(basename "$CONFIG_FRAGMENT")"
 fi
