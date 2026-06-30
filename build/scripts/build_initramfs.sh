@@ -61,7 +61,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     -v "$CARGO_GIT:/root/.cargo/git" \
     -v "$CCACHE_DIR:/ccache" \
     -e CCACHE_DIR=/ccache \
-    -e CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc \
+    -e CC_aarch64_unknown_linux_musl=musl-gcc \
     -w /workspace \
     "$BUILD_IMAGE" bash -c "
       cargo build --release --target aarch64-unknown-linux-musl && \
@@ -71,7 +71,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
   if command -v cargo &>/dev/null && rustup target list | grep -q "aarch64-unknown-linux-musl (installed)"; then
     info "Host compilation tools found. Building on host..."
-    CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl
+    CC_aarch64_unknown_linux_musl=musl-gcc cargo build --release --target aarch64-unknown-linux-musl
     if command -v busybox &>/dev/null; then
       mkdir -p "$OUT_DIR"
       cp "$(which busybox)" "$OUT_DIR/busybox"
@@ -97,7 +97,7 @@ else
       -v "$CARGO_GIT:/root/.cargo/git" \
       -v "$CCACHE_DIR:/ccache" \
       -e CCACHE_DIR=/ccache \
-      -e CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc \
+      -e CC_aarch64_unknown_linux_musl=musl-gcc \
       -w /workspace \
       "$BUILD_IMAGE" bash -c "
         cargo build --release --target aarch64-unknown-linux-musl && \

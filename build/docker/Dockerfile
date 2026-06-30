@@ -32,6 +32,12 @@ RUN apt-get update -qq && \
         busybox-static cpio gzip \
         # Build tools
         ccache curl wget xz-utils ca-certificates \
+        # Native C runtime — provides Scrt1.o, crti.o needed for host build scripts
+        # on arm64 Docker where aarch64-linux-gnu-gcc lacks its own sysroot.
+        libc6-dev \
+        # musl toolchain for aarch64-unknown-linux-musl Rust target
+        # Provides musl-gcc which wraps native gcc with musl headers and runtime.
+        musl-tools \
         # Debugging / verification utilities
         file binutils-aarch64-linux-gnu \
         binutils xxd \
