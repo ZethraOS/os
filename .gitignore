@@ -16,3 +16,4 @@
 /linux-*/
 *.tar.xz
 
+tools/test_key.pem

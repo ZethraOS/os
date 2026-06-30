@@ -237,6 +237,12 @@ build_in_docker() {
           --os_patch_level 2021-08 \
           --cmdline        '$DOCKER_CMDLINE' \
           --output         build/out/boot.img && \
+        if [ ! -f 'tools/test_key.pem' ]; then \
+          echo '[WARN] tools/test_key.pem not found — generating ephemeral RSA-2048 test key.' && \
+          echo '[WARN] This key is for bringup ONLY. Device is unlocked; AVB warning expected.' && \
+          openssl genrsa -out tools/test_key.pem 2048 2>/dev/null && \
+          echo \"[INFO] test_key.pem SHA-256: \$(sha256sum tools/test_key.pem | awk '{print \$1}')\"; \
+        fi && \
         python3 tools/avbtool add_hash_footer \
           --image          build/out/boot.img \
           --partition_name boot \
