@@ -82,7 +82,7 @@ success "Manifest started: $MANIFEST_FILE"
 info "Compiling kernel..."
 
 build_in_docker() {
-  info "Compiling inside Docker container (ubuntu:24.04)..."
+  info "Compiling inside Docker container (zethra-build-env)..."
   
   # Ensure docker is running
   if ! docker ps &>/dev/null; then
@@ -93,12 +93,8 @@ build_in_docker() {
   docker run --rm \
     -v "$REPO_ROOT:/workspace" \
     -w /workspace \
-    ubuntu:24.04 bash -c "
-      apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        wget xz-utils gcc-aarch64-linux-gnu bc libssl-dev flex bison make python3 python3-pip mkbootimg && \
-      wget -O /usr/bin/mkbootimg https://launchpadlibrarian.net/810765814/mkbootimg && \
-      chmod +x /usr/bin/mkbootimg && \
+    -e BOOT_EXTRA_CMDLINE="${BOOT_EXTRA_CMDLINE:-}" \
+    zethra-build-env bash -c "
       cd linux-$KERNEL_VERSION && \
       make ARCH=arm64 zethra_defconfig && \
       make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- KBUILD_BUILD_USER=zethra KBUILD_BUILD_HOST=zethra-build KBUILD_BUILD_TIMESTAMP=\"Fri Jun 12 17:00:00 UTC 2026\" KBUILD_BUILD_VERSION=1 -j\$(nproc) Image.gz dtbs && \
@@ -107,7 +103,7 @@ build_in_docker() {
       cp arch/arm64/boot/Image.gz /workspace/build/out/Image.gz-dtb && \
       cat arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dtb >> /workspace/build/out/Image.gz-dtb && \
       cd /workspace && \
-      if [ -f "build/out/initramfs.cpio.gz" ]; then \
+      if [ -f \"build/out/initramfs.cpio.gz\" ]; then \
         echo 'Packing boot.img inside Docker...' && \
         mkbootimg \
           --header_version 0 \
@@ -115,15 +111,15 @@ build_in_docker() {
           --ramdisk        build/out/initramfs.cpio.gz \
           --pagesize       4096 \
           --base           0x00000000 \
-          --kernel_offset  0x00200000 \
+          --kernel_offset  0x00008000 \
           --ramdisk_offset 0x01000000 \
           --second_offset  0x00f00000 \
           --tags_offset    0x00000100 \
           --os_version     10.0.0 \
           --os_patch_level 2021-08 \
-          --cmdline        'console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=eng panic=10' \
+          --cmdline        \"console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=eng panic=10 msm.separate_gpu_kms=1 \$BOOT_EXTRA_CMDLINE\" \
           --output         build/out/boot.img && \
-          python3 tools/avbtool add_hash_footer \
+        python3 tools/avbtool add_hash_footer \
           --image          build/out/boot.img \
           --partition_name boot \
           --dynamic_partition_size \
@@ -162,13 +158,13 @@ else
         --ramdisk        "$OUT_DIR/initramfs.cpio.gz" \
         --pagesize       4096 \
         --base           0x00000000 \
-        --kernel_offset  0x00200000 \
+        --kernel_offset  0x00008000 \
         --ramdisk_offset 0x01000000 \
         --second_offset  0x00f00000 \
         --tags_offset    0x00000100 \
         --os_version     10.0.0 \
         --os_patch_level 2021-08 \
-        --cmdline        "console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=eng panic=10" \
+        --cmdline        "console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=eng panic=10 msm.separate_gpu_kms=1 ${BOOT_EXTRA_CMDLINE:-}" \
         --output         "$OUT_DIR/boot.img"
       python3 "$REPO_ROOT/tools/avbtool" add_hash_footer \
         --image          "$OUT_DIR/boot.img" \
