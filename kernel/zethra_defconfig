@@ -80,7 +80,8 @@ CONFIG_DRM_MSM=y
 # Note: DRM_MSM auto-selects: SYNC_FILE, DRM_KMS_HELPER, DRM_SCHED, DRM_PANEL,
 #       DRM_BRIDGE, QCOM_MDT_LOADER, QCOM_SCM, PM_GENERIC_DOMAINS, IOMMU_IO_PGTABLE
 CONFIG_DRM_MSM_DSI=y
-CONFIG_DRM_MSM_DSI_10NM_PHY=y   # SDM636 uses 10nm DSI PHY generation
+CONFIG_DRM_MSM_DSI_10NM_PHY=y
+CONFIG_DRM_MSM_DSI_14NM_PHY=y   # SDM636 uses 14nm DSI PHY generation
 # Removed: CONFIG_DRM_MSM_ADRENO — phantom symbol, does not exist in Linux 7.1.
 #   Adreno (all generations A2xx-A7xx) is built unconditionally when DRM_MSM=y.
 CONFIG_DRM_MSM_REGISTER_LOGGING=y  # Valid debug symbol — enables register trace logging
@@ -88,11 +89,8 @@ CONFIG_DRM_FBDEV_EMULATION=y
 CONFIG_SYNC_FILE=y               # Redundant (auto-selected by DRM_MSM) but explicit
 CONFIG_QCOM_LLCC=y               # Last-Level Cache Controller — soft-dep of DRM_MSM on SDM660-class
 
-# Panel Selection
-# Removed: CONFIG_DRM_PANEL_ORISETECH_OTM1911A — phantom symbol.
-#   No OTM1911A driver exists in mainline Linux (any version through 7.1).
-#   The panel node in sdm636-nokia-frt.dts is commented out pending Track B
-#   (see docs/task-phases/phase_2_gpu_track.md).
+# Panel Selection — Nokia 6.1 Plus OTM1911A (ZethraOS out-of-tree driver)
+CONFIG_DRM_PANEL_ORISETECH_OTM1911A=y
 
 # Framebuffer & Console Support
 CONFIG_FRAMEBUFFER_CONSOLE=y
@@ -107,8 +105,11 @@ CONFIG_FB_DEVICE=y
 # Covers ALL Adreno generations (A5xx and A6xx) via DRM_MSM_GPU_STATE guards
 # in a5xx_gpu_state.c and a6xx_gpu_state.c.
 CONFIG_DRM_MSM_GPU_STATE=y
+CONFIG_DEBUG_FS=y              # Required to activate DRM_MSM_GPU_STATE at runtime
+CONFIG_DEV_COREDUMP=y          # GPU coredump on fault/hang — also activates GPU_STATE
 CONFIG_FW_LOADER=y
 CONFIG_FW_LOADER_USER_HELPER=n
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
 CONFIG_BACKLIGHT_QCOM_WLED=y    # Qualcomm WLED backlight
 
 # ─── Networking ────────────────────────────────────────────────────────────────
@@ -270,7 +271,8 @@ CONFIG_PSTORE_RAM=y
 CONFIG_PANIC_TIMEOUT=10
 CONFIG_WATCHDOG=y
 CONFIG_QCOM_WDT=y
-# CONFIG_DEBUG_KERNEL is not set
+CONFIG_DEBUG_KERNEL=y
+CONFIG_BOOT_PRINTK_DELAY=y
 CONFIG_PRINTK_TIME=y
 CONFIG_KALLSYMS_ALL=y
 CONFIG_PANIC_ON_OOPS=y
