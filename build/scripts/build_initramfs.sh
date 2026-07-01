@@ -11,70 +11,96 @@ rm -rf "$STAGE_DIR"
 mkdir -p "$STAGE_DIR"
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RESET='\033[0m'
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RED='\033[0;31m'; RESET='\033[0m'
 info()    { echo -e "${CYAN}==>${RESET} $*"; }
 success() { echo -e "${GREEN}✓${RESET}  $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${RESET} $*"; }
+error()   { echo -e "${RED}[ERROR]${RESET} $*"; exit 1; }
 
-echo "=================================================="
+# ─── Build environment image ─────────────────────────────────────────────────
+# Use the pre-baked zethra-build-env image (built once via build/docker/build_image.sh).
+# This eliminates per-run apt-get, rustup downloads, and mkbootimg downloads.
+BUILD_IMAGE="zethra-build-env:1"
+
+ensure_build_image() {
+  if ! docker image inspect "$BUILD_IMAGE" &>/dev/null; then
+    warn "Build image '$BUILD_IMAGE' not found. Building it now (one-time, ~5-10 min)..."
+    bash "$REPO_ROOT/build/docker/build_image.sh"
+    success "Build image ready: $BUILD_IMAGE"
+  fi
+}
+
+# ─── Persistent cache volumes ─────────────────────────────────────────────────
+# These directories live on the HOST and are mounted into Docker.
+# They persist across container runs — nothing is re-downloaded.
+CARGO_REGISTRY="${CARGO_REGISTRY_CACHE:-$HOME/.cargo/registry}"
+CARGO_GIT="${CARGO_GIT_CACHE:-$HOME/.cargo/git}"
+CCACHE_DIR="${CCACHE_DIR:-$HOME/.ccache}"
+mkdir -p "$CARGO_REGISTRY" "$CARGO_GIT" "$CCACHE_DIR"
+
+echo "=========================================="
 echo "    ZethraOS Initramfs Builder"
-echo "=================================================="
+echo "=========================================="
 mkdir -p "$OUT_DIR"
 
 # ─── Step 1: Cross-compile Rust userspace ─────────────────────────────────────
 info "Compiling Rust userspace..."
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  # On macOS, build inside Docker to ensure correct cross-compiler alignment
-  info "macOS detected — compiling inside Docker container..."
-  
-  # Ensure docker is running
+  info "macOS detected — compiling inside Docker ($BUILD_IMAGE)..."
+
   if ! docker ps &>/dev/null; then
-    echo "Error: Docker is not running or not accessible."
-    exit 1
+    error "Docker is not running or not accessible."
   fi
-  
+
+  ensure_build_image
+
   docker run --rm \
     -v "$REPO_ROOT:/workspace" \
+    -v "$CARGO_REGISTRY:/root/.cargo/registry" \
+    -v "$CARGO_GIT:/root/.cargo/git" \
+    -v "$CCACHE_DIR:/ccache" \
+    -e CCACHE_DIR=/ccache \
+    -e CC_aarch64_unknown_linux_musl=musl-gcc \
     -w /workspace \
-    rust:slim bash -c "
-      apt-get update && \
-      apt-get install -y gcc-aarch64-linux-gnu busybox-static && \
-      rustup target add aarch64-unknown-linux-musl && \
-      CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl && \
+    "$BUILD_IMAGE" bash -c "
+      cargo build --release --target aarch64-unknown-linux-musl && \
       mkdir -p /workspace/build/out && \
       cp /usr/bin/busybox /workspace/build/out/busybox
     "
 else
-  # On Linux, compile on host if tools exist, fallback to Docker
   if command -v cargo &>/dev/null && rustup target list | grep -q "aarch64-unknown-linux-musl (installed)"; then
     info "Host compilation tools found. Building on host..."
-    CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl
+    CC_aarch64_unknown_linux_musl=musl-gcc cargo build --release --target aarch64-unknown-linux-musl
     if command -v busybox &>/dev/null; then
       mkdir -p "$OUT_DIR"
       cp "$(which busybox)" "$OUT_DIR/busybox"
     else
       warn "busybox not found on host, fetching via Docker..."
+      ensure_build_image
       docker run --rm \
         -v "$REPO_ROOT:/workspace" \
+        -v "$CARGO_REGISTRY:/root/.cargo/registry" \
+        -v "$CARGO_GIT:/root/.cargo/git" \
         -w /workspace \
-        rust:slim bash -c "
-          apt-get update && \
-          apt-get install -y busybox-static && \
+        "$BUILD_IMAGE" bash -c "
           mkdir -p /workspace/build/out && \
           cp /usr/bin/busybox /workspace/build/out/busybox
         "
     fi
   else
-    warn "Host tools missing or misconfigured. Falling back to Docker..."
+    warn "Host tools missing or misconfigured. Falling back to Docker ($BUILD_IMAGE)..."
+    ensure_build_image
     docker run --rm \
       -v "$REPO_ROOT:/workspace" \
+      -v "$CARGO_REGISTRY:/root/.cargo/registry" \
+      -v "$CARGO_GIT:/root/.cargo/git" \
+      -v "$CCACHE_DIR:/ccache" \
+      -e CCACHE_DIR=/ccache \
+      -e CC_aarch64_unknown_linux_musl=musl-gcc \
       -w /workspace \
-      rust:slim bash -c "
-        apt-get update && \
-        apt-get install -y gcc-aarch64-linux-gnu busybox-static && \
-        rustup target add aarch64-unknown-linux-musl && \
-        CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl && \
+      "$BUILD_IMAGE" bash -c "
+        cargo build --release --target aarch64-unknown-linux-musl && \
         mkdir -p /workspace/build/out && \
         cp /usr/bin/busybox /workspace/build/out/busybox
       "
@@ -170,17 +196,27 @@ if [[ -d "$REPO_ROOT/build/configs/units" ]]; then
   success "Copied system unit configs"
 fi
 
-# Copy GPU firmware files
+# Copy GPU firmware files (non-fatal: missing blobs are acceptable for headless/DRM-off builds)
 if [[ -d "$REPO_ROOT/kernel/firmware/qcom" ]]; then
   info "Packaging GPU firmware blobs..."
   mkdir -p "$STAGE_DIR/lib/firmware/qcom"
-  cp "$REPO_ROOT"/kernel/firmware/qcom/a530* "$STAGE_DIR/lib/firmware/qcom/"
-  cp "$REPO_ROOT"/kernel/firmware/qcom/a512* "$STAGE_DIR/lib/firmware/qcom/"
-  # Run validation
-  (cd "$STAGE_DIR/lib/firmware/qcom" && ls | grep -E "a530|a512" > /dev/null)
-  success "GPU firmware blobs packaged successfully"
+  FW_COUNT=0
+  for pattern in a530 a512 a509; do
+    if ls "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* &>/dev/null 2>&1; then
+      cp "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* "$STAGE_DIR/lib/firmware/qcom/"
+      FW_COUNT=$((FW_COUNT + $(ls "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* | wc -l)))
+    else
+      warn "No ${pattern}* firmware blobs found in kernel/firmware/qcom/ (non-fatal for DRM=n builds)"
+    fi
+  done
+  if [[ "$FW_COUNT" -gt 0 ]]; then
+    success "GPU firmware blobs packaged: $FW_COUNT file(s)"
+  else
+    warn "No GPU firmware blobs found — GPU acceleration will not work at boot"
+    warn "This is expected and harmless for headless (Image 01) and drm-nodisp (Image 02) experiments"
+  fi
 else
-  warn "kernel/firmware/qcom not found, GPU acceleration may fail at boot"
+  warn "kernel/firmware/qcom not found — GPU acceleration may fail at boot"
 fi
 
 # Create base-setup helper script
@@ -288,13 +324,13 @@ find "$STAGE_DIR" -exec touch -h -t 202606121700.00 {} +
 INITRAMFS_OUT="$OUT_DIR/initramfs.cpio.gz"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  info "macOS detected — packaging initramfs inside Docker container for GNU cpio..."
+  info "macOS detected — packaging initramfs inside Docker ($BUILD_IMAGE)..."
+  ensure_build_image
   docker run --rm \
     -v "$REPO_ROOT:/workspace" \
     -v "$STAGE_DIR:/staging" \
     -w /staging \
-    ubuntu:24.04 bash -c "
-      apt-get update && apt-get install -y cpio && \
+    "$BUILD_IMAGE" bash -c "
       find . -not -name '*.cpio.gz' | sort | cpio --reproducible --owner=0:0 -oH newc 2>/dev/null | gzip -n > /workspace/build/out/initramfs.cpio.gz
     "
 else

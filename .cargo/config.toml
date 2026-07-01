@@ -1,2 +1,23 @@
+# .cargo/config.toml — Cargo build configuration for ZethraOS cross-compilation
+#
+# Problem this solves:
+#   On arm64 Docker (Apple Silicon via colima), the host triple is aarch64-unknown-linux-gnu.
+#   gcc-aarch64-linux-gnu is a cross-compiler package with no native C runtime (Scrt1.o, crti.o).
+#   Cargo uses this to link host build scripts (proc-macro2, quote, etc.) and fails with:
+#     "cannot find Scrt1.o: No such file or directory"
+#
+# Fix:
+#   - Host target (aarch64-unknown-linux-gnu): native `gcc` which HAS the full sysroot
+#   - Cross target (aarch64-unknown-linux-musl): `musl-gcc` for correct musl ABI
+#
+# Both `gcc` (via libc6-dev) and `musl-gcc` (via musl-tools) are installed in zethra-build-env:1.
+
 [target.aarch64-unknown-linux-gnu]
-linker = "aarch64-linux-gnu-gcc"
+# Native arm64: use system gcc — has Scrt1.o, crti.o from libc6-dev.
+# This is ONLY for host build scripts (proc-macro2, quote etc.), not the target binary.
+linker = "gcc"
+
+[target.aarch64-unknown-linux-musl]
+# musl target: musl-gcc wraps gcc with musl headers + runtime.
+# Installed via musl-tools. On arm64 produces correct arm64-musl binaries.
+linker = "musl-gcc"

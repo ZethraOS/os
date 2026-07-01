@@ -80,11 +80,14 @@ CONFIG_DRM_MSM=y
 # Note: DRM_MSM auto-selects: SYNC_FILE, DRM_KMS_HELPER, DRM_SCHED, DRM_PANEL,
 #       DRM_BRIDGE, QCOM_MDT_LOADER, QCOM_SCM, PM_GENERIC_DOMAINS, IOMMU_IO_PGTABLE
 CONFIG_DRM_MSM_DSI=y
-CONFIG_DRM_MSM_DSI_10NM_PHY=y
-CONFIG_DRM_MSM_DSI_14NM_PHY=y   # SDM636 uses 14nm DSI PHY generation
+# F-02 FIX: SDM636 uses the 14nm DSI PHY path ("qcom,dsi-phy-14nm-660" in sdm660.dtsi).
+# 10NM_PHY is SDM845-only. Using 10nm here would cause dsi_phy probe to return -EPROBE_DEFER
+# on all DSI-enabled images (3-6), making them indistinguishable from each other.
+CONFIG_DRM_MSM_DSI_14NM_PHY=y
 # Removed: CONFIG_DRM_MSM_ADRENO — phantom symbol, does not exist in Linux 7.1.
 #   Adreno (all generations A2xx-A7xx) is built unconditionally when DRM_MSM=y.
-CONFIG_DRM_MSM_REGISTER_LOGGING=y  # Valid debug symbol — enables register trace logging
+# Removed: CONFIG_DRM_MSM_REGISTER_LOGGING — confirmed phantom: not in Linux 7.1 Kconfig.
+#   Use drm.debug=0x3f on the kernel cmdline for DRM verbose logging instead.
 CONFIG_DRM_FBDEV_EMULATION=y
 CONFIG_SYNC_FILE=y               # Redundant (auto-selected by DRM_MSM) but explicit
 CONFIG_QCOM_LLCC=y               # Last-Level Cache Controller — soft-dep of DRM_MSM on SDM660-class
@@ -202,7 +205,10 @@ CONFIG_DEVTMPFS_MOUNT=y
 # ─── MSM Serial Console ──────────────────────────────────────────────────────
 # CONFIG_SERIAL_MSM is not set
 # CONFIG_SERIAL_MSM_CONSOLE is not set
-# CONFIG_SERIAL_EARLYCON is not set
+# F-16 FIX: SERIAL_EARLYCON must be enabled for earlycon=msm_serial_dm,0xc170000 to work.
+# Without it the kernel silently ignores the earlycon= cmdline arg and you get zero
+# output before the normal serial driver probes — fatal for early crash diagnosis.
+CONFIG_SERIAL_EARLYCON=y
 # CONFIG_SERIAL_AMBA is not set
 # CONFIG_SERIAL_AMBA_CONSOLE is not set
 
