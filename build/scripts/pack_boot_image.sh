@@ -37,7 +37,8 @@ TAGS_OFFSET=0x100
 BASE=0x0
 OS_VERSION="10.0.0"
 OS_PATCH_LEVEL="2021-08"
-CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 panic=10 buildvariant=userdebug"
+EXTRA_ARGS="${BOOT_EXTRA_CMDLINE:-}"
+CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 panic=10 buildvariant=userdebug ${EXTRA_ARGS}"
 
 # Options
 SIGN_BOOT=true
