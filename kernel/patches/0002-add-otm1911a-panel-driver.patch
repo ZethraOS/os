@@ -1,0 +1,287 @@
+--- a/drivers/gpu/drm/panel/Kconfig
++++ b/drivers/gpu/drm/panel/Kconfig
+@@ -664,6 +664,15 @@
+ 	  Say Y here if you want to enable support for Orise Technology
+ 	  otm8009a 480x800 dsi 2dl panel.
+ 
++config DRM_PANEL_ORISETECH_OTM1911A
++	tristate "Orise Technology otm1911a 1080x2280 dsi panel"
++	depends on OF
++	depends on DRM_MIPI_DSI
++	depends on BACKLIGHT_CLASS_DEVICE
++	help
++	  Say Y here if you want to enable support for the Orise Technology
++	  OTM1911A 1080x2280 MIPI-DSI panel used on the Nokia 6.1 Plus.
++
+ config DRM_PANEL_OSD_OSD101T2587_53TS
+ 	tristate "OSD OSD101T2587-53TS DSI 1920x1200 video mode panel"
+ 	depends on OF
+--- a/drivers/gpu/drm/panel/Makefile
++++ b/drivers/gpu/drm/panel/Makefile
+@@ -66,6 +66,7 @@
+ obj-$(CONFIG_DRM_PANEL_OLIMEX_LCD_OLINUXINO) += panel-olimex-lcd-olinuxino.o
+ obj-$(CONFIG_DRM_PANEL_ORISETECH_OTA5601A) += panel-orisetech-ota5601a.o
+ obj-$(CONFIG_DRM_PANEL_ORISETECH_OTM8009A) += panel-orisetech-otm8009a.o
++obj-$(CONFIG_DRM_PANEL_ORISETECH_OTM1911A) += panel-orisetech-otm1911a.o
+ obj-$(CONFIG_DRM_PANEL_OSD_OSD101T2587_53TS) += panel-osd-osd101t2587-53ts.o
+ obj-$(CONFIG_DRM_PANEL_PANASONIC_VVX10F034N00) += panel-panasonic-vvx10f034n00.o
+ obj-$(CONFIG_DRM_PANEL_RASPBERRYPI_TOUCHSCREEN) += panel-raspberrypi-touchscreen.o
+--- a/drivers/gpu/drm/panel/panel-orisetech-otm1911a.c
++++ b/drivers/gpu/drm/panel/panel-orisetech-otm1911a.c
+@@ -0,0 +1,256 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Orise Tech OTM1911A 1080x2280 MIPI-DSI panel — Nokia 6.1 Plus (DRG)
++ *
++ * Minimal bring-up driver: enables regulators, reset, and standard DCS
++ * sleep-out/display-on. Full vendor init sequences can be added once
++ * captured from downstream CAF panel data.
++ */
++
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/media-bus-format.h>
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/regulator/consumer.h>
++
++#include <video/mipi_display.h>
++
++#include <drm/drm_mipi_dsi.h>
++#include <drm/drm_modes.h>
++#include <drm/drm_panel.h>
++
++struct otm1911a {
++	struct drm_panel panel;
++	struct mipi_dsi_device *dsi;
++	struct regulator *vdda;
++	struct regulator *vddi;
++	struct backlight_device *backlight;
++	struct gpio_desc *reset_gpio;
++	bool prepared;
++};
++
++static const struct drm_display_mode otm1911a_modes[] = {
++	{
++		/* 60 Hz — Nokia 6.1 Plus native panel geometry */
++		.clock = 169000,
++		.hdisplay = 1080,
++		.hsync_start = 1080 + 40,
++		.hsync_end = 1080 + 40 + 4,
++		.htotal = 1080 + 40 + 4 + 40,
++		.vdisplay = 2280,
++		.vsync_start = 2280 + 8,
++		.vsync_end = 2280 + 8 + 4,
++		.vtotal = 2280 + 8 + 4 + 8,
++		.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
++		.width_mm = 68,
++		.height_mm = 143,
++	},
++};
++
++static inline struct otm1911a *panel_to_otm1911a(struct drm_panel *panel)
++{
++	return container_of(panel, struct otm1911a, panel);
++}
++
++static int otm1911a_disable(struct drm_panel *panel)
++{
++	struct otm1911a *ctx = panel_to_otm1911a(panel);
++
++	backlight_disable(ctx->backlight);
++
++	return 0;
++}
++
++static int otm1911a_unprepare(struct drm_panel *panel)
++{
++	struct otm1911a *ctx = panel_to_otm1911a(panel);
++	struct mipi_dsi_device *dsi = ctx->dsi;
++
++	if (!ctx->prepared)
++		return 0;
++
++	mipi_dsi_dcs_set_display_off(dsi);
++	msleep(20);
++	mipi_dsi_dcs_enter_sleep_mode(dsi);
++	msleep(120);
++
++	if (ctx->reset_gpio)
++		gpiod_set_value_cansleep(ctx->reset_gpio, 1);
++
++	regulator_disable(ctx->vddi);
++	regulator_disable(ctx->vdda);
++
++	ctx->prepared = false;
++	return 0;
++}
++
++static int otm1911a_prepare(struct drm_panel *panel)
++{
++	struct otm1911a *ctx = panel_to_otm1911a(panel);
++	struct mipi_dsi_device *dsi = ctx->dsi;
++	int ret;
++
++	if (ctx->prepared)
++		return 0;
++
++	ret = regulator_enable(ctx->vdda);
++	if (ret < 0)
++		return ret;
++	msleep(5);
++
++	ret = regulator_enable(ctx->vddi);
++	if (ret < 0)
++		goto vdda_off;
++
++	if (ctx->reset_gpio) {
++		gpiod_set_value_cansleep(ctx->reset_gpio, 1);
++		msleep(2);
++		gpiod_set_value_cansleep(ctx->reset_gpio, 0);
++		msleep(10);
++	}
++
++	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
++	if (ret < 0)
++		goto vddi_off;
++
++	msleep(120);
++
++	ctx->prepared = true;
++	return 0;
++
++vddi_off:
++	regulator_disable(ctx->vddi);
++vdda_off:
++	regulator_disable(ctx->vdda);
++	return ret;
++}
++
++static int otm1911a_enable(struct drm_panel *panel)
++{
++	struct otm1911a *ctx = panel_to_otm1911a(panel);
++	int ret;
++
++	ret = mipi_dsi_dcs_set_display_on(ctx->dsi);
++	if (ret < 0)
++		return ret;
++
++	msleep(20);
++	backlight_enable(ctx->backlight);
++
++	return 0;
++}
++
++static int otm1911a_get_modes(struct drm_panel *panel,
++			      struct drm_connector *connector)
++{
++	struct drm_display_mode *mode;
++	unsigned int i;
++
++	for (i = 0; i < ARRAY_SIZE(otm1911a_modes); i++) {
++		mode = drm_mode_duplicate(connector->dev, &otm1911a_modes[i]);
++		if (!mode)
++			return -ENOMEM;
++
++		mode->type = DRM_MODE_TYPE_DRIVER;
++		if (i == 0)
++			mode->type |= DRM_MODE_TYPE_PREFERRED;
++
++		drm_mode_set_name(mode);
++		drm_mode_probed_add(connector, mode);
++	}
++
++	connector->display_info.width_mm = otm1911a_modes[0].width_mm;
++	connector->display_info.height_mm = otm1911a_modes[0].height_mm;
++
++	drm_display_info_set_bus_formats(&connector->display_info,
++					 (const u32[]){ MEDIA_BUS_FMT_FIXED }, 1);
++
++	return 1;
++}
++
++static const struct drm_panel_funcs otm1911a_funcs = {
++	.disable = otm1911a_disable,
++	.unprepare = otm1911a_unprepare,
++	.prepare = otm1911a_prepare,
++	.enable = otm1911a_enable,
++	.get_modes = otm1911a_get_modes,
++};
++
++static int otm1911a_probe(struct mipi_dsi_device *dsi)
++{
++	struct device *dev = &dsi->dev;
++	struct otm1911a *ctx;
++	int ret;
++
++	ctx = devm_drm_panel_alloc(dev, struct otm1911a, panel,
++				   &otm1911a_funcs, DRM_MODE_CONNECTOR_DSI);
++	if (IS_ERR(ctx))
++		return PTR_ERR(ctx);
++
++	ctx->dsi = dsi;
++	ctx->vdda = devm_regulator_get(dev, "vdda");
++	if (IS_ERR(ctx->vdda))
++		return dev_err_probe(dev, PTR_ERR(ctx->vdda),
++				     "failed to get vdda regulator\n");
++
++	ctx->vddi = devm_regulator_get(dev, "vddi");
++	if (IS_ERR(ctx->vddi))
++		return dev_err_probe(dev, PTR_ERR(ctx->vddi),
++				     "failed to get vddi regulator\n");
++
++	ctx->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
++	if (IS_ERR(ctx->reset_gpio))
++		return dev_err_probe(dev, PTR_ERR(ctx->reset_gpio),
++				     "failed to get reset GPIO\n");
++
++	ctx->backlight = devm_of_find_backlight(dev);
++	if (IS_ERR(ctx->backlight))
++		return dev_err_probe(dev, PTR_ERR(ctx->backlight),
++				     "failed to get backlight\n");
++
++	dsi->lanes = 4;
++	dsi->format = MIPI_DSI_FMT_RGB888;
++	dsi->mode_flags = MIPI_DSI_MODE_VIDEO |
++			  MIPI_DSI_MODE_VIDEO_BURST |
++			  MIPI_DSI_MODE_LPM;
++
++	drm_panel_add(&ctx->panel);
++
++	ret = mipi_dsi_attach(dsi);
++	if (ret < 0) {
++		drm_panel_remove(&ctx->panel);
++		return ret;
++	}
++
++	return 0;
++}
++
++static void otm1911a_remove(struct mipi_dsi_device *dsi)
++{
++	struct otm1911a *ctx = mipi_dsi_get_drvdata(dsi);
++
++	mipi_dsi_detach(dsi);
++	drm_panel_remove(&ctx->panel);
++}
++
++static const struct of_device_id otm1911a_of_match[] = {
++	{ .compatible = "orisetech,otm1911a" },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, otm1911a_of_match);
++
++static struct mipi_dsi_driver otm1911a_driver = {
++	.probe = otm1911a_probe,
++	.remove = otm1911a_remove,
++	.driver = {
++		.name = "panel-orisetech-otm1911a",
++		.of_match_table = otm1911a_of_match,
++	},
++};
++module_mipi_dsi_driver(otm1911a_driver);
++
++MODULE_AUTHOR("ZethraOS Project");
++MODULE_DESCRIPTION("Orise Tech OTM1911A MIPI-DSI panel for Nokia 6.1 Plus");
++MODULE_LICENSE("GPL");
