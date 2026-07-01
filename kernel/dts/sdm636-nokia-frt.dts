@@ -113,6 +113,7 @@
 		ramoops@acb00000 {
 			compatible = "ramoops";
 			reg = <0x00 0xacb00000 0x00 0x200000>;
+			no-map;
 			record-size = <0x1000>;
 			console-size = <0x40000>;
 			ftrace-size = <0x1000>;
@@ -473,8 +474,6 @@
 	status = "disabled";
 };
 
-
-
 &zap_shader_region {
 	status = "disabled";
 };
@@ -492,7 +491,16 @@
 	label = "backlight";
 };
 
+&mdss {
+	status = "okay";
+};
+
+&adreno_gpu {
+	status = "disabled";
+};
+
 &mdss_dsi0 {
+	vdda-supply = <&vreg_l1a_1p225>;
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -504,10 +512,31 @@
 		vddi-supply = <&vreg_l2a_1p0>;
 		reset-gpios = <&tlmm 82 GPIO_ACTIVE_LOW>;
 		backlight = <&pm660l_wled>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&mdss_dsi0_out>;
+			};
+		};
 	};
 };
 
+&mdss_dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
 &mdss_dsi0_phy {
+	vcca-supply = <&vreg_l1b_0p925>;
 	status = "okay";
+};
+
+&gpu_sdm660_opp_table {
+	opp-266000000 {
+		opp-supported-hw = <0xffffffff>;
+	};
+	opp-160000000 {
+		opp-supported-hw = <0xffffffff>;
+	};
 };
 
