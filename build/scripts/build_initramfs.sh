@@ -144,6 +144,53 @@ else
   exit 1
 fi
 
+# ─── Build and stage qbootctl (A/B boot success marker) ───────────────────────
+# qbootctl -m marks the current slot as boot-successful in the GPT attribute
+# field (bit 54 of the 64-bit Attributes UINT64), preventing the retry counter
+# from draining on every boot. Source: tools/qbootctl/ (linux-msm/qbootctl).
+info "Building qbootctl for arm64..."
+QBOOTCTL_SRC="$REPO_ROOT/tools/qbootctl"
+QBOOTCTL_BIN="$QBOOTCTL_SRC/qbootctl"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  ensure_build_image
+  docker run --rm \
+    -v "$REPO_ROOT:/workspace" \
+    -w /workspace/tools/qbootctl \
+    "$BUILD_IMAGE" bash -c "
+      aarch64-linux-gnu-gcc -static -O2 \
+        -o qbootctl \
+        qbootctl.c bootctrl_impl.c gpt-utils.c crc32.c ufs-bsg-stub.c \
+        -I. 2>&1
+    "
+else
+  if command -v aarch64-linux-gnu-gcc &>/dev/null; then
+    (cd "$QBOOTCTL_SRC" && \
+     aarch64-linux-gnu-gcc -static -O2 -o qbootctl \
+       qbootctl.c bootctrl_impl.c gpt-utils.c crc32.c ufs-bsg-stub.c -I.)
+  else
+    ensure_build_image
+    docker run --rm \
+      -v "$REPO_ROOT:/workspace" \
+      -w /workspace/tools/qbootctl \
+      "$BUILD_IMAGE" bash -c "
+        aarch64-linux-gnu-gcc -static -O2 \
+          -o qbootctl \
+          qbootctl.c bootctrl_impl.c gpt-utils.c crc32.c ufs-bsg-stub.c \
+          -I. 2>&1
+      "
+  fi
+fi
+
+if [[ -f "$QBOOTCTL_BIN" ]]; then
+  cp "$QBOOTCTL_BIN" "$STAGE_DIR/sbin/qbootctl"
+  chmod +x "$STAGE_DIR/sbin/qbootctl"
+  success "Copied qbootctl to /sbin/qbootctl ($(du -sh "$QBOOTCTL_BIN" | cut -f1))"
+else
+  echo "Error: qbootctl failed to build at $QBOOTCTL_BIN"
+  exit 1
+fi
+
 # Copy other system service binaries
 for svc in zethra-networkd zethra-sensord zethra-otad zethra-telephonyd zethra-compositor zethra-sandbox zethra-ai-daemon; do
   SVC_BIN="$REPO_ROOT/target/aarch64-unknown-linux-musl/release/$svc"
@@ -306,6 +353,27 @@ while true; do
 done &
 
 echo "[init] Launching PID 1: zethrad..."
+
+# ── Mark boot successful (P0 safety fix) ─────────────────────────────────────
+# Sets GPT attribute bit 54 (AB_PARTITION_ATTR_BOOT_SUCCESSFUL) on the current
+# slot's boot partition. Without this, the ABL decrements the retry counter
+# (bits 51-53) on every boot until it hits zero and marks the slot unbootable.
+# This must run BEFORE exec zethrad so it executes even if zethrad crashes.
+if [ -x /sbin/qbootctl ]; then
+  SLOT_SUFFIX=$(cat /proc/cmdline | tr ' ' '\n' | grep 'androidboot.slot_suffix' | cut -d= -f2)
+  if [ -n "$SLOT_SUFFIX" ]; then
+    echo "[init] Marking slot ${SLOT_SUFFIX} as boot-successful (qbootctl -m)..."
+    /sbin/qbootctl -m && \
+      echo "[init] slot-successful written to GPT" || \
+      echo "[init] WARNING: qbootctl -m failed — retry counter will drain"
+  else
+    echo "[init] WARNING: androidboot.slot_suffix not in cmdline — cannot mark successful"
+  fi
+else
+  echo "[init] WARNING: /sbin/qbootctl not found — boot success marker NOT written"
+fi
+# ─────────────────────────────────────────────────────────────────────────────
+
 export ZETHRA_UNITS_DIR=/etc/zethra/units
 if [ -d /mnt/persist ] && grep -q "/mnt/persist" /proc/mounts; then
   exec /sbin/zethrad >/mnt/persist/zethrad.log 2>&1
