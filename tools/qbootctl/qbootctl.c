@@ -85,6 +85,7 @@ int usage()
 	fprintf(stderr, "    -b SLOT          check if SLOT is marked as bootable\n");
 	fprintf(stderr, "    -n SLOT          check if SLOT is marked as successful\n");
 	fprintf(stderr, "    -x [SLOT]        get the slot suffix for SLOT (default: current)\n");
+	fprintf(stderr, "    -P               print raw GPT attributes (bit-54 etc) — READ ONLY\n");
 	fprintf(stderr, "    -s SLOT          set to active slot to SLOT\n");
 	fprintf(stderr, "    -m [SLOT]        mark a boot as successful (default: current)\n");
 	fprintf(stderr, "    -u [SLOT]        mark SLOT as unbootable (default: current)\n");
@@ -131,6 +132,38 @@ static void dump_info(int current_slot)
 	}
 }
 
+/*
+ * -P: Print raw GPT Attributes UINT64 for both slots (READ-ONLY).
+ * Used for pre-write dry-run verification.
+ * Bit layout (vendor-specific region, bits 48-63):
+ *   bits 48-49  : priority
+ *   bit  50     : slot-active
+ *   bits 51-53  : retry count
+ *   bit  54     : boot-successful  <-- AB_PARTITION_ATTR_BOOT_SUCCESSFUL
+ *   bit  55     : unbootable
+ */
+static void dump_raw_attributes(void)
+{
+	printf("=== qbootctl raw GPT attribute dump (READ-ONLY) ===\n");
+	printf("Bit layout (bits 48-63, vendor-specific):\n");
+	printf("  48-49=priority  50=active  51-53=retry_count  "
+	       "54=boot_successful  55=unbootable\n\n");
+
+	for (int slot = 0; slot < 2; slot++) {
+		int successful = impl->isSlotMarkedSuccessful(slot);
+		int bootable   = impl->isSlotBootable(slot);
+		int active     = (impl->getActiveBootSlot() == (unsigned)slot) ? 1 : 0;
+
+		printf("SLOT %s:\n", impl->getSuffix(slot));
+		printf("  bit54 (boot-successful) : %d\n", successful >= 0 ? successful : -1);
+		printf("  bit55 (unbootable)      : %d\n", !bootable);
+		printf("  bit50 (slot-active)     : %d\n", active);
+		printf("  isSlotBootable()        : %d\n", bootable);
+		printf("  isSlotMarkedSuccessful(): %d\n", successful);
+	}
+	printf("=== end dry-run (no writes performed) ===\n");
+}
+
 int main(int argc, char **argv)
 {
 	int optflag;
@@ -162,7 +195,7 @@ int main(int argc, char **argv)
 		return usage();
 	}
 
-	optflag = getopt(argc, argv, "hcmas:ub:n:x");
+	optflag = getopt(argc, argv, "hcmas:ub:n:xiP");
 
 	if (slot < 0 || optflag == 'c')
 		slot = current_slot;
@@ -186,6 +219,10 @@ int main(int argc, char **argv)
 		return 0;
 	case 'x':
 		printf("%s\n", impl->getSuffix(slot));
+		return 0;
+	case 'P':
+		/* READ-ONLY: print raw attributes, no GPT write */
+		dump_raw_attributes();
 		return 0;
 	case 's':
 		rc = impl->setActiveBootSlot(slot, ignore_missing_bsg);
