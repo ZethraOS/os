@@ -289,6 +289,20 @@ mount -t debugfs debug /sys/kernel/debug 2>/dev/null || true
 mkdir -p /sys/kernel/config
 mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
 
+# Create /dev/disk/by-partlabel symlinks for qbootctl (GPT partition label lookup)
+# The kernel sets PARTNAME in sysfs uevent for each GPT-labelled partition.
+# qbootctl needs /dev/disk/by-partlabel/<name> -> /dev/<devnode> to find partitions.
+# This replaces udev's 60-persistent-storage.rules on our minimal initramfs.
+mkdir -p /dev/disk/by-partlabel
+for uevent_path in /sys/block/mmcblk0/mmcblk0p*/uevent; do
+  devname=$(grep "^DEVNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
+  partname=$(grep "^PARTNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
+  if [ -n "$devname" ] && [ -n "$partname" ]; then
+    ln -sf "/dev/$devname" "/dev/disk/by-partlabel/$partname" 2>/dev/null || true
+  fi
+done
+echo "[init] Created $(ls /dev/disk/by-partlabel/ 2>/dev/null | wc -l) /dev/disk/by-partlabel/ entries"
+
 echo ""
 echo " ╔═══════════════════════════════╗"
 echo " ║       ZethraOS v0.2.0        ║"
