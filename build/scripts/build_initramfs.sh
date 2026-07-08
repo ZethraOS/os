@@ -294,7 +294,7 @@ mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
 # qbootctl needs /dev/disk/by-partlabel/<name> -> /dev/<devnode> to find partitions.
 # This replaces udev's 60-persistent-storage.rules on our minimal initramfs.
 mkdir -p /dev/disk/by-partlabel
-for uevent_path in /sys/block/mmcblk0/mmcblk0p*/uevent; do
+for uevent_path in /sys/block/mmcblk*/mmcblk*p*/uevent; do
   devname=$(grep "^DEVNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
   partname=$(grep "^PARTNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
   if [ -n "$devname" ] && [ -n "$partname" ]; then
