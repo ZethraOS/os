@@ -64,7 +64,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     -e CC_aarch64_unknown_linux_musl=musl-gcc \
     -w /workspace \
     "$BUILD_IMAGE" bash -c "
-      cargo build --release --target aarch64-unknown-linux-musl && \
+      cargo build -j 2 --release --target aarch64-unknown-linux-musl && \
       mkdir -p /workspace/build/out && \
       cp /usr/bin/busybox /workspace/build/out/busybox
     "
@@ -100,7 +100,7 @@ else
       -e CC_aarch64_unknown_linux_musl=musl-gcc \
       -w /workspace \
       "$BUILD_IMAGE" bash -c "
-        cargo build --release --target aarch64-unknown-linux-musl && \
+        cargo build -j 2 --release --target aarch64-unknown-linux-musl && \
         mkdir -p /workspace/build/out && \
         cp /usr/bin/busybox /workspace/build/out/busybox
       "
