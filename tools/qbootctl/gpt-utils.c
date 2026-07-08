@@ -294,6 +294,7 @@ error:
 static int get_dev_path_from_partition_name(const char *partname, char *buf, size_t buflen)
 {
 	char path[GPT_PTN_PATH_MAX] = { 0 };
+	char *orig_buf = buf;  /* save before realpath may clobber on failure */
 	int i;
 
 	if (!partname || !buf || buflen < ((PATH_TRUNCATE_LOC) + 1)) {
@@ -301,12 +302,22 @@ static int get_dev_path_from_partition_name(const char *partname, char *buf, siz
 		return -1;
 	}
 
-	// Need to find the lun that holds partition partname
+	/* Need to find the lun that holds partition partname */
 	snprintf(path, sizeof(path), "%s/%s", BOOT_DEV_DIR, partname);
-
 
 	buf = realpath(path, buf);
 	if (!buf) {
+		/*
+		 * Fallback for eMMC devices without udev / by-partlabel symlinks
+		 * (e.g. minimal initramfs using devtmpfs only).  eMMC uses a
+		 * single block device (/dev/mmcblk0) containing all partitions, so
+		 * we don't need per-LUN resolution — just return the base device.
+		 */
+		if (access(EMMC_DEVICE, F_OK) == 0) {
+			strncpy(orig_buf, EMMC_DEVICE, buflen - 1);
+			orig_buf[buflen - 1] = '\0';
+			return 0;
+		}
 		return -1;
 	} else {
 		for (i = strlen(buf); i > 0; i--)
