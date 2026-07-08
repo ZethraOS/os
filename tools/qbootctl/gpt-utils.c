@@ -286,9 +286,17 @@ error:
 	return ret;
 }
 
+static const char *get_emmc_device(void)
+{
+	if (access("/dev/mmcblk1", F_OK) == 0) {
+		return "/dev/mmcblk1";
+	}
+	return "/dev/mmcblk0";
+}
+
 // Given a parttion name(eg: rpm) get the path to the block device that
 // represents the GPT disk the partition resides on. In the case of emmc it
-// would be the default emmc dev(/dev/mmcblk0). In the case of UFS we look
+// would be the default emmc dev(/dev/mmcblk0 or /dev/mmcblk1). In the case of UFS we look
 // through the /dev/disk/bootdevice/by-name/ tree for partname, and resolve
 // the path to the LUN from there.
 static int get_dev_path_from_partition_name(const char *partname, char *buf, size_t buflen)
@@ -310,11 +318,12 @@ static int get_dev_path_from_partition_name(const char *partname, char *buf, siz
 		/*
 		 * Fallback for eMMC devices without udev / by-partlabel symlinks
 		 * (e.g. minimal initramfs using devtmpfs only).  eMMC uses a
-		 * single block device (/dev/mmcblk0) containing all partitions, so
-		 * we don't need per-LUN resolution — just return the base device.
+		 * single block device containing all partitions, so we don't need
+		 * per-LUN resolution — just return the base device.
 		 */
-		if (access(EMMC_DEVICE, F_OK) == 0) {
-			strncpy(orig_buf, EMMC_DEVICE, buflen - 1);
+		const char *emmc_dev = get_emmc_device();
+		if (access(emmc_dev, F_OK) == 0) {
+			strncpy(orig_buf, emmc_dev, buflen - 1);
 			orig_buf[buflen - 1] = '\0';
 			return 0;
 		}
@@ -823,5 +832,5 @@ bool gpt_utils_is_partition_backed_by_emmc(const char *part)
 	if (get_dev_path_from_partition_name(part, devpath, sizeof(devpath)))
 		return false;
 
-	return !strcmp(devpath, EMMC_DEVICE);
+	return !strcmp(devpath, get_emmc_device());
 }
