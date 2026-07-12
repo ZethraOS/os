@@ -11,30 +11,37 @@
  static const struct drm_display_mode otm1911a_modes[] = {
  	{
  		/* 60 Hz — Nokia 6.1 Plus native panel geometry */
-@@ -92,6 +96,13 @@
+@@ -95,6 +99,8 @@
  	struct mipi_dsi_device *dsi = ctx->dsi;
  	int ret;
  
-+	if (mock_attach) {
-+		dev_err(&dsi->dev, "ANTIGRAVITY: otm1911a_prepare mocked out\n");
-+		return 0;
-+	}
-+
-+	dev_err(&dsi->dev, "ANTIGRAVITY: otm1911a_prepare starting...\n");
++	dev_err(&dsi->dev, "ANTIGRAVITY: otm1911a_prepare starting (mock=%d)...\n", mock_attach);
 +
  	if (ctx->prepared)
  		return 0;
  
-@@ -132,6 +143,13 @@
+@@ -118,6 +124,12 @@
+ 		msleep(120); /* Wait for panel initialization */
+ 	}
+ 
++	if (mock_attach) {
++		dev_err(&dsi->dev, "ANTIGRAVITY: Bypassing DCS writes in prepare (mock_attach=1)\n");
++		ctx->prepared = true;
++		return 0;
++	}
++
+ 	ret = mipi_dsi_dcs_exit_sleep_mode(dsi);
+ 	if (ret < 0)
+ 		goto vdda_off;
+@@ -136,6 +148,12 @@
  	struct otm1911a *ctx = panel_to_otm1911a(panel);
  	int ret;
  
 +	if (mock_attach) {
-+		dev_err(&ctx->dsi->dev, "ANTIGRAVITY: otm1911a_enable mocked out\n");
++		dev_err(&ctx->dsi->dev, "ANTIGRAVITY: Bypassing DCS writes in enable (mock_attach=1)\n");
++		backlight_enable(ctx->backlight);
 +		return 0;
 +	}
-+
-+	dev_err(&ctx->dsi->dev, "ANTIGRAVITY: otm1911a_enable starting...\n");
 +
  	ret = mipi_dsi_dcs_set_display_on(ctx->dsi);
  	if (ret < 0)
