@@ -1,0 +1,2 @@
+# Exclude vendored tools from repository language statistics
+tools/** linguist-vendored
