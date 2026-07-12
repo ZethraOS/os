@@ -376,14 +376,14 @@ Where:
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║  TRUSTED ZONE (runs in restricted SELinux domain)               ║
-║  zethra-assistantd, Schema Registry, Memory Store               ║
+║  TRUSTED ZONE (runs in restricted SELinux domain)                ║
+║  zethra-assistantd, Schema Registry, Memory Store                ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  SEMI-TRUSTED ZONE (IPC only, no direct memory access)          ║
-║  zethra-telephonyd, zethra-networkd, zethra-compositor          ║
+║  SEMI-TRUSTED ZONE (IPC only, no direct memory access)           ║
+║  zethra-telephonyd, zethra-networkd, zethra-compositor           ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  UNTRUSTED ZONE (sandboxed, no tool execution rights)           ║
-║  App Sandboxes, External Web Content, Email Bodies, SMS Bodies  ║
+║  UNTRUSTED ZONE (sandboxed, no tool execution rights)            ║
+║  App Sandboxes, External Web Content, Email Bodies, SMS Bodies   ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
