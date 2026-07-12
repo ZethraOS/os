@@ -1,6 +1,5 @@
 import time
 import subprocess
-import sys
 
 def poll_fastboot():
     try:
