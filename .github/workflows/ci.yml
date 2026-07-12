@@ -26,6 +26,7 @@ env:
   RUST_VERSION: "stable"
   KERNEL_VERSION: "6.9"
   TARGET_ARCH: "aarch64-unknown-linux-gnu"
+  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: "aarch64-linux-gnu-gcc"
 
 jobs:
   # ── 1. Rust linting and tests ────────────────────────────────────────────
