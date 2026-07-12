@@ -1,0 +1,5 @@
+.vscode/
+.push.settings.jsonc
+build/
+compile_commands.json
+

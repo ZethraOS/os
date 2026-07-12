@@ -1,0 +1,23 @@
+# Latest local boot image inspection preserved on 2026-06-21
+
+Artifact: build/out/boot.img
+SHA-256: 0add849ec0f9bce84c121845ea124707dc8e72fcaf2703aff84e9e97826a5c97
+Size: 31440896 bytes
+
+Decoded header:
+- Android boot header version: 0
+- Kernel size: 5923421 bytes
+- Kernel address: 0x00008000
+- Ramdisk size: 25439376 bytes
+- Ramdisk address: 0x01000000
+- Page size: 4096
+
+Command line recovered from the image:
+console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=eng panic=10 msm.separate_gpu_kms=1
+
+Absent from the image command line:
+- msm.debug_checkpoint=43
+- panel_orisetech_otm1911a.mock_attach=1
+
+The existing build/out/.boot-image-params.txt is stale relative to this image. It
+records checkpoint 14 and a different input kernel hash from an earlier build.

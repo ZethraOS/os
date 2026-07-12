@@ -1,0 +1,309 @@
+--- a/drivers/gpu/drm/msm/msm_drv.c
++++ b/drivers/gpu/drm/msm/msm_drv.c
+@@ -8,6 +8,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/fault-inject.h>
+ #include <linux/debugfs.h>
++#include <linux/delay.h>
+ #include <linux/of_address.h>
+ #include <linux/uaccess.h>
+ 
+@@ -58,6 +59,10 @@
+ MODULE_PARM_DESC(separate_gpu_drm, "Use separate DRM device for the GPU (0=single DRM device for both GPU and display (default), 1=two DRM devices)");
+ module_param(separate_gpu_kms, bool, 0400);
+ 
++int msm_debug_checkpoint = 0;
++module_param_named(debug_checkpoint, msm_debug_checkpoint, int, 0444);
++MODULE_PARM_DESC(debug_checkpoint, "Checkpoint stall (10=probe, 1=init entry, 2=post-bind, 3=hw-init)");
++
+ DECLARE_FAULT_ATTR(fail_gem_alloc);
+ DECLARE_FAULT_ATTR(fail_gem_iova);
+ 
+@@ -111,6 +116,15 @@
+ 	struct drm_device *ddev;
+ 	int ret;
+ 
++	if (msm_debug_checkpoint == 1) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 1 reached (bind entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	if (drm_firmware_drivers_only())
+ 		return -ENODEV;
+ 
+@@ -158,6 +172,15 @@
+ 	if (ret)
+ 		goto err_put_dev;
+ 
++	if (msm_debug_checkpoint == 2) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 2 reached (post-component-bind)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	ret = msm_gem_shrinker_init(ddev);
+ 	if (ret)
+ 		goto err_msm_uninit;
+@@ -166,11 +189,29 @@
+ 		ret = msm_drm_kms_init(dev, drv);
+ 		if (ret)
+ 			goto err_msm_uninit;
++	}
++
++	if (msm_debug_checkpoint == 15) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 15 reached (pre-register)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
+ 	}
+ 
+ 	ret = drm_dev_register(ddev, 0);
+ 	if (ret)
+ 		goto err_msm_uninit;
++
++	if (msm_debug_checkpoint == 13) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 13 reached (post-register)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
+ 
+ 	ret = msm_debugfs_late_init(ddev);
+ 	if (ret)
+@@ -1058,6 +1099,15 @@
+ 	struct component_match *match = NULL;
+ 	int ret;
+ 
++	if (msm_debug_checkpoint == 10) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 0 reached (probe entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	priv = devm_kzalloc(master_dev, sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+ 		return -ENOMEM;
+--- a/drivers/gpu/drm/msm/msm_kms.c
++++ b/drivers/gpu/drm/msm/msm_kms.c
+@@ -9,6 +9,7 @@
+ #include <linux/kthread.h>
+ #include <linux/sched/mm.h>
+ #include <uapi/linux/sched/types.h>
++#include <linux/delay.h>
+ 
+ #include <drm/drm_drv.h>
+ #include <drm/drm_mode_config.h>
+@@ -323,6 +324,16 @@
+ 		goto err_msm_uninit;
+ 	}
+ 
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 17) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 17 reached (pre-irq-install)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	pm_runtime_get_sync(dev);
+ 	ret = msm_irq_install(ddev, kms->irq);
+ 	pm_runtime_put_sync(dev);
+@@ -331,6 +342,15 @@
+ 		goto err_msm_uninit;
+ 	}
+ 
++	if (msm_debug_checkpoint == 16) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 16 reached (pre-mode-config-reset)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	drm_mode_config_reset(ddev);
+ 
+ 	return 0;
+@@ -384,5 +404,16 @@
+ 	struct drm_device *ddev = priv->dev;
+ 
+ 	drm_kms_helper_poll_init(ddev);
++
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 14) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 14 reached (post-poll-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	drm_client_setup(ddev, NULL);
+ }
+--- a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
++++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
+@@ -10,6 +10,7 @@
+ #define pr_fmt(fmt)	"[drm:%s:%d] " fmt, __func__, __LINE__
+ 
+ #include <linux/debugfs.h>
++#include <linux/delay.h>
+ #include <linux/dma-buf.h>
+ #include <linux/of_irq.h>
+ #include <linux/pm_opp.h>
+@@ -1150,6 +1151,16 @@
+ 
+ 	dpu_kms = to_dpu_kms(kms);
+ 	dev = dpu_kms->dev;
++
++	extern int msm_debug_checkpoint;
++	if (msm_debug_checkpoint == 3) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 3 reached (hw-init entry)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
+ 
+ 	dev->mode_config.cursor_width = 512;
+ 	dev->mode_config.cursor_height = 512;
+@@ -1163,8 +1174,26 @@
+ 	if (rc < 0)
+ 		goto error;
+ 
++	if (msm_debug_checkpoint == 4) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 4 reached (post-pm-resume)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	core_rev = readl_relaxed(dpu_kms->mmio + 0x0);
+ 
++	if (msm_debug_checkpoint == 5) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 5 reached (post-reg-read)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	pr_info("dpu hardware revision:0x%x\n", core_rev);
+ 
+ 	dpu_kms->catalog = of_device_get_match_data(dev->dev);
+@@ -1184,6 +1213,15 @@
+ 		goto err_pm_put;
+ 	}
+ 
++	if (msm_debug_checkpoint == 6) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 6 reached (post-mmu-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	dpu_kms->mdss = qcom_ubwc_config_get_data();
+ 	if (IS_ERR(dpu_kms->mdss)) {
+ 		rc = PTR_ERR(dpu_kms->mdss);
+@@ -1203,6 +1241,15 @@
+ 		goto err_pm_put;
+ 	}
+ 
++	if (msm_debug_checkpoint == 7) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 7 reached (post-rm-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	dpu_kms->hw_mdp = dpu_hw_mdptop_init(dev,
+ 					     dpu_kms->catalog->mdp,
+ 					     dpu_kms->mmio,
+@@ -1214,6 +1261,15 @@
+ 		goto err_pm_put;
+ 	}
+ 
++	if (msm_debug_checkpoint == 8) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 8 reached (post-mdp-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	struct dpu_hw_vbif *hw;
+ 	const struct dpu_vbif_cfg *vbif = dpu_kms->catalog->vbif;
+ 
+@@ -1226,6 +1282,15 @@
+ 
+ 	dpu_kms->hw_vbif = hw;
+ 
++	if (msm_debug_checkpoint == 9) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 9 reached (post-vbif-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	/* TODO: use the same max_freq as in dpu_kms_hw_init */
+ 	max_core_clk_rate = dpu_kms_get_clk_rate(dpu_kms, "core");
+ 	if (!max_core_clk_rate) {
+@@ -1266,6 +1331,15 @@
+ 	dev->max_vblank_count = 0xffffffff;
+ 	/* Disable vblank irqs aggressively for power-saving */
+ 	dev->vblank_disable_immediate = true;
++
++	if (msm_debug_checkpoint == 11) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 11 reached (pre-drm-obj-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
+ 
+ 	/*
+ 	 * _dpu_kms_drm_obj_init should create the DRM related objects
+@@ -1277,6 +1351,15 @@
+ 		goto err_pm_put;
+ 	}
+ 
++	if (msm_debug_checkpoint == 12) {
++		int i;
++		pr_err("ANTIGRAVITY: Checkpoint 12 reached (post-drm-obj-init)! Stalling...\n");
++		for (i = 0; i < 10; i++) {
++			pr_err("ANTIGRAVITY: Heartbeat %d/10\n", i);
++			ssleep(1);
++		}
++	}
++
+ 	dpu_vbif_init_memtypes(dpu_kms);
+ 
+ 	pm_runtime_put_sync(&dpu_kms->pdev->dev);

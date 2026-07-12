@@ -11,70 +11,96 @@ rm -rf "$STAGE_DIR"
 mkdir -p "$STAGE_DIR"
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RESET='\033[0m'
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RED='\033[0;31m'; RESET='\033[0m'
 info()    { echo -e "${CYAN}==>${RESET} $*"; }
 success() { echo -e "${GREEN}✓${RESET}  $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${RESET} $*"; }
+error()   { echo -e "${RED}[ERROR]${RESET} $*"; exit 1; }
 
-echo "=================================================="
+# ─── Build environment image ─────────────────────────────────────────────────
+# Use the pre-baked zethra-build-env image (built once via build/docker/build_image.sh).
+# This eliminates per-run apt-get, rustup downloads, and mkbootimg downloads.
+BUILD_IMAGE="zethra-build-env:1"
+
+ensure_build_image() {
+  if ! docker image inspect "$BUILD_IMAGE" &>/dev/null; then
+    warn "Build image '$BUILD_IMAGE' not found. Building it now (one-time, ~5-10 min)..."
+    bash "$REPO_ROOT/build/docker/build_image.sh"
+    success "Build image ready: $BUILD_IMAGE"
+  fi
+}
+
+# ─── Persistent cache volumes ─────────────────────────────────────────────────
+# These directories live on the HOST and are mounted into Docker.
+# They persist across container runs — nothing is re-downloaded.
+CARGO_REGISTRY="${CARGO_REGISTRY_CACHE:-$HOME/.cargo/registry}"
+CARGO_GIT="${CARGO_GIT_CACHE:-$HOME/.cargo/git}"
+CCACHE_DIR="${CCACHE_DIR:-$HOME/.ccache}"
+mkdir -p "$CARGO_REGISTRY" "$CARGO_GIT" "$CCACHE_DIR"
+
+echo "=========================================="
 echo "    ZethraOS Initramfs Builder"
-echo "=================================================="
+echo "=========================================="
 mkdir -p "$OUT_DIR"
 
 # ─── Step 1: Cross-compile Rust userspace ─────────────────────────────────────
 info "Compiling Rust userspace..."
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  # On macOS, build inside Docker to ensure correct cross-compiler alignment
-  info "macOS detected — compiling inside Docker container..."
-  
-  # Ensure docker is running
+  info "macOS detected — compiling inside Docker ($BUILD_IMAGE)..."
+
   if ! docker ps &>/dev/null; then
-    echo "Error: Docker is not running or not accessible."
-    exit 1
+    error "Docker is not running or not accessible."
   fi
-  
+
+  ensure_build_image
+
   docker run --rm \
     -v "$REPO_ROOT:/workspace" \
+    -v "$CARGO_REGISTRY:/root/.cargo/registry" \
+    -v "$CARGO_GIT:/root/.cargo/git" \
+    -v "$CCACHE_DIR:/ccache" \
+    -e CCACHE_DIR=/ccache \
+    -e CC_aarch64_unknown_linux_musl=musl-gcc \
     -w /workspace \
-    rust:slim bash -c "
-      apt-get update && \
-      apt-get install -y gcc-aarch64-linux-gnu busybox-static && \
-      rustup target add aarch64-unknown-linux-musl && \
-      CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl && \
+    "$BUILD_IMAGE" bash -c "
+      cargo build -j 2 --release --target aarch64-unknown-linux-musl && \
       mkdir -p /workspace/build/out && \
       cp /usr/bin/busybox /workspace/build/out/busybox
     "
 else
-  # On Linux, compile on host if tools exist, fallback to Docker
   if command -v cargo &>/dev/null && rustup target list | grep -q "aarch64-unknown-linux-musl (installed)"; then
     info "Host compilation tools found. Building on host..."
-    CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl
+    CC_aarch64_unknown_linux_musl=musl-gcc cargo build --release --target aarch64-unknown-linux-musl
     if command -v busybox &>/dev/null; then
       mkdir -p "$OUT_DIR"
       cp "$(which busybox)" "$OUT_DIR/busybox"
     else
       warn "busybox not found on host, fetching via Docker..."
+      ensure_build_image
       docker run --rm \
         -v "$REPO_ROOT:/workspace" \
+        -v "$CARGO_REGISTRY:/root/.cargo/registry" \
+        -v "$CARGO_GIT:/root/.cargo/git" \
         -w /workspace \
-        rust:slim bash -c "
-          apt-get update && \
-          apt-get install -y busybox-static && \
+        "$BUILD_IMAGE" bash -c "
           mkdir -p /workspace/build/out && \
           cp /usr/bin/busybox /workspace/build/out/busybox
         "
     fi
   else
-    warn "Host tools missing or misconfigured. Falling back to Docker..."
+    warn "Host tools missing or misconfigured. Falling back to Docker ($BUILD_IMAGE)..."
+    ensure_build_image
     docker run --rm \
       -v "$REPO_ROOT:/workspace" \
+      -v "$CARGO_REGISTRY:/root/.cargo/registry" \
+      -v "$CARGO_GIT:/root/.cargo/git" \
+      -v "$CCACHE_DIR:/ccache" \
+      -e CCACHE_DIR=/ccache \
+      -e CC_aarch64_unknown_linux_musl=musl-gcc \
       -w /workspace \
-      rust:slim bash -c "
-        apt-get update && \
-        apt-get install -y gcc-aarch64-linux-gnu busybox-static && \
-        rustup target add aarch64-unknown-linux-musl && \
-        CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc cargo build --release --target aarch64-unknown-linux-musl && \
+      "$BUILD_IMAGE" bash -c "
+        cargo build -j 2 --release --target aarch64-unknown-linux-musl && \
         mkdir -p /workspace/build/out && \
         cp /usr/bin/busybox /workspace/build/out/busybox
       "
@@ -115,6 +141,53 @@ if [[ -f "$ZETHRAD_BIN" ]]; then
   success "Copied zethrad init to /sbin/zethrad"
 else
   echo "Error: zethrad binary not found at $ZETHRAD_BIN"
+  exit 1
+fi
+
+# ─── Build and stage qbootctl (A/B boot success marker) ───────────────────────
+# qbootctl -m marks the current slot as boot-successful in the GPT attribute
+# field (bit 54 of the 64-bit Attributes UINT64), preventing the retry counter
+# from draining on every boot. Source: tools/qbootctl/ (linux-msm/qbootctl).
+info "Building qbootctl for arm64..."
+QBOOTCTL_SRC="$REPO_ROOT/tools/qbootctl"
+QBOOTCTL_BIN="$QBOOTCTL_SRC/qbootctl"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  ensure_build_image
+  docker run --rm \
+    -v "$REPO_ROOT:/workspace" \
+    -w /workspace/tools/qbootctl \
+    "$BUILD_IMAGE" bash -c "
+      aarch64-linux-gnu-gcc -static -O2 \
+        -o qbootctl \
+        qbootctl.c bootctrl_impl.c gpt-utils.c crc32.c ufs-bsg-stub.c \
+        -I. 2>&1
+    "
+else
+  if command -v aarch64-linux-gnu-gcc &>/dev/null; then
+    (cd "$QBOOTCTL_SRC" && \
+     aarch64-linux-gnu-gcc -static -O2 -o qbootctl \
+       qbootctl.c bootctrl_impl.c gpt-utils.c crc32.c ufs-bsg-stub.c -I.)
+  else
+    ensure_build_image
+    docker run --rm \
+      -v "$REPO_ROOT:/workspace" \
+      -w /workspace/tools/qbootctl \
+      "$BUILD_IMAGE" bash -c "
+        aarch64-linux-gnu-gcc -static -O2 \
+          -o qbootctl \
+          qbootctl.c bootctrl_impl.c gpt-utils.c crc32.c ufs-bsg-stub.c \
+          -I. 2>&1
+      "
+  fi
+fi
+
+if [[ -f "$QBOOTCTL_BIN" ]]; then
+  cp "$QBOOTCTL_BIN" "$STAGE_DIR/sbin/qbootctl"
+  chmod +x "$STAGE_DIR/sbin/qbootctl"
+  success "Copied qbootctl to /sbin/qbootctl ($(du -sh "$QBOOTCTL_BIN" | cut -f1))"
+else
+  echo "Error: qbootctl failed to build at $QBOOTCTL_BIN"
   exit 1
 fi
 
@@ -170,17 +243,27 @@ if [[ -d "$REPO_ROOT/build/configs/units" ]]; then
   success "Copied system unit configs"
 fi
 
-# Copy GPU firmware files
+# Copy GPU firmware files (non-fatal: missing blobs are acceptable for headless/DRM-off builds)
 if [[ -d "$REPO_ROOT/kernel/firmware/qcom" ]]; then
   info "Packaging GPU firmware blobs..."
   mkdir -p "$STAGE_DIR/lib/firmware/qcom"
-  cp "$REPO_ROOT"/kernel/firmware/qcom/a530* "$STAGE_DIR/lib/firmware/qcom/"
-  cp "$REPO_ROOT"/kernel/firmware/qcom/a512* "$STAGE_DIR/lib/firmware/qcom/"
-  # Run validation
-  (cd "$STAGE_DIR/lib/firmware/qcom" && ls | grep -E "a530|a512" > /dev/null)
-  success "GPU firmware blobs packaged successfully"
+  FW_COUNT=0
+  for pattern in a530 a512 a509; do
+    if ls "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* &>/dev/null 2>&1; then
+      cp "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* "$STAGE_DIR/lib/firmware/qcom/"
+      FW_COUNT=$((FW_COUNT + $(ls "$REPO_ROOT"/kernel/firmware/qcom/${pattern}* | wc -l)))
+    else
+      warn "No ${pattern}* firmware blobs found in kernel/firmware/qcom/ (non-fatal for DRM=n builds)"
+    fi
+  done
+  if [[ "$FW_COUNT" -gt 0 ]]; then
+    success "GPU firmware blobs packaged: $FW_COUNT file(s)"
+  else
+    warn "No GPU firmware blobs found — GPU acceleration will not work at boot"
+    warn "This is expected and harmless for headless (Image 01) and drm-nodisp (Image 02) experiments"
+  fi
 else
-  warn "kernel/firmware/qcom not found, GPU acceleration may fail at boot"
+  warn "kernel/firmware/qcom not found — GPU acceleration may fail at boot"
 fi
 
 # Create base-setup helper script
@@ -206,6 +289,37 @@ mount -t debugfs debug /sys/kernel/debug 2>/dev/null || true
 mkdir -p /sys/kernel/config
 mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
 
+# Feed the hardware watchdog in the background to prevent boot reboots
+(
+  while true; do
+    if [ -c /dev/watchdog ]; then
+      echo "a" > /dev/watchdog 2>/dev/null
+    fi
+    sleep 2
+  done
+) &
+
+# Create /dev/disk/by-partlabel symlinks for qbootctl (GPT partition label lookup)
+# The kernel sets PARTNAME in sysfs uevent for each GPT-labelled partition.
+# qbootctl needs /dev/disk/by-partlabel/<name> -> /dev/<devnode> to find partitions.
+# This replaces udev's 60-persistent-storage.rules on our minimal initramfs.
+echo "[init] Waiting for storage devices to populate..."
+retries=0
+while [ ! -d /sys/block/mmcblk1/mmcblk1p52 ] && [ ! -d /sys/block/mmcblk0/mmcblk0p52 ] && [ $retries -lt 100 ]; do
+  sleep 0.05
+  retries=$((retries+1))
+done
+
+mkdir -p /dev/disk/by-partlabel
+for uevent_path in /sys/block/mmcblk*/mmcblk*p*/uevent; do
+  devname=$(grep "^DEVNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
+  partname=$(grep "^PARTNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
+  if [ -n "$devname" ] && [ -n "$partname" ]; then
+    ln -sf "/dev/$devname" "/dev/disk/by-partlabel/$partname" 2>/dev/null || true
+  fi
+done
+echo "[init] Created $(ls /dev/disk/by-partlabel/ 2>/dev/null | wc -l) /dev/disk/by-partlabel/ entries"
+
 echo ""
 echo " ╔═══════════════════════════════╗"
 echo " ║       ZethraOS v0.2.0        ║"
@@ -220,10 +334,9 @@ echo "[init] Kernel log (last 50 lines):"
 dmesg | tail -50 2>/dev/null || true
 
 # Save early dmesg to persist partition (diagnostic fallback for bootloops)
-echo "[init] Waiting for storage devices to populate..."
-sleep 2
 mkdir -p /mnt/persist
-if mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
+if mount -t ext4 /dev/disk/by-partlabel/persist /mnt/persist 2>/dev/null || \
+   mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/block/mmcblk1p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
@@ -255,9 +368,20 @@ if [ -d /sys/kernel/config/usb_gadget ]; then
   echo "CDC ACM Serial" > "$GADGET/configs/c.1/strings/0x409/configuration"
   ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
 
+  # Wait for UDC controller to populate
+  echo "[init] Waiting for USB controller UDC to probe..."
+  udc_retries=0
+  while [ -z "$(ls /sys/class/udc/ 2>/dev/null)" ] && [ $udc_retries -lt 100 ]; do
+    sleep 0.05
+    udc_retries=$((udc_retries+1))
+  done
+
   UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
   if [ -n "$UDC" ]; then
+    echo "[init] Binding USB gadget to UDC: $UDC"
     echo "$UDC" > "$GADGET/UDC" 2>/dev/null
+  else
+    echo "[init] WARNING: USB controller UDC not found, USB serial will be unavailable"
   fi
 fi
 
@@ -270,6 +394,22 @@ while true; do
 done &
 
 echo "[init] Launching PID 1: zethrad..."
+
+# ── Mark boot successful (P0 safety fix) ─────────────────────────────────────
+# Sets GPT attribute bit 54 (AB_PARTITION_ATTR_BOOT_SUCCESSFUL) on the current
+# slot's boot partition. Without this, the ABL decrements the retry counter
+# (bits 51-53) on every boot until it hits zero and marks the slot unbootable.
+# This must run BEFORE exec zethrad so it executes even if zethrad crashes.
+if [ -x /sbin/qbootctl ]; then
+  echo "[init] Marking slot as boot-successful (qbootctl -m)..."
+  /sbin/qbootctl -m && \
+    echo "[init] slot-successful written to GPT" || \
+    echo "[init] WARNING: qbootctl -m failed — retry counter will drain"
+else
+  echo "[init] WARNING: /sbin/qbootctl not found — boot success marker NOT written"
+fi
+# ─────────────────────────────────────────────────────────────────────────────
+
 export ZETHRA_UNITS_DIR=/etc/zethra/units
 if [ -d /mnt/persist ] && grep -q "/mnt/persist" /proc/mounts; then
   exec /sbin/zethrad >/mnt/persist/zethrad.log 2>&1
@@ -288,13 +428,13 @@ find "$STAGE_DIR" -exec touch -h -t 202606121700.00 {} +
 INITRAMFS_OUT="$OUT_DIR/initramfs.cpio.gz"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  info "macOS detected — packaging initramfs inside Docker container for GNU cpio..."
+  info "macOS detected — packaging initramfs inside Docker ($BUILD_IMAGE)..."
+  ensure_build_image
   docker run --rm \
     -v "$REPO_ROOT:/workspace" \
     -v "$STAGE_DIR:/staging" \
     -w /staging \
-    ubuntu:24.04 bash -c "
-      apt-get update && apt-get install -y cpio && \
+    "$BUILD_IMAGE" bash -c "
       find . -not -name '*.cpio.gz' | sort | cpio --reproducible --owner=0:0 -oH newc 2>/dev/null | gzip -n > /workspace/build/out/initramfs.cpio.gz
     "
 else

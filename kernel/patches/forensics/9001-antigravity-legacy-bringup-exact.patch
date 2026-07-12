@@ -1,0 +1,205 @@
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -706,12 +706,24 @@
+ {
+ 	struct device *dev = &gc->gpiodev->dev;
+ 	int size;
++	int parent_size = -1;
+ 
+-	/* Format is "start, count, ..." */
++	if (gc->parent)
++		parent_size = device_property_count_u32(gc->parent, "gpio-reserved-ranges");
++
+ 	size = device_property_count_u32(dev, "gpio-reserved-ranges");
++
++	pr_info("ANTIGRAVITY: gpiochip_count_reserved_ranges for label=%s: dev=%s, size=%d, parent_size=%d\n",
++		gc->label ?: "unknown", dev_name(dev), size, parent_size);
++
+ 	if (size > 0 && size % 2 == 0)
+ 		return size;
+ 
++	if (parent_size > 0 && parent_size % 2 == 0) {
++		pr_info("ANTIGRAVITY: using parent_size=%d for reserved ranges\n", parent_size);
++		return parent_size;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -732,6 +744,13 @@
+ 
+ 	ret = device_property_read_u32_array(dev, "gpio-reserved-ranges",
+ 					     ranges, size);
++	if (ret) {
++		if (gc->parent) {
++			pr_info("ANTIGRAVITY: reading reserved ranges from parent device instead\n");
++			ret = device_property_read_u32_array(gc->parent, "gpio-reserved-ranges",
++							     ranges, size);
++		}
++	}
+ 	if (ret) {
+ 		kfree(ranges);
+ 		return ret;
+@@ -745,6 +764,7 @@
+ 			continue;
+ 
+ 		bitmap_clear(gc->gpiodev->valid_mask, start, count);
++		pr_info("ANTIGRAVITY: cleared valid mask for reserved range [%u, %u]\n", start, start + count - 1);
+ 	}
+ 
+ 	kfree(ranges);
+@@ -907,6 +927,8 @@
+ 	struct gpio_device *gdev = gc->gpiodev;
+ 	struct fwnode_handle *fwnode = dev_fwnode(&gdev->dev);
+ 	int ret;
++
++	pr_info("ANTIGRAVITY: gpiochip_add_data_with_key entry\n");
+ 
+ 	/*
+ 	 * If fwnode doesn't belong to another device, it's safe to clear its
+@@ -1287,11 +1309,15 @@
+ 				   &desc->flags, !gc->direction_input);
+ 	}
+ 
++	pr_info("ANTIGRAVITY: of_gpiochip_add start\n");
+ 	ret = of_gpiochip_add(gc);
++	pr_info("ANTIGRAVITY: of_gpiochip_add returned %d\n", ret);
+ 	if (ret)
+ 		goto err_free_valid_mask;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_add_pin_ranges start\n");
+ 	ret = gpiochip_add_pin_ranges(gc);
++	pr_info("ANTIGRAVITY: gpiochip_add_pin_ranges returned %d\n", ret);
+ 	if (ret)
+ 		goto err_remove_of_chip;
+ 
+@@ -1301,15 +1327,21 @@
+ 	if (ret)
+ 		goto err_free_hogs;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start\n");
+ 	ret = gpiochip_irqchip_init_valid_mask(gc);
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned %d\n", ret);
+ 	if (ret)
+ 		goto err_free_hogs;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_hw start\n");
+ 	ret = gpiochip_irqchip_init_hw(gc);
++	pr_info("ANTIGRAVITY: gpiochip_irqchip_init_hw returned %d\n", ret);
+ 	if (ret)
+ 		goto err_remove_irqchip_mask;
+ 
++	pr_info("ANTIGRAVITY: gpiochip_add_irqchip start\n");
+ 	ret = gpiochip_add_irqchip(gc, lock_key, request_key);
++	pr_info("ANTIGRAVITY: gpiochip_add_irqchip returned %d\n", ret);
+ 	if (ret)
+ 		goto err_remove_irqchip_mask;
+ 
+--- a/drivers/hwspinlock/qcom_hwspinlock.c
++++ b/drivers/hwspinlock/qcom_hwspinlock.c
+@@ -208,7 +208,10 @@
+ 	u32 stride;
+ 	u32 base;
+ 	int i;
++	int ret;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: hwspinlock probe START for %s\n", ktime_get_ns(), dev_name(&pdev->dev));
++
+ 	regmap = qcom_hwspinlock_probe_syscon(pdev, &base, &stride);
+ 	if (IS_ERR(regmap) && PTR_ERR(regmap) == -ENODEV)
+ 		regmap = qcom_hwspinlock_probe_mmio(pdev, &base, &stride);
+@@ -234,8 +237,11 @@
+ 			return PTR_ERR(bank->lock[i].priv);
+ 	}
+ 
+-	return devm_hwspin_lock_register(&pdev->dev, bank, &qcom_hwspinlock_ops,
++	ret = devm_hwspin_lock_register(&pdev->dev, bank, &qcom_hwspinlock_ops,
+ 					 0, QCOM_MUTEX_NUM_LOCKS);
++
++	pr_info("ANTIGRAVITY [%llu ns]: hwspinlock probe DONE for %s, ret=%d\n", ktime_get_ns(), dev_name(&pdev->dev), ret);
++	return ret;
+ }
+ 
+ static struct platform_driver qcom_hwspinlock_driver = {
+--- a/drivers/pinctrl/qcom/pinctrl-msm.c
++++ b/drivers/pinctrl/qcom/pinctrl-msm.c
+@@ -1408,6 +1408,8 @@
+ 	unsigned gpio, ngpio = pctrl->soc->ngpios;
+ 	struct device_node *np;
+ 	bool skip;
++
++	pr_info("ANTIGRAVITY [%llu ns]: msm_gpio_init enter, ngpios=%d\n", ktime_get_ns(), ngpio);
+ 
+ 	if (WARN_ON(ngpio > MAX_NR_GPIO))
+ 		return -EINVAL;
+@@ -1454,7 +1456,9 @@
+ 	girq->parents[0] = pctrl->irq;
+ 	girq->init_valid_mask = msm_gpio_irq_init_valid_mask;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_gpio_init calling devm_gpiochip_add_data\n", ktime_get_ns());
+ 	ret = devm_gpiochip_add_data(pctrl->dev, &pctrl->chip, pctrl);
++	pr_info("ANTIGRAVITY [%llu ns]: msm_gpio_init devm_gpiochip_add_data returned %d\n", ktime_get_ns(), ret);
+ 	if (ret) {
+ 		dev_err(pctrl->dev, "Failed register gpiochip\n");
+ 		return ret;
+@@ -1507,8 +1511,10 @@
+ 	int i;
+ 	const struct pinfunction *func = pctrl->soc->functions;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: setup_pm_reset enter\n", ktime_get_ns());
+ 	for (i = 0; i < pctrl->soc->nfunctions; i++)
+ 		if (!strcmp(func[i].name, "ps_hold")) {
++			pr_info("ANTIGRAVITY [%llu ns]: setup_pm_reset registering sys_off handler\n", ktime_get_ns());
+ 			if (devm_register_sys_off_handler(pctrl->dev,
+ 							  SYS_OFF_MODE_RESTART,
+ 							  128,
+@@ -1520,6 +1526,7 @@
+ 			pm_power_off = msm_ps_hold_poweroff;
+ 			break;
+ 		}
++	pr_info("ANTIGRAVITY [%llu ns]: setup_pm_reset exit\n", ktime_get_ns());
+ }
+ 
+ static __maybe_unused int msm_pinctrl_suspend(struct device *dev)
+@@ -1550,6 +1557,8 @@
+ 	int ret;
+ 	int i;
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_pinctrl_probe start for %s\n", ktime_get_ns(), dev_name(&pdev->dev));
++
+ 	pctrl = devm_kzalloc(&pdev->dev, sizeof(*pctrl), GFP_KERNEL);
+ 	if (!pctrl)
+ 		return -ENOMEM;
+@@ -1567,11 +1576,13 @@
+ 		for (i = 0; i < soc_data->ntiles; i++) {
+ 			res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+ 							   soc_data->tiles[i]);
++			pr_info("ANTIGRAVITY [%llu ns]: mapping tile %s\n", ktime_get_ns(), soc_data->tiles[i]);
+ 			pctrl->regs[i] = devm_ioremap_resource(&pdev->dev, res);
+ 			if (IS_ERR(pctrl->regs[i]))
+ 				return PTR_ERR(pctrl->regs[i]);
+ 		}
+ 	} else {
++		pr_info("ANTIGRAVITY [%llu ns]: mapping single resource\n", ktime_get_ns());
+ 		pctrl->regs[0] = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
+ 		if (IS_ERR(pctrl->regs[0]))
+ 			return PTR_ERR(pctrl->regs[0]);
+@@ -1579,8 +1590,10 @@
+ 		pctrl->phys_base[0] = res->start;
+ 	}
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: setting up PM reset notifier...\n", ktime_get_ns());
+ 	msm_pinctrl_setup_pm_reset(pctrl);
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: requesting IRQ...\n", ktime_get_ns());
+ 	pctrl->irq = platform_get_irq(pdev, 0);
+ 	if (pctrl->irq < 0)
+ 		return pctrl->irq;
+@@ -1613,6 +1626,7 @@
+ 
+ 	platform_set_drvdata(pdev, pctrl);
+ 
++	pr_info("ANTIGRAVITY [%llu ns]: msm_pinctrl_probe success for %s\n", ktime_get_ns(), dev_name(&pdev->dev));
+ 	dev_dbg(&pdev->dev, "Probed Qualcomm pinctrl driver\n");
+ 
+ 	return 0;
