@@ -1,7 +1,7 @@
 # ZethraOS — Nokia 6.1 Plus Hardware Target
 
 **Device**: Nokia 6.1 Plus (TA-1103)  
-**Status**: Primary reference hardware target; Phase 1 boot baseline verified on 2026-06-13
+**Status**: Primary reference hardware target; Slot A control baseline frozen on 2026-07-12. See [NOKIA61PLUS_SLOT_A_CONTROL_BASELINE.md](NOKIA61PLUS_SLOT_A_CONTROL_BASELINE.md).
 
 ---
 
