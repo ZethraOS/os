@@ -31,6 +31,7 @@ def run_cmd(cmd):
     try:
         os.read(fd, 65536)
     except BlockingIOError:
+        # Non-blocking read has no pending input; nothing to flush.
         pass
 
     # Send command
@@ -53,6 +54,7 @@ def run_cmd(cmd):
             else:
                 no_data_count += 1
         except BlockingIOError:
+            # Non-blocking read would block; no more data available currently.
             no_data_count += 1
 
     os.close(fd)

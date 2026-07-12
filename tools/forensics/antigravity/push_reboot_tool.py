@@ -47,6 +47,7 @@ def push_and_run():
     try:
         os.read(fd, 65536)
     except BlockingIOError:
+        # Non-blocking read has no pending input; nothing to flush.
         pass
     os.set_blocking(fd, True)
 
@@ -81,6 +82,7 @@ def push_and_run():
     try:
         print(os.read(fd, 4096).decode(errors='ignore'))
     except BlockingIOError:
+        # Non-blocking read may have no data available yet; ignore and continue.
         pass
     os.set_blocking(fd, True)
 
