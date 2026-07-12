@@ -289,10 +289,27 @@ mount -t debugfs debug /sys/kernel/debug 2>/dev/null || true
 mkdir -p /sys/kernel/config
 mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
 
+# Feed the hardware watchdog in the background to prevent boot reboots
+(
+  while true; do
+    if [ -c /dev/watchdog ]; then
+      echo "a" > /dev/watchdog 2>/dev/null
+    fi
+    sleep 2
+  done
+) &
+
 # Create /dev/disk/by-partlabel symlinks for qbootctl (GPT partition label lookup)
 # The kernel sets PARTNAME in sysfs uevent for each GPT-labelled partition.
 # qbootctl needs /dev/disk/by-partlabel/<name> -> /dev/<devnode> to find partitions.
 # This replaces udev's 60-persistent-storage.rules on our minimal initramfs.
+echo "[init] Waiting for storage devices to populate..."
+retries=0
+while [ ! -d /sys/block/mmcblk1/mmcblk1p52 ] && [ ! -d /sys/block/mmcblk0/mmcblk0p52 ] && [ $retries -lt 100 ]; do
+  sleep 0.05
+  retries=$((retries+1))
+done
+
 mkdir -p /dev/disk/by-partlabel
 for uevent_path in /sys/block/mmcblk*/mmcblk*p*/uevent; do
   devname=$(grep "^DEVNAME=" "$uevent_path" 2>/dev/null | cut -d= -f2)
@@ -317,10 +334,9 @@ echo "[init] Kernel log (last 50 lines):"
 dmesg | tail -50 2>/dev/null || true
 
 # Save early dmesg to persist partition (diagnostic fallback for bootloops)
-echo "[init] Waiting for storage devices to populate..."
-sleep 2
 mkdir -p /mnt/persist
-if mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
+if mount -t ext4 /dev/disk/by-partlabel/persist /mnt/persist 2>/dev/null || \
+   mount -t ext4 /dev/block/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk0p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/block/mmcblk1p73 /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
@@ -352,9 +368,20 @@ if [ -d /sys/kernel/config/usb_gadget ]; then
   echo "CDC ACM Serial" > "$GADGET/configs/c.1/strings/0x409/configuration"
   ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
 
+  # Wait for UDC controller to populate
+  echo "[init] Waiting for USB controller UDC to probe..."
+  udc_retries=0
+  while [ -z "$(ls /sys/class/udc/ 2>/dev/null)" ] && [ $udc_retries -lt 100 ]; do
+    sleep 0.05
+    udc_retries=$((udc_retries+1))
+  done
+
   UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
   if [ -n "$UDC" ]; then
+    echo "[init] Binding USB gadget to UDC: $UDC"
     echo "$UDC" > "$GADGET/UDC" 2>/dev/null
+  else
+    echo "[init] WARNING: USB controller UDC not found, USB serial will be unavailable"
   fi
 fi
 
@@ -374,15 +401,10 @@ echo "[init] Launching PID 1: zethrad..."
 # (bits 51-53) on every boot until it hits zero and marks the slot unbootable.
 # This must run BEFORE exec zethrad so it executes even if zethrad crashes.
 if [ -x /sbin/qbootctl ]; then
-  SLOT_SUFFIX=$(cat /proc/cmdline | tr ' ' '\n' | grep 'androidboot.slot_suffix' | cut -d= -f2)
-  if [ -n "$SLOT_SUFFIX" ]; then
-    echo "[init] Marking slot ${SLOT_SUFFIX} as boot-successful (qbootctl -m)..."
-    /sbin/qbootctl -m && \
-      echo "[init] slot-successful written to GPT" || \
-      echo "[init] WARNING: qbootctl -m failed — retry counter will drain"
-  else
-    echo "[init] WARNING: androidboot.slot_suffix not in cmdline — cannot mark successful"
-  fi
+  echo "[init] Marking slot as boot-successful (qbootctl -m)..."
+  /sbin/qbootctl -m && \
+    echo "[init] slot-successful written to GPT" || \
+    echo "[init] WARNING: qbootctl -m failed — retry counter will drain"
 else
   echo "[init] WARNING: /sbin/qbootctl not found — boot success marker NOT written"
 fi
