@@ -1,2 +1,5 @@
 # Exclude vendored tools from repository language statistics
 tools/** linguist-vendored
+
+# Classify kernel config fragments as INI for highlighting, but exclude them from code stats
+*.frag linguist-language=INI linguist-documentation
