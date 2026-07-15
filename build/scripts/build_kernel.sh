@@ -148,8 +148,10 @@ BOOT_EXTRA_CMDLINE="${BOOT_EXTRA_CMDLINE:-}"
 
 # Base cmdline — applied to ALL builds:
 # - earlycon=msm_serial_dm,0xc170000  (F-16: output before serial driver probes)
-# - msm.separate_gpu_kms=1            (F-05: separate GPU/KMS probe on SDM636)
-BASE_CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=userdebug panic=10 msm.separate_gpu_kms=1"
+# NOTE: msm.separate_gpu_kms=1 was REMOVED (Experiment B-02, 2026-07-16).
+#   With adreno_gpu disabled in DTS, that flag prevents msm_drm KMS from
+#   registering entirely. Unified KMS mode (no flag) is correct for headless display bringup.
+BASE_CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=userdebug panic=10"
 if [[ -n "$BOOT_EXTRA_CMDLINE" ]]; then
   FULL_CMDLINE="$BASE_CMDLINE $BOOT_EXTRA_CMDLINE"
 else
