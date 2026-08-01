@@ -84,6 +84,13 @@ CONFIG_DRM_MSM_DSI=y
 # 10NM_PHY is SDM845-only. Using 10nm here would cause dsi_phy probe to return -EPROBE_DEFER
 # on all DSI-enabled images (3-6), making them indistinguishable from each other.
 CONFIG_DRM_MSM_DSI_14NM_PHY=y
+# B-03/04 FIX (2026-07-24): SDM636 uses MDP5 display controller ("qcom,mdp5" in sdm630.dtsi).
+# DPU driver is the correct one for SDM630/636/660 in Linux 7.1.
+# qcom,sdm630-mdp5 is in msm_mdp5_dpu_migrated[] in msm_drv.c —
+# MDP5 driver explicitly skips binding for these SoCs.
+# DPU uses dpu_kms_mmap_mdp5() path (mdp_phys/vbif_phys resources) for MDP5-compat devices.
+# CONFIG_DRM_MSM_MDP5 is intentionally disabled.
+CONFIG_DRM_MSM_DPU=y
 # Removed: CONFIG_DRM_MSM_ADRENO — phantom symbol, does not exist in Linux 7.1.
 #   Adreno (all generations A2xx-A7xx) is built unconditionally when DRM_MSM=y.
 # Removed: CONFIG_DRM_MSM_REGISTER_LOGGING — confirmed phantom: not in Linux 7.1 Kconfig.
@@ -175,7 +182,9 @@ CONFIG_USB_DWC3=y              # Qualcomm DWC3 controller (SDM636)
 CONFIG_USB_DWC3_QCOM=y         # Qualcomm DWC3 glue layer
 CONFIG_USB_GADGET=y
 CONFIG_USB_CONFIGFS=y
-CONFIG_USB_CONFIGFS_ACM=y      # CDC ACM USB Serial function
+CONFIG_USB_CONFIGFS_ACM=y
+CONFIG_USB_G_SERIAL=y
+CONFIG_U_SERIAL_CONSOLE=y      # CDC ACM USB Serial function
 CONFIG_USB_TYPEC=y
 CONFIG_TYPEC_QCOM_PMIC=y       # Qualcomm PMIC USB Type-C
 CONFIG_USB_ROLE_SWITCH=y

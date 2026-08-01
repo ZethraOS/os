@@ -228,8 +228,12 @@ success "Diagnostic initramfs: $DEBUG_INITRAMFS ($(du -sh "$DEBUG_INITRAMFS" | c
 # Repack boot.img with improved cmdline
 info "Repacking boot.img with diagnostic initramfs and improved cmdline..."
 
-# The improved cmdline adds critical parameters (earlycon removed to prevent clock-gating bus hangs)
-CMDLINE="console=tty0 loglevel=8 ignore_loglevel androidboot.hardware=qcom androidboot.bootdevice=c0c4000.sdhci lpm_levels.sleep_disabled=1 cpuidle.off=1 buildvariant=eng printk.devkmsg=on clk_ignore_unused pd_ignore_unused nosmp initcall_debug earlyprintk panic=5 oops=panic no_console_suspend pstore.backend=ramoops ramoops.mem_address=0xacb00000 ramoops.mem_size=0x200000 ramoops.console_size=0x40000 ramoops.record_size=0x1000 ramoops.ftrace_size=0x1000 ramoops.pmsg_size=0x1000 ramoops.ecc=0 arm-smmu.disable_bypass=0 iommu.passthrough=1"
+# The debug cmdline restores all required baseline parameters.
+# earlycon=msm_serial_dm,0xc170000: REQUIRED — provides serial output before the MSM serial
+#   driver probes. Previous claim that this causes clock-gating hangs was incorrect.
+# msm.separate_gpu_kms=1: REQUIRED — splits GPU and KMS devices so GPU probe failure does
+#   not block the display path. Restored to baseline 2026-07-31.
+CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 androidboot.hardware=qcom msm.separate_gpu_kms=1 androidboot.bootdevice=c0c4000.sdhci lpm_levels.sleep_disabled=1 buildvariant=eng printk.devkmsg=on clk_ignore_unused pd_ignore_unused initcall_debug panic=5 oops=panic no_console_suspend pstore.backend=ramoops ramoops.mem_address=0xacb00000 ramoops.mem_size=0x200000 ramoops.console_size=0x40000 ramoops.record_size=0x1000 ramoops.ftrace_size=0x1000 ramoops.pmsg_size=0x1000 ramoops.ecc=0 arm-smmu.disable_bypass=0 iommu.passthrough=1"
 
 
 python3 "$REPO_ROOT/tools/mkbootimg" \
