@@ -491,6 +491,10 @@
 	label = "backlight";
 };
 
+&mmss_smmu {
+	status = "okay";
+};
+
 &mdss {
 	status = "okay";
 };
