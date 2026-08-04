@@ -51,7 +51,10 @@ impl PartitionManager {
     pub fn get_current_slot() -> Result<Slot> {
         // First try qbootctl on live target hardware
         if Path::new("/sbin/qbootctl").exists() {
-            if let Ok(output) = std::process::Command::new("/sbin/qbootctl").arg("-x").output() {
+            if let Ok(output) = std::process::Command::new("/sbin/qbootctl")
+                .arg("-x")
+                .output()
+            {
                 if output.status.success() {
                     let suffix = String::from_utf8_lossy(&output.stdout).trim().to_string();
                     if let Some(slot) = Slot::from_suffix(&suffix) {
@@ -113,9 +116,12 @@ impl PartitionManager {
                 .await?;
             if status.success() {
                 info!(slot = ?slot, "✓ qbootctl successfully set active boot slot");
-                return Ok(());
+                Ok(())
             } else {
-                return Err(anyhow::anyhow!("qbootctl failed to set active slot: {}", status));
+                Err(anyhow::anyhow!(
+                    "qbootctl failed to set active slot: {}",
+                    status
+                ))
             }
         } else {
             warn!("qbootctl binary not found — simulating BCB active slot switch");
@@ -221,7 +227,11 @@ impl OtaHal for PartitionManager {
         })
     }
 
-    async fn verify_and_switch(&mut self, target_slot: &BootSlot, _expected_sha256: &str) -> Result<()> {
+    async fn verify_and_switch(
+        &mut self,
+        target_slot: &BootSlot,
+        _expected_sha256: &str,
+    ) -> Result<()> {
         let target: Slot = target_slot.into();
         self.set_active_slot_next_boot(&target).await
     }

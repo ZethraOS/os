@@ -30,22 +30,36 @@ pub struct CameraInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum CameraFacing { Front, Back, External }
+pub enum CameraFacing {
+    Front,
+    Back,
+    External,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CaptureRequest {
     pub width: u32,
     pub height: u32,
     pub format: ImageFormat,
-    pub exposure_ns: Option<i64>,   // None = auto
-    pub iso: Option<u32>,            // None = auto
+    pub exposure_ns: Option<i64>, // None = auto
+    pub iso: Option<u32>,         // None = auto
     pub af_mode: AfMode,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ImageFormat { Yuv420, Jpeg, Raw10, Raw12, Heif }
+pub enum ImageFormat {
+    Yuv420,
+    Jpeg,
+    Raw10,
+    Raw12,
+    Heif,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum AfMode { Auto, Continuous, Manual { distance_diopters: f32 } }
+pub enum AfMode {
+    Auto,
+    Continuous,
+    Manual { distance_diopters: f32 },
+}
 
 #[async_trait::async_trait]
 pub trait CameraHal: Send + Sync {
@@ -64,29 +78,34 @@ pub trait CameraHal: Send + Sync {
 pub struct SensorEvent {
     pub sensor_type: SensorType,
     pub timestamp_ns: i64,
-    pub values: [f32; 6],    // Up to 6 floats; interpretation depends on type
+    pub values: [f32; 6], // Up to 6 floats; interpretation depends on type
     pub accuracy: SensorAccuracy,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum SensorType {
-    Accelerometer,          // m/s² — [x, y, z]
-    Gyroscope,              // rad/s — [x, y, z]
-    Magnetometer,           // μT — [x, y, z]
-    Proximity,              // cm
-    AmbientLight,           // lux
-    Barometer,              // hPa
-    Thermometer,            // °C
-    HeartRate,              // bpm
-    StepCounter,            // steps since boot
-    GravityVector,          // m/s² — [x, y, z]
-    LinearAcceleration,     // m/s² without gravity — [x, y, z]
-    RotationVector,         // quaternion [x, y, z, w, accuracy_rad]
-    GameRotationVector,     // quaternion [x, y, z, w] (no magnetometer)
+    Accelerometer,      // m/s² — [x, y, z]
+    Gyroscope,          // rad/s — [x, y, z]
+    Magnetometer,       // μT — [x, y, z]
+    Proximity,          // cm
+    AmbientLight,       // lux
+    Barometer,          // hPa
+    Thermometer,        // °C
+    HeartRate,          // bpm
+    StepCounter,        // steps since boot
+    GravityVector,      // m/s² — [x, y, z]
+    LinearAcceleration, // m/s² without gravity — [x, y, z]
+    RotationVector,     // quaternion [x, y, z, w, accuracy_rad]
+    GameRotationVector, // quaternion [x, y, z, w] (no magnetometer)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SensorAccuracy { Unreliable, Low, Medium, High }
+pub enum SensorAccuracy {
+    Unreliable,
+    Low,
+    Medium,
+    High,
+}
 
 #[async_trait::async_trait]
 pub trait SensorHal: Send + Sync {
@@ -110,13 +129,22 @@ pub struct DisplayConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum HdrType { None, Hdr10, Hdr10Plus, DolbyVision }
+pub enum HdrType {
+    None,
+    Hdr10,
+    Hdr10Plus,
+    DolbyVision,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ColorGamut { Srgb, DisplayP3, BtRec2020 }
+pub enum ColorGamut {
+    Srgb,
+    DisplayP3,
+    BtRec2020,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisplayAttributes {
-    pub brightness: f32,        // 0.0–1.0
+    pub brightness: f32, // 0.0–1.0
     pub auto_brightness: bool,
     pub refresh_rate: u32,
     pub adaptive_refresh: bool, // LPTO-style variable refresh
@@ -148,10 +176,19 @@ pub enum BiometricResult {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum BiometricFailReason { NoMatch, FingerNotDetected, SensorDirty, Unknown }
+pub enum BiometricFailReason {
+    NoMatch,
+    FingerNotDetected,
+    SensorDirty,
+    Unknown,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum BiometricType { Fingerprint, FaceId, Iris }
+pub enum BiometricType {
+    Fingerprint,
+    FaceId,
+    Iris,
+}
 
 #[async_trait::async_trait]
 pub trait BiometricHal: Send + Sync {
@@ -180,7 +217,7 @@ pub struct BatteryInfo {
     pub charge_type: ChargeType,
     pub temperature_c: f32,
     pub voltage_mv: u32,
-    pub current_ma: i32,    // negative = discharging
+    pub current_ma: i32, // negative = discharging
     pub full_capacity_mah: u32,
     pub design_capacity_mah: u32,
     pub cycle_count: u32,
@@ -189,9 +226,23 @@ pub struct BatteryInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ChargeType { None, Wired5W, Wired18W, Wired45W, Wireless5W, Wireless15W }
+pub enum ChargeType {
+    None,
+    Wired5W,
+    Wired18W,
+    Wired45W,
+    Wireless5W,
+    Wireless15W,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum BatteryHealth { Good, Overheat, Dead, Overvoltage, UnspecFailure, Cold }
+pub enum BatteryHealth {
+    Good,
+    Overheat,
+    Dead,
+    Overvoltage,
+    UnspecFailure,
+    Cold,
+}
 
 #[async_trait::async_trait]
 pub trait PowerHal: Send + Sync {
@@ -203,12 +254,20 @@ pub trait PowerHal: Send + Sync {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum PerfMode { PowerSave, Balanced, Performance, Gaming }
+pub enum PerfMode {
+    PowerSave,
+    Balanced,
+    Performance,
+    Gaming,
+}
 
 // ─── Boot Control / OTA HAL ───────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum BootSlot { A, B }
+pub enum BootSlot {
+    A,
+    B,
+}
 
 impl BootSlot {
     pub fn suffix(&self) -> &'static str {
@@ -256,7 +315,11 @@ pub struct OtaProgress {
 pub trait OtaHal: Send + Sync {
     async fn start_update(&mut self, payload_path: &str, target_slot: &BootSlot) -> Result<()>;
     async fn poll_progress(&self) -> Result<OtaProgress>;
-    async fn verify_and_switch(&mut self, target_slot: &BootSlot, expected_sha256: &str) -> Result<()>;
+    async fn verify_and_switch(
+        &mut self,
+        target_slot: &BootSlot,
+        expected_sha256: &str,
+    ) -> Result<()>;
     async fn trigger_rollback(&mut self, reason: &str) -> Result<()>;
 }
 
@@ -277,5 +340,9 @@ pub struct CapabilityResponse {
 
 #[async_trait::async_trait]
 pub trait SandboxHal: Send + Sync {
-    async fn dispatch_capability(&self, app_id: &str, req: CapabilityRequest) -> Result<CapabilityResponse>;
+    async fn dispatch_capability(
+        &self,
+        app_id: &str,
+        req: CapabilityRequest,
+    ) -> Result<CapabilityResponse>;
 }
