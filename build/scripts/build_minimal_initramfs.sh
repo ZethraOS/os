@@ -181,10 +181,12 @@ echo "[minit] ✓ Init complete. Spawning shell on /dev/ttyGS0 and /dev/ttyMSM0"
 echo "[minit] Run 'dmesg | grep -i drm' to inspect display driver probing"
 
 # Shell on UART (hardware serial — always available)
-(while true; do
-  /bin/sh < /dev/ttyMSM0 > /dev/ttyMSM0 2>&1
-  sleep 1
-done) &
+if [ -c /dev/ttyMSM0 ]; then
+  (while true; do
+    [ -c /dev/ttyMSM0 ] && /bin/sh < /dev/ttyMSM0 > /dev/ttyMSM0 2>&1
+    sleep 1
+  done) &
+fi
 
 # Shell on USB ACM (enumerated ~3-5s after boot)
 while true; do
