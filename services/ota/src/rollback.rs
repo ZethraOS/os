@@ -87,6 +87,10 @@ impl PostUpdateMonitor {
         let previous = current.inactive();
 
         info!(reverting_to = ?previous, "Emergency revert initiated");
+        let mgr = PartitionManager;
+        if let Err(e) = mgr.set_active_slot_next_boot(&previous).await {
+            error!("Failed to set active slot during rollback: {}", e);
+        }
 
         tokio::process::Command::new("reboot").spawn().ok();
         Ok(())

@@ -204,3 +204,58 @@ pub trait PowerHal: Send + Sync {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PerfMode { PowerSave, Balanced, Performance, Gaming }
+
+// ─── Boot Control / OTA HAL ───────────────────────────────────────────────────
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BootSlot { A, B }
+
+impl BootSlot {
+    pub fn suffix(&self) -> &'static str {
+        match self {
+            BootSlot::A => "_a",
+            BootSlot::B => "_b",
+        }
+    }
+
+    pub fn inactive(&self) -> Self {
+        match self {
+            BootSlot::A => BootSlot::B,
+            BootSlot::B => BootSlot::A,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotStatus {
+    pub slot: BootSlot,
+    pub active: bool,
+    pub successful: bool,
+    pub bootable: bool,
+}
+
+#[async_trait::async_trait]
+pub trait BootControlHal: Send + Sync {
+    async fn get_current_slot(&self) -> Result<BootSlot>;
+    async fn get_active_slot(&self) -> Result<BootSlot>;
+    async fn get_slot_info(&self, slot: &BootSlot) -> Result<SlotStatus>;
+    async fn mark_boot_successful(&mut self) -> Result<()>;
+    async fn set_active_slot(&mut self, slot: &BootSlot) -> Result<()>;
+    async fn mark_slot_unbootable(&mut self, slot: &BootSlot) -> Result<()>;
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OtaProgress {
+    pub bytes_written: u64,
+    pub total_bytes: u64,
+    pub percentage: f32,
+    pub verified_sha256: Option<String>,
+}
+
+#[async_trait::async_trait]
+pub trait OtaHal: Send + Sync {
+    async fn start_update(&mut self, payload_path: &str, target_slot: &BootSlot) -> Result<()>;
+    async fn poll_progress(&self) -> Result<OtaProgress>;
+    async fn verify_and_switch(&mut self, target_slot: &BootSlot, expected_sha256: &str) -> Result<()>;
+    async fn trigger_rollback(&mut self, reason: &str) -> Result<()>;
+}
