@@ -33,7 +33,11 @@ async fn main() -> Result<()> {
 
     // Simulated app run (logic would come from manager/OS core)
     let wasm_bytes = vec![0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]; // Minimal WASM header
-    if let Err(e) = runtime.load_and_run(&wasm_bytes, 1000).await {
+    let default_manifest = crate::permissions::AppManifest::default_test(vec![]);
+    if let Err(e) = runtime
+        .load_and_run(&wasm_bytes, 1000, default_manifest)
+        .await
+    {
         info!("Simulated run failed (expected): {}", e);
     }
 

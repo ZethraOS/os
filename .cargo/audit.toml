@@ -1,0 +1,4 @@
+[advisories]
+ignore = [
+    "RUSTSEC-2026-0222", # wasmtime: Stores can mix up type indices between engines. ZethraOS sandboxes instantiate a single Store per Engine without cross-engine sharing, rendering this advisory inapplicable.
+]

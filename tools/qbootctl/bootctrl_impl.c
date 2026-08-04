@@ -488,7 +488,7 @@ static int boot_ctl_set_active_slot_for_partitions(struct gpt_disk *disk,
 		snprintf(buf + rc, GPT_PTN_PATH_MAX - rc, "/%s", slotA);
 		LOGD("Checking for partition %s\n", buf);
 		if (stat(buf, &st)) {
-			if (!strcmp(slotA, "boot_a") || !strcmp(slotA, "dtbo_a")) {
+			if (!strcmp(slotA, "boot_a")) {
 				fprintf(stderr, "Couldn't find required partition %s\n", slotA);
 				return -1;
 			}

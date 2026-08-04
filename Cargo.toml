@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "hal",
     "services/zethrad",
     "services/telephony",
     "services/network",

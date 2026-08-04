@@ -30,7 +30,7 @@ VBMETA_OUTPUT="$OUT_DIR/vbmeta.img"
 # Boot image parameters (matching stock Nokia 6.1 Plus capture)
 HEADER_VERSION=0
 PAGE_SIZE=4096
-KERNEL_OFFSET=0x8000
+KERNEL_OFFSET=0x00008000
 RAMDISK_OFFSET=0x01000000
 SECOND_OFFSET=0x00f00000
 TAGS_OFFSET=0x100
@@ -38,7 +38,7 @@ BASE=0x0
 OS_VERSION="10.0.0"
 OS_PATCH_LEVEL="2021-08"
 EXTRA_ARGS="${BOOT_EXTRA_CMDLINE:-}"
-CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 panic=10 buildvariant=userdebug ${EXTRA_ARGS}"
+CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 console=ttyGS0,115200 androidboot.hardware=qcom msm.separate_gpu_kms=1 panic=10 buildvariant=userdebug ${EXTRA_ARGS}"
 
 # Options
 SIGN_BOOT=true
@@ -209,12 +209,11 @@ if [[ "$SIGN_BOOT" == true ]]; then
       
       success "Boot image signed with test key: $BOOT_OUTPUT"
       
-      # Also create unsigned vbmeta for testing
+      # Create pure disabled vbmeta image for testing (flag 3: disable verification + hashtree)
       python3 "$AVBTOOL" make_vbmeta_image \
         --output "$VBMETA_OUTPUT" \
-        --chain_partition boot:1:"$TEST_KEY.pub" \
-        --set_hashtree_disabled_flag \
-        --set_verification_disabled_flag 2>&1 | grep -v "^$" || true
+        --flag 3 \
+        --padding_size 4096 2>&1 | grep -v "^$" || true
       
       if [[ -f "$VBMETA_OUTPUT" ]]; then
         success "VBMeta: $VBMETA_OUTPUT (for --disable-verity testing)"

@@ -148,8 +148,13 @@ BOOT_EXTRA_CMDLINE="${BOOT_EXTRA_CMDLINE:-}"
 
 # Base cmdline — applied to ALL builds:
 # - earlycon=msm_serial_dm,0xc170000  (F-16: output before serial driver probes)
-# - msm.separate_gpu_kms=1            (F-05: separate GPU/KMS probe on SDM636)
-BASE_CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 androidboot.hardware=qcom lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=userdebug panic=10 msm.separate_gpu_kms=1"
+# - msm.separate_gpu_kms=1            (F-05: splits GPU and display KMS into separate devices;
+#     required so that Adreno GPU probe failures do not block the display path and vice versa.
+#     Incorrectly removed in Experiment B-02 2026-07-16 — RESTORED to baseline 2026-07-31.)
+# - fw_devlink=permissive             (2026-07-25: display-subsystem@c900000 has a devlink
+#     dependency on remoteproc:glink-edge (ADSP) which never probes without full Android
+#     userspace/firmware. Without permissive, the display driver never probes at all.)
+BASE_CMDLINE="earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 console=ttyGS0,115200 androidboot.hardware=qcom msm.separate_gpu_kms=1 lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=userdebug panic=10 fw_devlink=permissive"
 if [[ -n "$BOOT_EXTRA_CMDLINE" ]]; then
   FULL_CMDLINE="$BASE_CMDLINE $BOOT_EXTRA_CMDLINE"
 else
@@ -223,12 +228,14 @@ build_in_docker() {
       cp arch/arm64/boot/Image.gz /workspace/build/out/Image.gz-dtb && \
       cat arch/arm64/boot/dts/qcom/sdm636-nokia-frt.dtb >> /workspace/build/out/Image.gz-dtb && \
       cd /workspace && \
-      if [ -f 'build/out/initramfs.cpio.gz' ]; then \
-        echo 'Packing boot.img...' && \
+      RAMDISK=build/out/initramfs-minimal.cpio.gz && \
+      if [ ! -f \"\$RAMDISK\" ]; then RAMDISK=build/out/initramfs.cpio.gz; fi && \
+      if [ -f \"\$RAMDISK\" ]; then \
+        echo \"Packing boot.img with ramdisk: \$RAMDISK (\$(du -sh \$RAMDISK | cut -f1))...\" && \
         mkbootimg \
           --header_version 0 \
           --kernel         build/out/Image.gz-dtb \
-          --ramdisk        build/out/initramfs.cpio.gz \
+          --ramdisk        \"\$RAMDISK\" \
           --pagesize       4096 \
           --base           0x00000000 \
           --kernel_offset  0x00008000 \
@@ -254,8 +261,8 @@ build_in_docker() {
           --salt           c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00 && \
         echo 'boot.img successfully built and signed at build/out/boot.img'; \
       else \
-        echo 'WARNING: build/out/initramfs.cpio.gz not found.' && \
-        echo 'Run build/scripts/build_initramfs.sh first (Step 0 of experiment matrix).' && \
+        echo 'WARNING: No initramfs found (neither initramfs-minimal.cpio.gz nor initramfs.cpio.gz).' && \
+        echo 'Run build/scripts/build_minimal_initramfs.sh first.' && \
         exit 1; \
       fi
     "
@@ -278,12 +285,21 @@ else
     )
     
     # Check if mkbootimg is available to pack
-    if command -v mkbootimg &>/dev/null && [[ -f "$OUT_DIR/initramfs.cpio.gz" ]]; then
+    # Prefer minimal initramfs (<2MB) over full initramfs (24MB) to stay
+    # under the Nokia ABL fastboot max download size (~16MB).
+    if [[ -f "$OUT_DIR/initramfs-minimal.cpio.gz" ]]; then
+      RAMDISK_IMG="$OUT_DIR/initramfs-minimal.cpio.gz"
+      info "Using minimal initramfs: $(du -sh "$RAMDISK_IMG" | cut -f1)"
+    else
+      RAMDISK_IMG="$OUT_DIR/initramfs.cpio.gz"
+      warn "Minimal initramfs not found — falling back to full initramfs (may exceed ABL limit)"
+    fi
+    if command -v mkbootimg &>/dev/null && [[ -f "$RAMDISK_IMG" ]]; then
       info "Packing boot.img on host..."
       mkbootimg \
         --header_version 0 \
         --kernel         "$OUT_DIR/Image.gz-dtb" \
-        --ramdisk        "$OUT_DIR/initramfs.cpio.gz" \
+        --ramdisk        "$RAMDISK_IMG" \
         --pagesize       4096 \
         --base           0x00000000 \
         --kernel_offset  0x00008000 \

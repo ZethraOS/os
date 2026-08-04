@@ -22,3 +22,5 @@ hex                  = "0.4"
 futures-util         = "0.3"
 ed25519-dalek        = "2.1"
 base64               = "0.21"
+zethra-hal           = { path = "../../hal" }
+async-trait          = "0.1"
