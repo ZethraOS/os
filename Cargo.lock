@@ -3432,6 +3432,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "zethra-hal"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "serde",
+]
+
+[[package]]
 name = "zethra-network"
 version = "0.1.0"
 dependencies = [
@@ -3453,6 +3462,7 @@ name = "zethra-otad"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "base64 0.21.7",
  "chrono",
  "ed25519-dalek",
@@ -3465,6 +3475,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "zethra-hal",
 ]
 
 [[package]]
@@ -3488,12 +3499,15 @@ name = "zethra-sandbox"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "serde",
  "tokio",
  "toml 0.8.23",
  "tracing",
  "tracing-subscriber",
  "wasmtime",
+ "wat",
+ "zethra-hal",
 ]
 
 [[package]]

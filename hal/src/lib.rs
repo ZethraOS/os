@@ -259,3 +259,23 @@ pub trait OtaHal: Send + Sync {
     async fn verify_and_switch(&mut self, target_slot: &BootSlot, expected_sha256: &str) -> Result<()>;
     async fn trigger_rollback(&mut self, reason: &str) -> Result<()>;
 }
+
+// ─── App Sandbox HAL ──────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CapabilityRequest {
+    pub permission_id: u32,
+    pub operation_code: u32,
+    pub payload: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CapabilityResponse {
+    pub status_code: i32,
+    pub payload: Vec<u8>,
+}
+
+#[async_trait::async_trait]
+pub trait SandboxHal: Send + Sync {
+    async fn dispatch_capability(&self, app_id: &str, req: CapabilityRequest) -> Result<CapabilityResponse>;
+}

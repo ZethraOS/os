@@ -17,3 +17,8 @@ anyhow.workspace     = true
 tracing.workspace    = true
 tracing-subscriber.workspace = true
 toml = "0.8"
+zethra-hal           = { path = "../../hal" }
+async-trait          = "0.1"
+
+[dev-dependencies]
+wat = "1.0"
