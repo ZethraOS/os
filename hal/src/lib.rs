@@ -346,3 +346,70 @@ pub trait SandboxHal: Send + Sync {
         req: CapabilityRequest,
     ) -> Result<CapabilityResponse>;
 }
+
+// ─── Telephony & Cellular HAL ──────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NetworkRegistrationStatus {
+    NotRegistered,
+    RegisteredHome,
+    Searching,
+    RegistrationDenied,
+    Unknown,
+    RegisteredRoaming,
+    EmergencyOnly,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CallDirection {
+    Inbound,
+    Outbound,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CallState {
+    Active,
+    Holding,
+    Dialing,
+    Alerting,
+    Incoming,
+    Waiting,
+    Terminated,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallInfo {
+    pub call_id: String,
+    pub number: String,
+    pub state: CallState,
+    pub direction: CallDirection,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsMessage {
+    pub message_id: String,
+    pub sender: String,
+    pub text: String,
+    pub timestamp_epoch: u64,
+}
+
+#[async_trait::async_trait]
+pub trait TelephonyHal: Send + Sync {
+    /// Inspect cellular baseband network registration and signaling state.
+    async fn get_registration_status(&mut self) -> Result<NetworkRegistrationStatus>;
+
+    /// Initiate an outgoing cellular call. For emergency numbers, routing bypasses SIM auth.
+    async fn dial_call(&mut self, number: &str, is_emergency: bool) -> Result<String>;
+
+    /// Terminate an active voice call by ID.
+    async fn hangup_call(&mut self, call_id: &str) -> Result<()>;
+
+    /// Transmit a short message service (SMS) payload over cellular signaling.
+    async fn send_sms(&mut self, destination: &str, text: &str) -> Result<()>;
+
+    /// Poll for queued inbound SMS payloads buffered by the cellular proxy or baseband driver.
+    async fn pull_incoming_sms(&mut self) -> Result<Vec<SmsMessage>>;
+
+    /// Enumerate all active cellular voice calls and their operational state.
+    async fn list_active_calls(&mut self) -> Result<Vec<CallInfo>>;
+}
