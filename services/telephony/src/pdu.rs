@@ -73,3 +73,29 @@ impl PduEncoder {
         Ok(pdu.to_uppercase())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_7bit_encoding_decoding_roundtrip() {
+        let original = "Hello ZethraOS";
+        let encoded = PduEncoder::encode_7bit(original);
+        let decoded = PduEncoder::decode_7bit(&encoded);
+        assert!(
+            decoded.starts_with(original),
+            "Expected decoded {} to start with {}",
+            decoded,
+            original
+        );
+    }
+
+    #[test]
+    fn test_create_submit_pdu() {
+        let pdu = PduEncoder::create_submit_pdu("18005551234", "Test SMS")
+            .expect("Failed to create submit PDU");
+        assert!(pdu.starts_with("000100"));
+        assert!(!pdu.is_empty());
+    }
+}

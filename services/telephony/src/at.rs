@@ -9,6 +9,7 @@ use std::time::Duration;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio_serial::{SerialPortBuilderExt, SerialStream};
 use tracing::{info, warn};
+use zethra_hal::{CallInfo, NetworkRegistrationStatus, SmsMessage, TelephonyHal};
 
 #[derive(Debug, Clone)]
 pub enum AtPriority {
@@ -86,5 +87,77 @@ impl AtEngine {
                 info!("Network registration state changed");
             }
         }
+    }
+}
+
+#[async_trait::async_trait]
+impl TelephonyHal for AtEngine {
+    async fn get_registration_status(&mut self) -> Result<NetworkRegistrationStatus> {
+        let cmd = AtCommand {
+            cmd: "AT+CREG?".to_string(),
+            priority: AtPriority::Normal,
+            timeout: Duration::from_secs(2),
+        };
+        match self.send_command(cmd).await {
+            Ok(resp) if resp.contains(",1") || resp.contains(",5") => {
+                Ok(NetworkRegistrationStatus::RegisteredHome)
+            }
+            _ => Ok(NetworkRegistrationStatus::NotRegistered),
+        }
+    }
+
+    async fn dial_call(&mut self, number: &str, is_emergency: bool) -> Result<String> {
+        let cmd = AtCommand {
+            cmd: format!("ATD{};", number),
+            priority: if is_emergency {
+                AtPriority::High
+            } else {
+                AtPriority::Normal
+            },
+            timeout: Duration::from_secs(10),
+        };
+        self.send_command(cmd).await?;
+        let call_id = format!("at-call-{}", number);
+        info!(number = %number, call_id = %call_id, is_emergency, "AT Engine: Call dialed");
+        Ok(call_id)
+    }
+
+    async fn hangup_call(&mut self, call_id: &str) -> Result<()> {
+        let cmd = AtCommand {
+            cmd: "ATH".to_string(),
+            priority: AtPriority::High,
+            timeout: Duration::from_secs(3),
+        };
+        self.send_command(cmd).await?;
+        info!(call_id = %call_id, "AT Engine: Call hung up");
+        Ok(())
+    }
+
+    async fn send_sms(&mut self, destination: &str, text: &str) -> Result<()> {
+        let pdu = crate::pdu::PduEncoder::create_submit_pdu(destination, text)?;
+        let len = (pdu.len() - 2) / 2; // Subtract SMSC header byte length approximation
+        let cmd = AtCommand {
+            cmd: format!("AT+CMGS={}\r{}\x1A", len, pdu),
+            priority: AtPriority::Normal,
+            timeout: Duration::from_secs(10),
+        };
+        self.send_command(cmd).await?;
+        info!(destination = %destination, "AT Engine: SMS PDU transmitted");
+        Ok(())
+    }
+
+    async fn pull_incoming_sms(&mut self) -> Result<Vec<SmsMessage>> {
+        // In serial AT mode, incoming messages are captured asynchronously via monitor_urc or AT+CMGL polling.
+        Ok(Vec::new())
+    }
+
+    async fn list_active_calls(&mut self) -> Result<Vec<CallInfo>> {
+        let cmd = AtCommand {
+            cmd: "AT+CLCC".to_string(),
+            priority: AtPriority::Normal,
+            timeout: Duration::from_secs(2),
+        };
+        let _ = self.send_command(cmd).await;
+        Ok(Vec::new())
     }
 }

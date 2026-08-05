@@ -20,3 +20,5 @@ hex = "0.4"
 chrono.workspace     = true
 uuid.workspace       = true
 async-trait          = "0.1"
+zethra-hal           = { path = "../../hal" }
+zbus                 = { version = "4.0", default-features = false, features = ["tokio"] }

@@ -34,3 +34,24 @@ impl Default for EmergencyHandler {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_emergency_numbers() {
+        let handler = EmergencyHandler::new();
+        assert!(handler.is_emergency("112"));
+        assert!(handler.is_emergency("911"));
+        assert!(handler.is_emergency("108"));
+        assert!(!handler.is_emergency("18005551234"));
+    }
+
+    #[test]
+    fn test_unauthenticated_routing() {
+        let handler = EmergencyHandler::new();
+        assert!(handler.allow_unauthenticated("911"));
+        assert!(!handler.allow_unauthenticated("5550199"));
+    }
+}
