@@ -413,3 +413,68 @@ pub trait TelephonyHal: Send + Sync {
     /// Enumerate all active cellular voice calls and their operational state.
     async fn list_active_calls(&mut self) -> Result<Vec<CallInfo>>;
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NetworkInterfaceState {
+    Up,
+    Down,
+    Testing,
+    Unknown,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkInterface {
+    pub name: String,
+    pub mac_address: String,
+    pub state: NetworkInterfaceState,
+    pub ip_addresses: Vec<String>,
+    pub is_wireless: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BluetoothAdapterState {
+    PoweredOn,
+    PoweredOff,
+    Resetting,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BluetoothAdapter {
+    pub adapter_id: String,
+    pub address: String,
+    pub name: String,
+    pub state: BluetoothAdapterState,
+    pub discoverable: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BluetoothDevice {
+    pub address: String,
+    pub name: String,
+    pub rssi: i32,
+    pub is_connected: bool,
+}
+
+#[async_trait::async_trait]
+pub trait NetworkHal: Send + Sync {
+    /// Enumerate all active LAN/PAN network links (excluding cellular WWAN interfaces managed by Telephony).
+    async fn list_interfaces(&mut self) -> Result<Vec<NetworkInterface>>;
+
+    /// Perform an active or passive Wi-Fi ESSID broadcast scan on a wireless interface (`wlan0`).
+    async fn scan_wifi(&mut self, interface: &str) -> Result<Vec<String>>;
+
+    /// Modify operational administrative status of a LAN/PAN interface.
+    async fn set_interface_state(&mut self, interface: &str, up: bool) -> Result<()>;
+}
+
+#[async_trait::async_trait]
+pub trait BluetoothHal: Send + Sync {
+    /// Enumerate local Bluetooth HCI controllers (`hci0`).
+    async fn list_adapters(&mut self) -> Result<Vec<BluetoothAdapter>>;
+
+    /// Enable or disable radio transmission on an enumerated Bluetooth controller.
+    async fn set_powered(&mut self, adapter_id: &str, powered: bool) -> Result<()>;
+
+    /// Scan for advertising BLE and BR/EDR peripheral devices in RF proximity.
+    async fn scan_devices(&mut self, adapter_id: &str) -> Result<Vec<BluetoothDevice>>;
+}
