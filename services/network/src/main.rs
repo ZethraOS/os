@@ -110,10 +110,11 @@ impl NetworkOrchestrator {
     }
 }
 
-// Ensure WifiManager is Cloneable for task spawning
+// WifiManager must be Clone so it can be moved into a spawned monitoring task.
+// The clone preserves the original interface name rather than resetting to "wlan0".
 impl Clone for WifiManager {
     fn clone(&self) -> Self {
-        Self::new("wlan0")
+        Self::new(&self.interface)
     }
 }
 
@@ -193,5 +194,46 @@ mod tests {
             .toggle_network_interface("rmnet0", false)
             .await
             .is_err());
+
+        // 7. Confirm newly-documented WWAN prefixes are also rejected
+        assert!(orchestrator
+            .toggle_network_interface("cdc-wdm0", true)
+            .await
+            .is_err());
+        assert!(orchestrator
+            .toggle_network_interface("pdp0", false)
+            .await
+            .is_err());
+        assert!(orchestrator
+            .toggle_network_interface("mbim0", true)
+            .await
+            .is_err());
+    }
+
+    /// Regression test: WifiManager::clone() must preserve the original interface name.
+    /// Before the fix, clone() always hard-coded "wlan0", silently routing the monitoring
+    /// task to the wrong wpa_supplicant socket.
+    #[test]
+    fn test_wifi_manager_clone_preserves_interface() {
+        let original = WifiManager::new("wlp2s0");
+        let cloned = original.clone();
+
+        assert_eq!(
+            cloned.interface, "wlp2s0",
+            "Cloned WifiManager must preserve the original interface name, not reset to 'wlan0'"
+        );
+        assert_eq!(
+            cloned.socket_path, "/var/run/wpa_supplicant/wlp2s0",
+            "Cloned WifiManager must derive the socket path from the original interface"
+        );
+    }
+
+    /// Regression test: WifiManager::clone() for the default "wlan0" interface still works.
+    #[test]
+    fn test_wifi_manager_clone_wlan0_still_works() {
+        let original = WifiManager::new("wlan0");
+        let cloned = original.clone();
+        assert_eq!(cloned.interface, "wlan0");
+        assert_eq!(cloned.socket_path, "/var/run/wpa_supplicant/wlan0");
     }
 }

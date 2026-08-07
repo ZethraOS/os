@@ -39,7 +39,8 @@ impl NetlinkMonitor {
 
 /// Linux network interface driver utilizing rtnetlink.
 /// Enforces architectural separation of responsibility by strictly managing LAN/PAN links
-/// (e.g. eth0, wlan0) while filtering out cellular WWAN interfaces (wwan*, rmnet*) owned by Telephony.
+/// (e.g. eth0, wlan0) while filtering out cellular WWAN interfaces owned by zethra-telephony.
+/// Filtered WWAN prefixes: wwan*, rmnet*, ccmni*, cdc-wdm*, pdp*, mbim*, qmi*.
 pub struct LinuxNetworkDriver {
     simulated: bool,
     simulated_interfaces: Vec<NetworkInterface>,
@@ -101,9 +102,25 @@ impl LinuxNetworkDriver {
         }
     }
 
-    /// Helper to verify if an interface name corresponds to a cellular WWAN link owned by zethra-telephony.
+    /// Returns true if `name` corresponds to a cellular WWAN data link owned by zethra-telephony.
+    ///
+    /// Covered prefixes match common Linux kernel naming conventions for USB, PCIe, and platform
+    /// modem data interfaces:
+    /// - `wwan*`     — kernel WWAN subsystem interfaces (kernel ≥ 5.14)
+    /// - `rmnet*`    — Qualcomm IPA/rmnet interfaces (Android/upstream)
+    /// - `ccmni*`    — MediaTek CCMNI (ccci net) interfaces
+    /// - `cdc-wdm*`  — CDC WDM QMI/MBIM control interfaces (USB modems)
+    /// - `pdp*`      — PDP context data interfaces (older MediaTek)
+    /// - `mbim*`     — MBIM data interfaces
+    /// - `qmi*`      — QMI-managed data interfaces
     fn is_cellular_wwan(name: &str) -> bool {
-        name.starts_with("wwan") || name.starts_with("rmnet") || name.starts_with("ccmni")
+        name.starts_with("wwan")
+            || name.starts_with("rmnet")
+            || name.starts_with("ccmni")
+            || name.starts_with("cdc-wdm")
+            || name.starts_with("pdp")
+            || name.starts_with("mbim")
+            || name.starts_with("qmi")
     }
 }
 
@@ -193,7 +210,7 @@ impl NetworkHal for LinuxNetworkDriver {
     }
 
     async fn scan_wifi(&mut self, interface: &str) -> Result<Vec<String>> {
-        if self.simulated || !interface.starts_with("wl") {
+        if self.simulated {
             info!(
                 interface = %interface,
                 "Simulated LinuxNetworkDriver: returning simulated Wi-Fi ESSID broadcast list"
@@ -205,7 +222,17 @@ impl NetworkHal for LinuxNetworkDriver {
             ]);
         }
 
-        // In live Linux mode, query the WPA supplicant scanning socket
+        // In live mode, only recognised wireless interface name prefixes are accepted.
+        // Returning simulated data silently for unknown names would hide configuration
+        // errors and make field debugging very difficult.
+        if !interface.starts_with("wl") {
+            anyhow::bail!(
+                "scan_wifi: '{}' is not a recognised wireless interface name (expected 'wl*' prefix)",
+                interface
+            );
+        }
+
+        // Query the WPA supplicant scanning socket
         match crate::wifi::WifiScanner::get_results().await {
             Ok(res) => {
                 let networks = res
@@ -216,8 +243,8 @@ impl NetworkHal for LinuxNetworkDriver {
                 Ok(networks)
             }
             Err(e) => {
-                warn!(error = %e, interface = %interface, "Failed to contact wpa_supplicant; returning simulated Wi-Fi fallback list");
-                Ok(vec!["Zethra-Mesh-5G".to_string(), "Guest-Net".to_string()])
+                warn!(error = %e, interface = %interface, "Failed to contact wpa_supplicant for Wi-Fi scan");
+                Err(e)
             }
         }
     }
@@ -304,7 +331,7 @@ mod tests {
         assert_eq!(ifaces[0].name, "eth0");
         assert_eq!(ifaces[1].name, "wlan0");
 
-        // 2. Scan Wi-Fi ESSIDs
+        // 2. Scan Wi-Fi ESSIDs on simulated driver (always returns simulated list)
         let wifi_essids = driver.scan_wifi("wlan0").await.expect("Failed Wi-Fi scan");
         assert_eq!(wifi_essids.len(), 3);
         assert_eq!(wifi_essids[0], "Zethra-Mesh-5G");
@@ -326,5 +353,82 @@ mod tests {
             .set_interface_state("rmnet_data0", true)
             .await
             .is_err());
+    }
+
+    /// Regression test: is_cellular_wwan must cover all documented WWAN prefix variants.
+    /// This test pins the filter against the interface names documented in PR #36 and the
+    /// audit report. Any regression in the filter that admits a WWAN interface silently
+    /// into zethra-networkd will be caught here.
+    #[test]
+    fn test_wwan_filter_covers_all_documented_prefixes() {
+        // All of these must be recognised as WWAN and rejected by zethra-networkd.
+        let wwan_cases = [
+            "wwan0",
+            "wwan1",
+            "rmnet0",
+            "rmnet_data0",
+            "rmnet_data1",
+            "ccmni0",
+            "ccmni1",
+            "cdc-wdm0",
+            "cdc-wdm1",
+            "pdp0",
+            "pdp_data0",
+            "mbim0",
+            "qmi0",
+            "qmi_rmnet0",
+        ];
+        for name in &wwan_cases {
+            assert!(
+                LinuxNetworkDriver::is_cellular_wwan(name),
+                "'{}' must be identified as a WWAN interface",
+                name
+            );
+        }
+
+        // These must NOT be classified as WWAN — they are LAN/PAN interfaces.
+        let lan_cases = ["eth0", "wlan0", "wlp2s0", "eno1", "enp3s0", "usb0", "lo"];
+        for name in &lan_cases {
+            assert!(
+                !LinuxNetworkDriver::is_cellular_wwan(name),
+                "'{}' must NOT be identified as a WWAN interface",
+                name
+            );
+        }
+    }
+
+    /// Regression test: scan_wifi on a simulated driver returns data for any interface name.
+    /// (Simulated mode always returns the preset list regardless of the name.)
+    #[tokio::test]
+    async fn test_simulated_scan_wifi_accepts_any_interface_name() {
+        let mut driver = LinuxNetworkDriver::new_simulated();
+        // Even a non-wl name is acceptable in simulated mode — this is intentional.
+        let result = driver.scan_wifi("wifi0").await;
+        assert!(
+            result.is_ok(),
+            "Simulated scan_wifi should succeed for any interface name"
+        );
+    }
+
+    /// Regression test: set_interface_state rejects cdc-wdm and pdp prefixes (newly added).
+    #[tokio::test]
+    async fn test_wwan_filter_rejects_newly_added_prefixes() {
+        let mut driver = LinuxNetworkDriver::new_simulated();
+        assert!(
+            driver.set_interface_state("cdc-wdm0", true).await.is_err(),
+            "cdc-wdm0 must be rejected as a WWAN interface"
+        );
+        assert!(
+            driver.set_interface_state("pdp0", true).await.is_err(),
+            "pdp0 must be rejected as a WWAN interface"
+        );
+        assert!(
+            driver.set_interface_state("mbim0", true).await.is_err(),
+            "mbim0 must be rejected as a WWAN interface"
+        );
+        assert!(
+            driver.set_interface_state("qmi0", true).await.is_err(),
+            "qmi0 must be rejected as a WWAN interface"
+        );
     }
 }
