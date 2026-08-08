@@ -3888,8 +3888,10 @@ name = "zethra-network"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "futures-util",
  "netlink-packet-core",
+ "netlink-packet-route",
  "reqwest",
  "rtnetlink",
  "serde",
@@ -3898,6 +3900,8 @@ dependencies = [
  "tokio-util",
  "tracing",
  "tracing-subscriber",
+ "zbus",
+ "zethra-hal",
 ]
 
 [[package]]

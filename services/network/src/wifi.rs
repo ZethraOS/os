@@ -32,9 +32,9 @@ impl WifiScanner {
 
 pub struct WifiManager {
     #[allow(dead_code)]
-    interface: String,
+    pub(crate) interface: String,
     #[allow(dead_code)]
-    socket_path: String,
+    pub(crate) socket_path: String,
 }
 
 impl WifiManager {
