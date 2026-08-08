@@ -18,3 +18,5 @@
 
 tools/test_key.pem
 build/scripts/__pycache__/
+
+/devices/*/*.zip

@@ -30,7 +30,14 @@ impl TelephonyOrchestrator {
                     info!(device = %device, "✓ Physical serial modem node detected; initializing fallback AtEngine");
                     Box::new(AtEngine::new(device, 115200)?)
                 } else {
-                    warn!(device = %device, "Serial device node not found; falling back to simulated ModemManagerProxy for test execution");
+                    // check_simulation_gate enforces ZETHRA_ALLOW_SIMULATED=1 in production.
+                    // If the gate returns Err, the ? propagates it and the daemon exits non-zero
+                    // with an ERROR log rather than silently entering simulation mode.
+                    crate::proxy::check_simulation_gate(&format!(
+                        "D-Bus unavailable ({}) and serial device '{}' not found",
+                        e, device
+                    ))?;
+                    warn!(device = %device, "ZETHRA_ALLOW_SIMULATED=1: falling back to simulated ModemManagerProxy for test execution");
                     Box::new(ModemManagerProxy::new_simulated())
                 }
             }
