@@ -149,6 +149,19 @@
 	status = "okay";
 };
 
+/* Bluetooth */
+&blsp2_uart1 {
+	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,wcn3990-bt";
+		vddio-supply = <&vreg_l9a_1p8>;
+		vddxo-supply = <&vreg_l9a_1p8>;
+		vddrf-supply = <&vreg_l6a_1p3>;
+		vddch0-supply = <&vreg_l19a_3p3>;
+	};
+};
+
 /* eMMC */
 &sdhc_1 {
 	status = "okay";
