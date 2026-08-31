@@ -1,4 +1,5 @@
 [advisories]
 ignore = [
     "RUSTSEC-2026-0222", # wasmtime: Stores can mix up type indices between engines. ZethraOS sandboxes instantiate a single Store per Engine without cross-engine sharing, rendering this advisory inapplicable.
+    "RUSTSEC-2026-0269", # wasmtime: Filesystem sandbox escape in wasmtime-wasi when paths/symlinks contain trailing slashes. wasmtime-wasi is absent from the dependency graph; no WASI filesystem context is linked; no guest filesystem preopens are exposed; sandbox interaction uses only custom in-memory host imports.
 ]
