@@ -207,6 +207,9 @@ jobs:
     name: Security — warnings drift monitor
     runs-on: ubuntu-24.04
     continue-on-error: true
+    permissions:
+      contents: read
+      issues: write
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -288,13 +291,18 @@ jobs:
             const fs = require('fs');
             const summary = fs.readFileSync('security-drift-summary.md', 'utf8');
             const title = `Security drift report: ${new Date().toISOString().slice(0, 10)}`;
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title,
-              body: summary,
-              labels: ['security', 'dependencies']
-            });
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: summary,
+                labels: ['security', 'dependencies']
+              });
+              core.info("Successfully auto-filed security drift issue.");
+            } catch (err) {
+              core.warning(`Failed to auto-file drift issue: ${err.message}. Ensure GITHUB_TOKEN has 'issues: write' permission.`);
+            }
 
   # ── 6. AI patch auto-merge ──────────────────────────────────────────────
   ai-auto-merge:
