@@ -63,6 +63,43 @@ else
   warn "Firmware blobs not found in $EXISTING_FW — DPU probe may defer"
 fi
 
+# ── QCA Bluetooth firmware (WCN3990 — crbtfw11.tlv + crnv11.bin) ──────────────
+# Proprietary firmware is NEVER committed to the repository.
+# It MUST be supplied via the BT_FIRMWARE_DIR environment variable pointing to
+# an absolute path containing both crbtfw11.tlv and crnv11.bin.
+# SHA-256 hashes are verified against the OTA evidence report before staging.
+EXPECTED_CRBTFW11_SHA256="d6532b99875890fb7969874ff6e904939ca0d6f2d2bd1e1fd3ae86470bebc9f5"
+EXPECTED_CRNV11_SHA256="206deb651dcfd187d1fd39f1f064af20324d1b4e28dcd72f5ed23bb8ef605d00"
+
+if [[ -z "${BT_FIRMWARE_DIR:-}" ]]; then
+  err "BT_FIRMWARE_DIR is not set. Set it to the absolute path containing crbtfw11.tlv and crnv11.bin."
+fi
+
+if [[ ! -f "$BT_FIRMWARE_DIR/crbtfw11.tlv" ]]; then
+  err "Missing: $BT_FIRMWARE_DIR/crbtfw11.tlv"
+fi
+if [[ ! -f "$BT_FIRMWARE_DIR/crnv11.bin" ]]; then
+  err "Missing: $BT_FIRMWARE_DIR/crnv11.bin"
+fi
+
+info "Verifying BT firmware SHA-256 hashes..."
+ACTUAL_CRBTFW11_SHA256="$(shasum -a 256 "$BT_FIRMWARE_DIR/crbtfw11.tlv" | awk '{print $1}')"
+ACTUAL_CRNV11_SHA256="$(shasum -a 256 "$BT_FIRMWARE_DIR/crnv11.bin" | awk '{print $1}')"
+
+if [[ "$ACTUAL_CRBTFW11_SHA256" != "$EXPECTED_CRBTFW11_SHA256" ]]; then
+  err "SHA-256 mismatch for crbtfw11.tlv: expected $EXPECTED_CRBTFW11_SHA256, got $ACTUAL_CRBTFW11_SHA256"
+fi
+if [[ "$ACTUAL_CRNV11_SHA256" != "$EXPECTED_CRNV11_SHA256" ]]; then
+  err "SHA-256 mismatch for crnv11.bin: expected $EXPECTED_CRNV11_SHA256, got $ACTUAL_CRNV11_SHA256"
+fi
+success "BT firmware hashes verified"
+
+mkdir -p "$WORK_DIR/lib/firmware/qca"
+cp "$BT_FIRMWARE_DIR/crbtfw11.tlv" "$WORK_DIR/lib/firmware/qca/"
+cp "$BT_FIRMWARE_DIR/crnv11.bin"   "$WORK_DIR/lib/firmware/qca/"
+success "BT firmware staged: lib/firmware/qca/crbtfw11.tlv + lib/firmware/qca/crnv11.bin"
+
+
 # ── /dev nodes (minimal set — devtmpfs will populate more at runtime) ──────────
 info "Creating static /dev nodes..."
 # mknod requires root or CAP_MKNOD; we create them as device-less placeholders
