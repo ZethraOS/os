@@ -63,41 +63,41 @@ else
   warn "Firmware blobs not found in $EXISTING_FW — DPU probe may defer"
 fi
 
-# ── QCA Bluetooth firmware (WCN3990 — crbtfw11.tlv + crnv11.bin) ──────────────
+# ── QCA Bluetooth firmware (WCN3990 — crbtfw21.tlv + crnv21.bin) ──────────────
 # Proprietary firmware is NEVER committed to the repository.
 # It MUST be supplied via the BT_FIRMWARE_DIR environment variable pointing to
-# an absolute path containing both crbtfw11.tlv and crnv11.bin.
+# an absolute path containing both crbtfw21.tlv and crnv21.bin.
 # SHA-256 hashes are verified against the OTA evidence report before staging.
-EXPECTED_CRBTFW11_SHA256="d6532b99875890fb7969874ff6e904939ca0d6f2d2bd1e1fd3ae86470bebc9f5"
-EXPECTED_CRNV11_SHA256="206deb651dcfd187d1fd39f1f064af20324d1b4e28dcd72f5ed23bb8ef605d00"
+EXPECTED_CRBTFW21_SHA256="49c9358d5488d4836626b8e0e49a31fea01b4e80394d40528253d19afba52ca8"
+EXPECTED_CRNV21_SHA256="2bd75139a0dccb75470a453c299fd1861bc34ceb9502ea419557a9ebe405b016"
 
 if [[ -z "${BT_FIRMWARE_DIR:-}" ]]; then
-  err "BT_FIRMWARE_DIR is not set. Set it to the absolute path containing crbtfw11.tlv and crnv11.bin."
+  err "BT_FIRMWARE_DIR is not set. Set it to the absolute path containing crbtfw21.tlv and crnv21.bin."
 fi
 
-if [[ ! -f "$BT_FIRMWARE_DIR/crbtfw11.tlv" ]]; then
-  err "Missing: $BT_FIRMWARE_DIR/crbtfw11.tlv"
+if [[ ! -f "$BT_FIRMWARE_DIR/crbtfw21.tlv" ]]; then
+  err "Missing: $BT_FIRMWARE_DIR/crbtfw21.tlv"
 fi
-if [[ ! -f "$BT_FIRMWARE_DIR/crnv11.bin" ]]; then
-  err "Missing: $BT_FIRMWARE_DIR/crnv11.bin"
+if [[ ! -f "$BT_FIRMWARE_DIR/crnv21.bin" ]]; then
+  err "Missing: $BT_FIRMWARE_DIR/crnv21.bin"
 fi
 
 info "Verifying BT firmware SHA-256 hashes..."
-ACTUAL_CRBTFW11_SHA256="$(shasum -a 256 "$BT_FIRMWARE_DIR/crbtfw11.tlv" | awk '{print $1}')"
-ACTUAL_CRNV11_SHA256="$(shasum -a 256 "$BT_FIRMWARE_DIR/crnv11.bin" | awk '{print $1}')"
+ACTUAL_CRBTFW21_SHA256="$(shasum -a 256 "$BT_FIRMWARE_DIR/crbtfw21.tlv" | awk '{print $1}')"
+ACTUAL_CRNV21_SHA256="$(shasum -a 256 "$BT_FIRMWARE_DIR/crnv21.bin" | awk '{print $1}')"
 
-if [[ "$ACTUAL_CRBTFW11_SHA256" != "$EXPECTED_CRBTFW11_SHA256" ]]; then
-  err "SHA-256 mismatch for crbtfw11.tlv: expected $EXPECTED_CRBTFW11_SHA256, got $ACTUAL_CRBTFW11_SHA256"
+if [[ "$ACTUAL_CRBTFW21_SHA256" != "$EXPECTED_CRBTFW21_SHA256" ]]; then
+  err "SHA-256 mismatch for crbtfw21.tlv: expected $EXPECTED_CRBTFW21_SHA256, got $ACTUAL_CRBTFW21_SHA256"
 fi
-if [[ "$ACTUAL_CRNV11_SHA256" != "$EXPECTED_CRNV11_SHA256" ]]; then
-  err "SHA-256 mismatch for crnv11.bin: expected $EXPECTED_CRNV11_SHA256, got $ACTUAL_CRNV11_SHA256"
+if [[ "$ACTUAL_CRNV21_SHA256" != "$EXPECTED_CRNV21_SHA256" ]]; then
+  err "SHA-256 mismatch for crnv21.bin: expected $EXPECTED_CRNV21_SHA256, got $ACTUAL_CRNV21_SHA256"
 fi
 success "BT firmware hashes verified"
 
 mkdir -p "$WORK_DIR/lib/firmware/qca"
-cp "$BT_FIRMWARE_DIR/crbtfw11.tlv" "$WORK_DIR/lib/firmware/qca/"
-cp "$BT_FIRMWARE_DIR/crnv11.bin"   "$WORK_DIR/lib/firmware/qca/"
-success "BT firmware staged: lib/firmware/qca/crbtfw11.tlv + lib/firmware/qca/crnv11.bin"
+cp "$BT_FIRMWARE_DIR/crbtfw21.tlv" "$WORK_DIR/lib/firmware/qca/"
+cp "$BT_FIRMWARE_DIR/crnv21.bin"   "$WORK_DIR/lib/firmware/qca/"
+success "BT firmware staged: lib/firmware/qca/crbtfw21.tlv + lib/firmware/qca/crnv21.bin"
 
 
 # ── /dev nodes (minimal set — devtmpfs will populate more at runtime) ──────────
