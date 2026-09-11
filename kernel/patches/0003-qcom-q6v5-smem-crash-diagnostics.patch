@@ -1,0 +1,123 @@
+diff --git a/drivers/remoteproc/qcom_q6v5.c b/drivers/remoteproc/qcom_q6v5.c
+index 8c9e5e1..b2e4f0a 100644
+--- a/drivers/remoteproc/qcom_q6v5.c
++++ b/drivers/remoteproc/qcom_q6v5.c
+@@ -115,23 +115,83 @@
++/*
++ * Qualcomm SMEM Crash Diagnostics:
++ * SMEM (Shared Memory) allocates diagnostic and state items between the
++ * host (APPS, host 0) and remote subsystems (e.g. Modem MPSS, host 1).
++ * When Hexagon asserts err_fatal(), it records failure information
++ * (source file, line number, and assert expression or panic format)
++ * into a shared memory partition or global heap item.
++ *
++ * Typically, crash reasons are stored at:
++ *   - SMEM 421: MPSS / WCSS crash reason string (or struct)
++ *   - SMEM 422: WCNSS crash reason
++ *   - SMEM 423: ADSP crash reason
++ *   - SMEM 424: SLPI crash reason
++ *   - SMEM 601: Subsystem restart reason
++ *   - SMEM 602: SBL / Minidump Table of Contents
++ *   - SMEM 626 / 633 / 640 / 641: Peripheral-specific crash logs
++ *
++ * In some firmware revisions, the crash reason may be stored in a private
++ * point-to-point SMEM partition (hosts 0..24), or prefixed by a binary
++ * header rather than a standard null-terminated C string. We probe
++ * QCOM_SMEM_HOST_ANY, all individual hosts, and scan items 400-660,
++ * dumping raw hex + ASCII for full visibility.
++ */
+ static irqreturn_t q6v5_fatal_interrupt(int irq, void *data)
+ {
+ 	struct qcom_q6v5 *q6v5 = data;
+-	size_t len;
+-	char *msg;
+-	int h;
++	size_t len = 0;
++	char *msg;
++	bool found = false;
++	int item, h;
+ 
+ 	if (!q6v5->running)
+ 		return IRQ_HANDLED;
+ 
+-	msg = qcom_smem_get(QCOM_SMEM_HOST_ANY, q6v5->crash_reason, &len);
+-	if (IS_ERR(msg) || len == 0 || !msg[0]) {
+-		for (h = 0; h < 5; h++) {
+-			msg = qcom_smem_get(h, q6v5->crash_reason, &len);
+-			if (!IS_ERR(msg) && len > 0 && msg[0])
+-				break;
+-		}
+-	}
+-	if (!IS_ERR(msg) && len > 0 && msg[0])
+-		dev_err(q6v5->dev, "fatal error received: %.*s\n", (int)len, msg);
+-	else
+-		dev_err(q6v5->dev, "fatal error without message (crash_reason=%d)\n", q6v5->crash_reason);
++	dev_err(q6v5->dev, "fatal error interrupt asserted (configured crash_reason=%d)\n",
++		q6v5->crash_reason);
++
++	/* a. Log exact return code and length from qcom_smem_get for crash_reason */
++	msg = qcom_smem_get(QCOM_SMEM_HOST_ANY, q6v5->crash_reason, &len);
++	if (IS_ERR(msg)) {
++		dev_err(q6v5->dev, "smem HOST_ANY item %d lookup error: %ld\n",
++			q6v5->crash_reason, PTR_ERR(msg));
++	} else if (len == 0) {
++		dev_err(q6v5->dev, "smem HOST_ANY item %d returned zero length\n",
++			q6v5->crash_reason);
++	} else {
++		dev_err(q6v5->dev, "smem HOST_ANY item %d: length=%zu\n",
++			q6v5->crash_reason, len);
++		print_hex_dump(KERN_ERR, "q6v5-smem: ", DUMP_PREFIX_OFFSET,
++			       16, 1, msg, min_t(size_t, len, 128), true);
++		found = true;
++	}
++
++	/* b & c. Scan all hosts (0-24) for crash_reason */
++	for (h = 0; h < 25; h++) {
++		len = 0;
++		msg = qcom_smem_get(h, q6v5->crash_reason, &len);
++		if (!IS_ERR(msg) && len > 0) {
++			dev_err(q6v5->dev, "smem host %d item %d: length=%zu\n",
++				h, q6v5->crash_reason, len);
++			print_hex_dump(KERN_ERR, "q6v5-host: ", DUMP_PREFIX_OFFSET,
++				       16, 1, msg, min_t(size_t, len, 128), true);
++			found = true;
++		}
++	}
++
++	/* d & e. Scan diagnostic SMEM items 400-660 (especially 602 minidump) */
++	for (item = 400; item <= 660; item++) {
++		if (item == q6v5->crash_reason)
++			continue;
++
++		len = 0;
++		msg = qcom_smem_get(QCOM_SMEM_HOST_ANY, item, &len);
++		if (!IS_ERR(msg) && len > 0) {
++			dev_err(q6v5->dev, "smem HOST_ANY item %d: length=%zu\n",
++				item, len);
++			print_hex_dump(KERN_ERR, "q6v5-diag: ", DUMP_PREFIX_OFFSET,
++				       16, 1, msg, min_t(size_t, len, 128), true);
++			found = true;
++		}
++
++		for (h = 0; h < 5; h++) {
++			len = 0;
++			msg = qcom_smem_get(h, item, &len);
++			if (!IS_ERR(msg) && len > 0) {
++				dev_err(q6v5->dev, "smem host %d item %d: length=%zu\n",
++					h, item, len);
++				print_hex_dump(KERN_ERR, "q6v5-diag-host: ", DUMP_PREFIX_OFFSET,
++					       16, 1, msg, min_t(size_t, len, 128), true);
++				found = true;
++			}
++		}
++	}
++
++	if (!found)
++		dev_err(q6v5->dev, "fatal error without message (crash_reason=%d)\n",
++			q6v5->crash_reason);
+ 
+ 	q6v5->running = false;
+ 	rproc_report_crash(q6v5->rproc, RPROC_FATAL_ERROR);
+ 
+ 	return IRQ_HANDLED;
+ }
