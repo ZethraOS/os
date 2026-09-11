@@ -128,10 +128,25 @@ fi
 cp "$OUT_DIR/rmtfs" "$WORK_DIR/usr/bin/rmtfs"
 chmod 755 "$WORK_DIR/usr/bin/rmtfs"
 ln -sf /usr/bin/rmtfs "$WORK_DIR/bin/rmtfs"
-success "Modem daemons staged to /usr/bin: qrtr-ns, qrtr-lookup, rmtfs"
+
+if [[ ! -f "$OUT_DIR/tqftpserv" ]]; then
+  info "Building tqftpserv from tools/..."
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace/tools/tqftpserv zethra-build-env:1 bash -c \
+    "make clean && CC=aarch64-linux-gnu-gcc make && aarch64-linux-gnu-strip -s tqftpserv"
+  cp "$REPO_ROOT/tools/tqftpserv/tqftpserv" "$OUT_DIR/"
+fi
+
+cp "$OUT_DIR/tqftpserv" "$WORK_DIR/usr/bin/tqftpserv"
+chmod 755 "$WORK_DIR/usr/bin/tqftpserv"
+ln -sf /usr/bin/tqftpserv "$WORK_DIR/bin/tqftpserv"
+success "Modem daemons staged to /usr/bin: qrtr-ns, qrtr-lookup, rmtfs, tqftpserv"
 
 # ── Service Units & Init Scripts ──────────────────────────────────────────────
 info "Writing systemd units and init scripts for modem daemons..."
+
+if [[ -f "$REPO_ROOT/tools/tqftpserv/tqftpserv.service" ]]; then
+  cp "$REPO_ROOT/tools/tqftpserv/tqftpserv.service" "$WORK_DIR/etc/systemd/system/"
+fi
 
 cat > "$WORK_DIR/etc/systemd/system/qrtr-ns.service" << 'EOF'
 [Unit]
@@ -205,6 +220,27 @@ case "$1" in
 esac
 EOF
 chmod 755 "$WORK_DIR/etc/init.d/rmtfs"
+
+cat > "$WORK_DIR/etc/init.d/tqftpserv" << 'EOF'
+#!/bin/sh
+case "$1" in
+  start)
+    echo "Starting tqftpserv..."
+    /usr/bin/tqftpserv -d -t /mnt/modem /lib/firmware > /tmp/tqftpserv.log 2>&1 &
+    ;;
+  stop)
+    killall tqftpserv 2>/dev/null || true
+    ;;
+  status)
+    pidof tqftpserv >/dev/null && echo "tqftpserv is running" || echo "tqftpserv is stopped"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOF
+chmod 755 "$WORK_DIR/etc/init.d/tqftpserv"
 success "Service units and init scripts created"
 
 # ── Optional Modem Firmware Staging (Phase 5B hybrid strategy) ────────────────
@@ -298,15 +334,15 @@ else
   echo "[minit] ⚠ persist partition not mounted (dmesg not saved)"
 fi
 
-# ── Mount Modem Partition (VFAT) & Symlink Firmware Segments ──────────────────
+# ── Mount Modem Partition (VFAT) & Symlink Firmware Files ─────────────────────
 echo "[minit] Mounting modem firmware partition..."
-mkdir -p /mnt/modem /lib/firmware/qcom/sdm636
+mkdir -p /mnt/modem /lib/firmware/qcom/sdm636 /var/lib/tqftpserv
 if mount -t vfat -o ro /dev/disk/by-partlabel/modem_b /mnt/modem 2>/dev/null || \
    mount -t vfat -o ro /dev/disk/by-partlabel/modem_a /mnt/modem 2>/dev/null; then
   echo "[minit] ✓ modem partition mounted at /mnt/modem"
   fw_count=0
-  for f in /mnt/modem/image/modem.*; do
-    if [ -f "$f" ]; then
+  for f in /mnt/modem/image/*; do
+    if [ -e "$f" ]; then
       ln -sf "$f" "/lib/firmware/qcom/sdm636/$(basename "$f")"
       fw_count=$((fw_count+1))
     fi
@@ -368,6 +404,13 @@ if [ -x /usr/bin/rmtfs ]; then
   echo "[minit] Starting rmtfs daemon (storage: /dev/disk/by-partlabel)..."
   /usr/bin/rmtfs -v -s -P -o /dev/disk/by-partlabel > /tmp/rmtfs.log 2>&1 &
   sleep 0.1
+fi
+
+if [ -x /usr/bin/tqftpserv ]; then
+  echo "[minit] Starting tqftpserv daemon (serving /mnt/modem and /lib/firmware)..."
+  /usr/bin/tqftpserv -d -t /mnt/modem /lib/firmware > /tmp/tqftpserv.log 2>&1 &
+  sleep 0.1
+  echo "[minit] Started tqftpserv serving /mnt/modem and /lib/firmware"
 fi
 
 # ── Trigger Remoteproc Modem Boot ────────────────────────────────────────────
