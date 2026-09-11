@@ -40,6 +40,7 @@ static void dbgprintf(const char *fmt, ...)
 	va_start(ap, fmt);
 	vprintf(fmt, ap);
 	va_end(ap);
+	fflush(stdout);
 }
 
 static void qmi_result_error(struct rmtfs_qmi_result *result, unsigned error)
@@ -504,6 +505,9 @@ int main(int argc, char **argv)
 	int ret;
 	int option;
 	const char *storage_root = NULL;
+
+	setlinebuf(stdout);
+	setlinebuf(stderr);
 
 	while ((option = getopt(argc, argv, "o:S:Prsv")) != -1) {
 		switch (option) {

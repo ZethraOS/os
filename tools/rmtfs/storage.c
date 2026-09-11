@@ -1,5 +1,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <linux/fs.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -49,6 +51,9 @@ static const struct partition partition_table[] = {
 	{ "/oem/nvbk/dynamic", "oem_dycnvbk", "oem_dycnvbk" },
 	/* Some OxygenOS firmware versions request this alternative path */
 	{ "/oppo/oem_partion", "oem_stanvbk", "oem_stanvbk" },
+	/* Nokia / Qualcomm Dual SIM FSG partitions */
+	{ "/boot/modem_fsg_oem_1", "fsg", "fsg" },
+	{ "/boot/modem_fsg_oem_2", "fsg", "fsg" },
 	{}
 };
 
@@ -279,6 +284,7 @@ int storage_sync(struct rmtfd *rmtfd)
 
 static int storage_populate_shadow_buf(struct rmtfd *rmtfd, const char *file)
 {
+	uint64_t blk_len = 0;
 	ssize_t len;
 	ssize_t n;
 	void *buf;
@@ -289,8 +295,12 @@ static int storage_populate_shadow_buf(struct rmtfd *rmtfd, const char *file)
 	if (fd < 0)
 		return -1;
 
-	len = lseek(fd, 0, SEEK_END);
-	if (len < 0) {
+	if (ioctl(fd, BLKGETSIZE64, &blk_len) == 0 && blk_len > 0) {
+		len = (ssize_t)blk_len;
+	} else {
+		len = lseek(fd, 0, SEEK_END);
+	}
+	if (len <= 0) {
 		ret = -1;
 		goto err_close_fd;
 	}
@@ -306,6 +316,7 @@ static int storage_populate_shadow_buf(struct rmtfd *rmtfd, const char *file)
 	n = read(fd, buf, len);
 	if (n < 0) {
 		ret = -1;
+		free(buf);
 		goto err_close_fd;
 	}
 

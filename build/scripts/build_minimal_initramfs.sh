@@ -27,8 +27,8 @@ rm -rf "$WORK_DIR"
 # ── Directory skeleton (POSIX minimal) ─────────────────────────────────────────
 for d in bin sbin usr/bin usr/sbin etc etc/init.d etc/systemd/system \
           dev proc sys sys/kernel/debug sys/kernel/config \
-          tmp run mnt mnt/persist \
-          lib/firmware/qcom \
+          tmp run mnt mnt/persist mnt/modem \
+          lib/firmware/qcom lib/firmware/qcom/sdm636 \
           dev/disk/by-partlabel; do
   mkdir -p "$WORK_DIR/$d"
 done
@@ -154,7 +154,7 @@ After=qrtr-ns.service
 ConditionPathExists=/dev/qcom_rmtfs_mem1
 
 [Service]
-ExecStart=/usr/bin/rmtfs -r -s -o /dev/disk/by-partlabel
+ExecStart=/usr/bin/rmtfs -s -P -o /dev/disk/by-partlabel
 Restart=always
 RestartSec=1
 
@@ -190,7 +190,7 @@ cat > "$WORK_DIR/etc/init.d/rmtfs" << 'EOF'
 case "$1" in
   start)
     echo "Starting rmtfs..."
-    /usr/bin/rmtfs -r -s -o /dev/disk/by-partlabel &
+    /usr/bin/rmtfs -s -P -o /dev/disk/by-partlabel &
     ;;
   stop)
     killall rmtfs 2>/dev/null || true
@@ -298,8 +298,66 @@ else
   echo "[minit] ⚠ persist partition not mounted (dmesg not saved)"
 fi
 
+# ── Mount Modem Partition (VFAT) & Symlink Firmware Segments ──────────────────
+echo "[minit] Mounting modem firmware partition..."
+mkdir -p /mnt/modem /lib/firmware/qcom/sdm636
+if mount -t vfat -o ro /dev/disk/by-partlabel/modem_b /mnt/modem 2>/dev/null || \
+   mount -t vfat -o ro /dev/disk/by-partlabel/modem_a /mnt/modem 2>/dev/null; then
+  echo "[minit] ✓ modem partition mounted at /mnt/modem"
+  fw_count=0
+  for f in /mnt/modem/image/modem.*; do
+    if [ -f "$f" ]; then
+      ln -sf "$f" "/lib/firmware/qcom/sdm636/$(basename "$f")"
+      fw_count=$((fw_count+1))
+    fi
+  done
+  echo "[minit] ✓ Symlinked $fw_count modem firmware files to /lib/firmware/qcom/sdm636/"
+else
+  echo "[minit] ⚠ modem partition mount failed"
+fi
+
 # ── Modem Userspace Daemons (qrtr-ns, rmtfs) ──────────────────────────────────
 export PATH=/usr/bin:/bin:/sbin:/usr/sbin
+
+# Ensure EFS partition symlinks exist for rmtfs
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
+
+# Detect active slot (cmdline check)
+ACTIVE_SLOT="b"
+case "$(cat /proc/cmdline 2>/dev/null)" in
+  *slot_suffix=_a*|*androidboot.slot_suffix=_a*) ACTIVE_SLOT="a" ;;
+  *) ACTIVE_SLOT="b" ;;
+esac
+
+# Map nvdef_${slot} → fsg for rmtfs (Nokia FIH stores NV in nvdef, not fsg)
+if [ "$ACTIVE_SLOT" = "b" ]; then
+  ln -sf /dev/disk/by-partlabel/nvdef_b /dev/disk/by-partlabel/fsg
+  echo "[minit] Mapped nvdef_b → fsg for EFS"
+else
+  ln -sf /dev/disk/by-partlabel/nvdef_a /dev/disk/by-partlabel/fsg
+  echo "[minit] Mapped nvdef_a → fsg for EFS"
+fi
+
+ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null || true
+
+# Verify EFS has valid data (non-zero)
+EFS_HASH=$(dd if=/dev/disk/by-partlabel/fsg bs=4096 count=512 2>/dev/null | sha256sum | cut -d' ' -f1)
+echo "[minit] EFS SHA-256: $EFS_HASH"
+
+# Disable remoteproc auto-recovery (keep crash state intact)
+if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
+  echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/recovery 2>/dev/null || true
+  echo enabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
+  echo "[minit] Disabled remoteproc recovery, enabled coredump"
+fi
+
+# Enable devcoredump
+echo 0 > /sys/class/devcoredump/disabled 2>/dev/null || true
+
 if [ -x /usr/bin/qrtr-ns ]; then
   echo "[minit] Starting qrtr-ns daemon..."
   /usr/bin/qrtr-ns &
@@ -308,7 +366,26 @@ fi
 
 if [ -x /usr/bin/rmtfs ]; then
   echo "[minit] Starting rmtfs daemon (storage: /dev/disk/by-partlabel)..."
-  /usr/bin/rmtfs -r -s -o /dev/disk/by-partlabel &
+  /usr/bin/rmtfs -v -s -P -o /dev/disk/by-partlabel > /tmp/rmtfs.log 2>&1 &
+  sleep 0.1
+fi
+
+# ── Trigger Remoteproc Modem Boot ────────────────────────────────────────────
+if [ -d /sys/class/remoteproc/remoteproc0 ]; then
+  # Re-verify debugfs options before starting
+  if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
+    echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/recovery 2>/dev/null || true
+    echo enabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
+  fi
+  state=$(cat /sys/class/remoteproc/remoteproc0/state 2>/dev/null)
+  if [ "$state" = "offline" ]; then
+    echo "[minit] Triggering remoteproc0 boot (echo start)..."
+    echo start > /sys/class/remoteproc/remoteproc0/state 2>/dev/null || true
+    sleep 0.5
+    echo "[minit] remoteproc0 state: $(cat /sys/class/remoteproc/remoteproc0/state 2>/dev/null)"
+  else
+    echo "[minit] remoteproc0 state is already: $state"
+  fi
 fi
 
 # ── USB CDC-ACM Serial Gadget ─────────────────────────────────────────────────

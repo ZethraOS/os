@@ -3,8 +3,11 @@ import time
 import base64
 import termios
 
-port = "/dev/tty.usbmodemZETHRA0000011"
-binary_path = "build/out/reboot_bootloader"
+import glob
+
+ports = glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/tty.usbmodem*")
+port = ports[0] if ports else "/dev/cu.usbmodem2101"
+binary_path = "/Users/nomad/workstation/work/code/OS/Mobile/zethraos/tools/reboot_bootloader/reboot_bootloader_tiny"
 
 def push_and_run():
     if not os.path.exists(binary_path):
