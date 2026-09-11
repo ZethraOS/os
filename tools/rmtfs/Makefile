@@ -2,9 +2,9 @@
 OUT := rmtfs
 
 CC ?= gcc
-CFLAGS ?= -Wall -g -O2
+CFLAGS ?= -Wall -Os -ffunction-sections -fdata-sections
 CFLAGS += -I. -I../qrtr/include -DANDROID
-LDFLAGS += -static -lpthread
+LDFLAGS += -Wl,--gc-sections -static -lpthread
 
 prefix = /usr/local
 bindir := $(prefix)/bin

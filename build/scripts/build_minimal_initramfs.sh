@@ -498,7 +498,7 @@ info "Packing minimal initramfs..."
 CPIO_OUT="$OUT_DIR/initramfs-minimal.cpio.gz"
 (
   cd "$WORK_DIR"
-  find . | sort | cpio -H newc -o 2>/dev/null | gzip -9 > "$CPIO_OUT"
+  find . | sort | cpio -H newc -o 2>/dev/null | xz --check=crc32 -9 > "$CPIO_OUT"
 )
 
 CPIO_SIZE=$(ls -lh "$CPIO_OUT" | awk '{print $5}')

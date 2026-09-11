@@ -2,20 +2,26 @@
 OUT := tqftpserv
 
 CC ?= aarch64-linux-gnu-gcc
-CFLAGS ?= -Wall -g -O2 -D_GNU_SOURCE
+CFLAGS ?= -Wall -Os -ffunction-sections -fdata-sections -D_GNU_SOURCE
 CFLAGS += -I. -I../qrtr/include
-LDFLAGS += -static
+LDFLAGS += -Wl,--gc-sections -static
 
 SRCS := tqftpserv.c translate.c ../qrtr/lib/qrtr.c ../qrtr/lib/logging.c
-OBJS := tqftpserv.o translate.o ../qrtr/lib/qrtr.o ../qrtr/lib/logging.o
+OBJS := tqftpserv.o translate.o qrtr.o logging.o
 
 all: $(OUT)
 
 $(OUT): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+qrtr.o: ../qrtr/lib/qrtr.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+logging.o: ../qrtr/lib/logging.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OUT) tqftpserv.o translate.o
+	rm -f $(OUT) *.o
