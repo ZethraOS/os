@@ -7,7 +7,7 @@
 #   Wi-Fi:  Qualcomm WCN3680 (wcn36xx)
 #   Audio:  Qualcomm WCD9335 codec
 #   Flash:  64GB eMMC
-# Based on Linux 6.x mainline — GPL-2 licensed
+# Based on Linux 7.1 mainline — GPL-2 licensed
 # Build: make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- zethra_defconfig
 
 # ─── Core ─────────────────────────────────────────────────────────────────────

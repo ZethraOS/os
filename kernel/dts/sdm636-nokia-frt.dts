@@ -558,3 +558,8 @@
 	};
 };
 
+/* Modem Subsystem (Qualcomm Hexagon MPSS) */
+&remoteproc_mss {
+	firmware-name = "qcom/sdm636/mba.mbn", "qcom/sdm636/modem.mdt";
+	status = "okay";
+};
