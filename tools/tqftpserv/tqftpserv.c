@@ -921,7 +921,6 @@ int main(int argc, char **argv)
 	int opcode;
 	int opt;
 	int ret;
-	int fd;
 
 	setlinebuf(stdout);
 	setlinebuf(stderr);
@@ -943,22 +942,33 @@ int main(int argc, char **argv)
 		}
 	}
 
-	fd = qrtr_open(0);
-	if (fd < 0) {
-		fprintf(stderr, "failed to open qrtr socket\n");
-		exit(1);
-	}
+#define NUM_INSTANCES 4
+	int ctrl_fds[NUM_INSTANCES];
+	int i;
 
-	ret = qrtr_publish(fd, 4096, 1, 0);
-	if (ret < 0) {
-		fprintf(stderr, "failed to publish service registry service\n");
-		exit(1);
+	for (i = 0; i < NUM_INSTANCES; i++) {
+		ctrl_fds[i] = qrtr_open(0);
+		if (ctrl_fds[i] < 0) {
+			fprintf(stderr, "failed to open qrtr socket for instance %d\n", i);
+			exit(1);
+		}
+
+		ret = qrtr_publish(ctrl_fds[i], 4096, 1, i);
+		if (ret < 0) {
+			fprintf(stderr, "failed to publish service 4096 instance %d\n", i);
+			exit(1);
+		}
+		log_debug("published service 4096 instance %d on fd %d\n", i, ctrl_fds[i]);
 	}
 
 	for (;;) {
 		FD_ZERO(&rfds);
-		FD_SET(fd, &rfds);
-		nfds = fd;
+		nfds = -1;
+
+		for (i = 0; i < NUM_INSTANCES; i++) {
+			FD_SET(ctrl_fds[i], &rfds);
+			nfds = MAX(nfds, ctrl_fds[i]);
+		}
 
 		list_for_each_entry(client, &writers, node) {
 			FD_SET(client->sock, &rfds);
@@ -996,67 +1006,70 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (FD_ISSET(fd, &rfds)) {
-			sl = sizeof(sq);
-			len = recvfrom(fd, buf, sizeof(buf), 0, (void *)&sq, &sl);
-			if (len < 0) {
-				ret = -errno;
-				if (ret != -ENETRESET)
-					fprintf(stderr, "recvfrom failed on control socket: %d\n", ret);
-				return ret;
-			}
-
-			/* Ignore control messages */
-			if (sq.sq_port == QRTR_PORT_CTRL) {
-				ret = qrtr_decode(&pkt, buf, len, &sq);
-				if (ret < 0) {
-					fprintf(stderr, "unable to decode qrtr packet\n");
+		for (i = 0; i < NUM_INSTANCES; i++) {
+			if (FD_ISSET(ctrl_fds[i], &rfds)) {
+				sl = sizeof(sq);
+				len = recvfrom(ctrl_fds[i], buf, sizeof(buf), 0, (void *)&sq, &sl);
+				if (len < 0) {
+					ret = -errno;
+					if (ret != -ENETRESET)
+						fprintf(stderr, "recvfrom failed on control socket %d: %d\n", i, ret);
 					return ret;
 				}
 
-				switch (pkt.type) {
-				case QRTR_TYPE_BYE:
-					log_debug("got bye for %d\n", pkt.node);
-					list_for_each_entry_safe(client, next, &writers, node) {
-						if (client->sq.sq_node == sq.sq_node)
-							client_close_and_free(client);
+				/* Ignore control messages */
+				if (sq.sq_port == QRTR_PORT_CTRL) {
+					ret = qrtr_decode(&pkt, buf, len, &sq);
+					if (ret < 0) {
+						fprintf(stderr, "unable to decode qrtr packet\n");
+						return ret;
 					}
-					break;
-				case QRTR_TYPE_DEL_CLIENT:
-					log_debug("got del_client for %d:%d\n", pkt.node, pkt.port);
-					list_for_each_entry_safe(client, next, &writers, node) {
-						if (!memcmp(&client->sq, &sq, sizeof(sq)))
-							client_close_and_free(client);
-					}
-					break;
-				}
-			} else {
-				if (len < 2)
-					continue;
 
-				opcode = buf[0] << 8 | buf[1];
-				switch (opcode) {
-				case OP_RRQ:
-					handle_rrq(buf, len, &sq);
-					break;
-				case OP_WRQ:
-					handle_wrq(buf, len, &sq);
-					break;
-				case OP_ERROR:
-					buf[len] = '\0';
-					log_err("received error %d from %d:%d: %s\n",
-						buf[2] << 8 | buf[3], sq.sq_node, sq.sq_port, buf + 4);
-					break;
-				default:
-					log_err("unhandled op %d from %d:%d\n",
-						opcode, sq.sq_node, sq.sq_port);
-					break;
+					switch (pkt.type) {
+					case QRTR_TYPE_BYE:
+						log_debug("got bye for %d\n", pkt.node);
+						list_for_each_entry_safe(client, next, &writers, node) {
+							if (client->sq.sq_node == sq.sq_node)
+								client_close_and_free(client);
+						}
+						break;
+					case QRTR_TYPE_DEL_CLIENT:
+						log_debug("got del_client for %d:%d\n", pkt.node, pkt.port);
+						list_for_each_entry_safe(client, next, &writers, node) {
+							if (!memcmp(&client->sq, &sq, sizeof(sq)))
+								client_close_and_free(client);
+						}
+						break;
+					}
+				} else {
+					if (len < 2)
+						continue;
+
+					opcode = buf[0] << 8 | buf[1];
+					switch (opcode) {
+					case OP_RRQ:
+						handle_rrq(buf, len, &sq);
+						break;
+					case OP_WRQ:
+						handle_wrq(buf, len, &sq);
+						break;
+					case OP_ERROR:
+						buf[len] = '\0';
+						log_err("received error %d from %d:%d: %s\n",
+							buf[2] << 8 | buf[3], sq.sq_node, sq.sq_port, buf + 4);
+						break;
+					default:
+						log_err("unhandled op %d from %d:%d\n",
+							opcode, sq.sq_node, sq.sq_port);
+						break;
+					}
 				}
 			}
 		}
 	}
 
-	close(fd);
+	for (i = 0; i < NUM_INSTANCES; i++)
+		close(ctrl_fds[i]);
 
 	return 0;
 }

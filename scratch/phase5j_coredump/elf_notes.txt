@@ -1,0 +1,5 @@
+No note segments present in this remoteproc devcoredump ELF image.
+Kernel driver drivers/remoteproc/remoteproc_coredump.c generates PT_LOAD program headers
+exclusively for all registered DDR physical memory segments (28 PT_LOAD segments total).
+Subsystem minidump notes were bypassed because minidump_subsystem status != 1 at crash time,
+causing qcom_minidump() to fallback to direct PT_LOAD memory segment dumping.

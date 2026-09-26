@@ -28,6 +28,7 @@ rm -rf "$WORK_DIR"
 for d in bin sbin usr/bin usr/sbin etc etc/init.d etc/systemd/system \
           dev proc sys sys/kernel/debug sys/kernel/config \
           tmp run mnt mnt/persist mnt/modem \
+          var var/lib var/lib/tqftpserv \
           lib/firmware/qcom lib/firmware/qcom/sdm636 \
           dev/disk/by-partlabel; do
   mkdir -p "$WORK_DIR/$d"
@@ -48,6 +49,14 @@ done
 info "Copying qbootctl..."
 cp "$OUT_DIR/qbootctl" "$WORK_DIR/sbin/qbootctl"
 chmod 755 "$WORK_DIR/sbin/qbootctl"
+
+# ── reboot_bootloader ─────────────────────────────────────────────────────────
+if [[ -f "$REPO_ROOT/tools/reboot_bootloader/reboot_bootloader_tiny" ]]; then
+  info "Copying reboot_bootloader..."
+  cp "$REPO_ROOT/tools/reboot_bootloader/reboot_bootloader_tiny" "$WORK_DIR/sbin/reboot_bootloader"
+  chmod 755 "$WORK_DIR/sbin/reboot_bootloader"
+  ln -sf /sbin/reboot_bootloader "$WORK_DIR/bin/reboot_bootloader"
+fi
 
 # ── Qcom GPU firmware blobs (required for DPU/GPU probe on SDM636) ─────────────
 info "Copying Qcom firmware blobs..."
@@ -72,6 +81,7 @@ fi
 EXPECTED_CRBTFW21_SHA256="49c9358d5488d4836626b8e0e49a31fea01b4e80394d40528253d19afba52ca8"
 EXPECTED_CRNV21_SHA256="2bd75139a0dccb75470a453c299fd1861bc34ceb9502ea419557a9ebe405b016"
 
+BT_FIRMWARE_DIR="${BT_FIRMWARE_DIR:-$REPO_ROOT/scratch/bt_firmware}"
 if [[ -z "${BT_FIRMWARE_DIR:-}" ]]; then
   err "BT_FIRMWARE_DIR is not set. Set it to the absolute path containing crbtfw21.tlv and crnv21.bin."
 fi
@@ -103,6 +113,14 @@ success "BT firmware staged: lib/firmware/qca/crbtfw21.tlv + lib/firmware/qca/cr
 
 # ── Modem Userspace Daemons (qrtr-ns, qrtr-lookup, rmtfs) ─────────────────────
 info "Staging QRTR and RMTFS modem daemons..."
+# Always copy updated binaries from tools/ if present
+if [[ -f "$REPO_ROOT/tools/rmtfs/rmtfs" ]]; then
+  cp "$REPO_ROOT/tools/rmtfs/rmtfs" "$OUT_DIR/rmtfs"
+fi
+if [[ -f "$REPO_ROOT/tools/tqftpserv/tqftpserv" ]]; then
+  cp "$REPO_ROOT/tools/tqftpserv/tqftpserv" "$OUT_DIR/tqftpserv"
+fi
+
 # If binaries are not in $OUT_DIR, build them from tools/
 if [[ ! -f "$OUT_DIR/qrtr-ns" || ! -f "$OUT_DIR/rmtfs" ]]; then
   info "Building qrtr-ns and rmtfs from tools/..."
@@ -140,6 +158,24 @@ cp "$OUT_DIR/tqftpserv" "$WORK_DIR/usr/bin/tqftpserv"
 chmod 755 "$WORK_DIR/usr/bin/tqftpserv"
 ln -sf /usr/bin/tqftpserv "$WORK_DIR/bin/tqftpserv"
 success "Modem daemons staged to /usr/bin: qrtr-ns, qrtr-lookup, rmtfs, tqftpserv"
+
+# ── FIH SKUID Emulator ─────────────────────────────────────────────────────────
+# Emulates Android RIL's QMI SKUID delivery to prevent fih_nv_qmi_skuid2() crash.
+# Must run BEFORE remoteproc modem boot so it is ready when FIH service registers.
+info "Staging FIH SKUID emulator..."
+FIH_SKUID_BIN="$REPO_ROOT/services/telephony/fih_skuid_emulator"
+if [[ ! -f "$FIH_SKUID_BIN" ]]; then
+  info "Building fih_skuid_emulator from source..."
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace zethra-build-env:1 bash -c \
+    "aarch64-linux-gnu-gcc -static -Os -ffunction-sections -fdata-sections -Wl,--gc-sections \
+     -Itools/qrtr/include tools/qrtr/lib/qrtr.c tools/qrtr/lib/logging.c \
+     services/telephony/fih_skuid_emulator.c -o services/telephony/fih_skuid_emulator && \
+     aarch64-linux-gnu-strip services/telephony/fih_skuid_emulator"
+fi
+cp "$FIH_SKUID_BIN" "$WORK_DIR/usr/bin/fih_skuid_emulator"
+chmod 755 "$WORK_DIR/usr/bin/fih_skuid_emulator"
+ln -sf /usr/bin/fih_skuid_emulator "$WORK_DIR/bin/fih_skuid_emulator"
+success "FIH SKUID emulator staged to /usr/bin/fih_skuid_emulator"
 
 # ── Service Units & Init Scripts ──────────────────────────────────────────────
 info "Writing systemd units and init scripts for modem daemons..."
@@ -226,7 +262,7 @@ cat > "$WORK_DIR/etc/init.d/tqftpserv" << 'EOF'
 case "$1" in
   start)
     echo "Starting tqftpserv..."
-    /usr/bin/tqftpserv -d -t /mnt/modem /lib/firmware > /tmp/tqftpserv.log 2>&1 &
+    /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
     ;;
   stop)
     killall tqftpserv 2>/dev/null || true
@@ -242,6 +278,41 @@ esac
 EOF
 chmod 755 "$WORK_DIR/etc/init.d/tqftpserv"
 success "Service units and init scripts created"
+
+# ── FIH RFS Staging & FSC Candidate ──────────────────────────────────────────
+info "Staging FIH RFS directory tree..."
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/fih_rfs/data/vendor"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/shared"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/hlos"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/ramdumps"
+touch "$WORK_DIR/var/lib/tqftpserv/fih_rfs/data/vendor/.keep"
+touch "$WORK_DIR/var/lib/tqftpserv/shared/.keep"
+touch "$WORK_DIR/var/lib/tqftpserv/hlos/.keep"
+touch "$WORK_DIR/var/lib/tqftpserv/ramdumps/.keep"
+
+if [ -d "$REPO_ROOT/scratch/tqftpserv_staging" ]; then
+  cp -r "$REPO_ROOT/scratch/tqftpserv_staging/"* "$WORK_DIR/var/lib/tqftpserv/" 2>/dev/null || true
+  success "Staged FIH RFS directories from scratch/tqftpserv_staging"
+fi
+
+# Stage candidate FSC cookie and restore utility
+if [ -f "$REPO_ROOT/scratch/fsc_active_gen1.img" ]; then
+  cp "$REPO_ROOT/scratch/fsc_active_gen1.img" "$WORK_DIR/etc/fsc_candidate.img"
+  success "Staged fsc_active_gen1.img -> /etc/fsc_candidate.img"
+fi
+
+cat > "$WORK_DIR/usr/bin/restore_fsc_cookie" << 'EOF'
+#!/bin/sh
+if [ ! -f /etc/fsc_candidate.img ]; then
+  echo "No /etc/fsc_candidate.img found!"
+  exit 1
+fi
+echo "Writing /etc/fsc_candidate.img to /dev/disk/by-partlabel/fsc..."
+dd if=/etc/fsc_candidate.img of=/dev/disk/by-partlabel/fsc bs=1024 count=1 conv=fsync 2>&1
+echo "Done. FSC cookie written."
+EOF
+chmod 755 "$WORK_DIR/usr/bin/restore_fsc_cookie"
+ln -sf /usr/bin/restore_fsc_cookie "$WORK_DIR/bin/restore_fsc_cookie"
 
 # ── Optional Modem Firmware Staging (Phase 5B hybrid strategy) ────────────────
 if [[ -n "${MODEM_FIRMWARE_DIR:-}" ]]; then
@@ -355,9 +426,9 @@ fi
 # ── Modem Userspace Daemons (qrtr-ns, rmtfs) ──────────────────────────────────
 export PATH=/usr/bin:/bin:/sbin:/usr/sbin
 
-# Ensure EFS partition symlinks exist for rmtfs
-ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+# Ensure EFS partition symlinks exist for rmtfs (modemst2 has active Gen 17 matching fsc)
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
 ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
 
 # Detect active slot (cmdline check)
@@ -367,22 +438,29 @@ case "$(cat /proc/cmdline 2>/dev/null)" in
   *) ACTIVE_SLOT="b" ;;
 esac
 
-# Map nvdef_${slot} → fsg for rmtfs (Nokia FIH stores NV in nvdef, not fsg)
-if [ "$ACTIVE_SLOT" = "b" ]; then
-  ln -sf /dev/disk/by-partlabel/nvdef_b /dev/disk/by-partlabel/fsg
-  echo "[minit] Mapped nvdef_b → fsg for EFS"
+# Map nvdef_${slot} → fsg for rmtfs
+# Note: Nokia FIH prepends a 512-byte partition table header at sector 0 of nvdef.
+# The Qualcomm FSG image (magic 0xCDABCDAB) begins at sector 1 (offset 512).
+# Hexagon firmware requests sectors 0:4096 and expects 0xCDABCDAB at sector 0.
+NVDEF_PART="/dev/disk/by-partlabel/nvdef_${ACTIVE_SLOT}"
+if [ -b "$NVDEF_PART" ]; then
+  echo "[minit] Extracting Qualcomm FSG (skipping 512B FIH header) from $NVDEF_PART..."
+  dd if="$NVDEF_PART" of=/tmp/fsg_clean.img bs=512 skip=1 2>/dev/null
+  ln -sf /tmp/fsg_clean.img /dev/disk/by-partlabel/fsg
+  echo "[minit] Mapped /tmp/fsg_clean.img → fsg for EFS"
 else
-  ln -sf /dev/disk/by-partlabel/nvdef_a /dev/disk/by-partlabel/fsg
-  echo "[minit] Mapped nvdef_a → fsg for EFS"
+  echo "[minit] ⚠ $NVDEF_PART not found!"
 fi
 
 ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null || true
+ln -sf /tmp/fsg_clean.img /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null || true
+ln -sf /tmp/fsg_clean.img /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null || true
+echo "[minit] OEM FSG symlinks: modem_fsg_oem_1 -> $(readlink /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null), modem_fsg_oem_2 -> $(readlink /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null)"
 
 # Verify EFS has valid data (non-zero)
 EFS_HASH=$(dd if=/dev/disk/by-partlabel/fsg bs=4096 count=512 2>/dev/null | sha256sum | cut -d' ' -f1)
 echo "[minit] EFS SHA-256: $EFS_HASH"
+
 
 # Disable remoteproc auto-recovery (keep crash state intact)
 if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
@@ -407,10 +485,21 @@ if [ -x /usr/bin/rmtfs ]; then
 fi
 
 if [ -x /usr/bin/tqftpserv ]; then
-  echo "[minit] Starting tqftpserv daemon (serving /mnt/modem and /lib/firmware)..."
-  /usr/bin/tqftpserv -d -t /mnt/modem /lib/firmware > /tmp/tqftpserv.log 2>&1 &
+  echo "[minit] Starting tqftpserv daemon (serving /mnt/modem, /lib/firmware, and /var/lib/tqftpserv)..."
+  /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
   sleep 0.1
-  echo "[minit] Started tqftpserv serving /mnt/modem and /lib/firmware"
+  echo "[minit] Started tqftpserv daemon"
+fi
+
+# ── FIH SKUID Emulator (persistent daemon for Service 15) ────────────────────
+# Delivers SKUID1="600WW" to Hexagon modem via QMI (service 15, msg 6).
+# Runs persistently as a daemon listening for Service 15 on QRTR.
+if [ -x /usr/bin/fih_skuid_emulator ]; then
+  echo "[minit] Starting fih_skuid_emulator (persistent daemon)..."
+  /usr/bin/fih_skuid_emulator > /tmp/fih_skuid.log 2>&1 &
+  FIH_SKUID_PID=$!
+  sleep 0.1
+  echo "[minit] fih_skuid_emulator launched (PID=$FIH_SKUID_PID) — log: /tmp/fih_skuid.log"
 fi
 
 # ── Trigger Remoteproc Modem Boot ────────────────────────────────────────────

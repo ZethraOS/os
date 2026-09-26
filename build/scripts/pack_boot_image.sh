@@ -22,10 +22,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 OUT_DIR="$REPO_ROOT/build/out"
 TOOLS_DIR="$REPO_ROOT/tools"
 
-KERNEL_IMAGE="$OUT_DIR/Image.gz-dtb"
-INITRAMFS="$OUT_DIR/initramfs.cpio.gz"
-BOOT_OUTPUT="$OUT_DIR/boot.img"
-VBMETA_OUTPUT="$OUT_DIR/vbmeta.img"
+KERNEL_IMAGE="${KERNEL_IMAGE:-$OUT_DIR/Image.gz-dtb}"
+INITRAMFS="${INITRAMFS:-$OUT_DIR/initramfs-minimal.cpio.gz}"
+BOOT_OUTPUT="${BOOT_OUTPUT:-$OUT_DIR/boot.img}"
+VBMETA_OUTPUT="${VBMETA_OUTPUT:-$OUT_DIR/vbmeta.img}"
 
 # Boot image parameters (matching stock Nokia 6.1 Plus capture)
 HEADER_VERSION=0
@@ -88,7 +88,7 @@ if ! command -v mkbootimg &>/dev/null; then
 else
   MKBOOTIMG="$(command -v mkbootimg)"
 fi
-success "mkbootimg: $MKBOOTIMG ($(file "$MKBOOTIMG" | grep -oP '(x86_64|ARM64|aarch64)' || echo 'unknown arch'))"
+success "mkbootimg: $MKBOOTIMG ($(file "$MKBOOTIMG" | grep -oE '(x86_64|ARM64|aarch64)' || echo 'unknown arch'))"
 
 # ─── Document Boot Parameters ────────────────────────────────────────────────
 info "Recording boot image parameters for reproducibility..."

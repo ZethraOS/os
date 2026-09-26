@@ -1,0 +1,21 @@
+Running command on device: cat /tmp/fih_skuid.log
+=== DEVICE OUTPUT ===
+
+/ # ^C
+/ # 
+/ # [6ncat /tmp/fih_skuid.log
+[fih_skuid] Starting FIH SKUID Emulator (built with libqrtr)
+[fih_skuid] Target SKUID: 600WW, target service: 15
+[fih_skuid] Registering lookup for service 15 and wildcard
+[fih_skuid] NEW_SERVER: service=0 instance=0 node=0 port=0
+[fih_skuid] NEW_SERVER: service=14 instance=0 node=1 port=14
+[fih_skuid] NEW_SERVER: service=64 instance=1 node=1 port=16385
+[fih_skuid] NEW_SERVER: service=4096 instance=0 node=1 port=16386
+[fih_skuid] NEW_SERVER: service=4096 instance=1 node=1 port=16387
+[fih_skuid] NEW_SERVER: service=4096 instance=2 node=1 port=16388
+[fih_skuid] NEW_SERVER: service=4096 instance=3 node=1 port=16389
+[fih_skuid] NEW_SERVER: service=0 instance=0 node=0 port=0
+[fih_skuid] NEW_SERVER: service=66 instance=180 node=0 port=1
+[fih_skuid] NEW_SERVER: service=43 instance=18 node=0 port=4
+/ # [6n
+=====================

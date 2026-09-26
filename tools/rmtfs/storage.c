@@ -52,8 +52,8 @@ static const struct partition partition_table[] = {
 	/* Some OxygenOS firmware versions request this alternative path */
 	{ "/oppo/oem_partion", "oem_stanvbk", "oem_stanvbk" },
 	/* Nokia / Qualcomm Dual SIM FSG partitions */
-	{ "/boot/modem_fsg_oem_1", "fsg", "fsg" },
-	{ "/boot/modem_fsg_oem_2", "fsg", "fsg" },
+	{ "/boot/modem_fsg_oem_1", "modem_fsg_oem_1", "modem_fsg_oem_1" },
+	{ "/boot/modem_fsg_oem_2", "modem_fsg_oem_2", "modem_fsg_oem_2" },
 	{}
 };
 
@@ -163,14 +163,41 @@ found:
 	ret = fd_open(rmtfd, fspath, part);
 	if (ret) {
 		/* Try again with the slot suffix before giving up */
-		if (!slot_suffix)
-			return NULL;
-
-		snprintf(fspath, pathlen, "%s/%s%s", storage_dir, file, slot_suffix);
-		ret = fd_open(rmtfd, fspath, part);
-		if (ret)
-			return NULL;
+		if (slot_suffix) {
+			snprintf(fspath, pathlen, "%s/%s%s", storage_dir, file, slot_suffix);
+			ret = fd_open(rmtfd, fspath, part);
+		}
 	}
+	if (ret && storage_use_partitions) {
+		/* Fallback resolution for OEM partitions (nvcust / rf_nv) */
+		const char *fallback = NULL;
+		if (strcmp(part->path, "/boot/modem_fsg_oem_1") == 0)
+			fallback = "nvcust";
+		else if (strcmp(part->path, "/boot/modem_fsg_oem_2") == 0)
+			fallback = "rf_nv";
+
+		if (fallback) {
+			pathlen = strlen(storage_dir) + strlen(fallback) + 2 + strnlen(slot_suffix, SLOT_SUFFIX_LEN);
+			fspath = alloca(pathlen);
+			snprintf(fspath, pathlen, "%s/%s", storage_dir, fallback);
+			ret = fd_open(rmtfd, fspath, part);
+			if (ret && slot_suffix) {
+				snprintf(fspath, pathlen, "%s/%s%s", storage_dir, fallback, slot_suffix);
+				ret = fd_open(rmtfd, fspath, part);
+			}
+		}
+
+		/* As last resort for OEM partitions, fall back to fsg */
+		if (ret && (strcmp(part->path, "/boot/modem_fsg_oem_1") == 0 ||
+			    strcmp(part->path, "/boot/modem_fsg_oem_2") == 0)) {
+			pathlen = strlen(storage_dir) + strlen("fsg") + 2;
+			fspath = alloca(pathlen);
+			snprintf(fspath, pathlen, "%s/%s", storage_dir, "fsg");
+			ret = fd_open(rmtfd, fspath, part);
+		}
+	}
+	if (ret)
+		return NULL;
 
 	rmtfd->node = node;
 	rmtfd->partition = part;
