@@ -3,7 +3,10 @@ import sys
 import time
 import termios
 
-port = "/dev/tty.usbmodemZETHRA0000011"
+import glob
+
+ports = glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/tty.usbmodem*")
+port = ports[0] if ports else "/dev/cu.usbmodem2101"
 
 def run_cmd(cmd):
     try:
