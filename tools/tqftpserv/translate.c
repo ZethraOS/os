@@ -25,6 +25,10 @@
 #define READONLY_MODEM_PATH	READONLY_FW_BASE "modem_pr"
 #define READONLY_VENDOR_PATH		"/readonly/vendor/firmware/"
 #define READONLY_VENDOR_MNT_PATH	"/readonly/vendor/firmware_mnt/image/"
+#define FIH_RFS_PATH		"/fih_rfs/"
+#define SHARED_PATH		"/shared/"
+#define HLOS_PATH		"/hlos/"
+#define RAMDUMPS_PATH		"/ramdumps/"
 
 #ifndef ANDROID
 #define FIRMWARE_BASE	"/lib/firmware/"
@@ -174,6 +178,21 @@ static int translate_readonly(const char *file)
 	return fd;
 }
 
+static void ensure_parent_dirs(const char *basedir, const char *file)
+{
+	char path[PATH_MAX];
+	char *p;
+
+	snprintf(path, sizeof(path), "%s/%s", basedir, file);
+	for (p = path + strlen(basedir) + 1; *p; p++) {
+		if (*p == '/') {
+			*p = '\0';
+			mkdir(path, 0755);
+			*p = '/';
+		}
+	}
+}
+
 /**
  * translate_readwrite() - open "file" from the persistent readwrite directory
  * @file:	relative path of the requested file, with /readwrite/ stripped
@@ -194,11 +213,14 @@ static int translate_readwrite(const char *file, int flags)
 		return -1;
 	}
 
-	ret = mkdir(TQFTPSERV_RW_DIR, 0700);
+	ret = mkdir(TQFTPSERV_RW_DIR, 0755);
 	if (ret < 0 && errno != EEXIST) {
 		warn("failed to create tqftpserv readwrite directory");
 		return -1;
 	}
+
+	if (flags & (O_CREAT | O_WRONLY | O_RDWR))
+		ensure_parent_dirs(TQFTPSERV_RW_DIR, file);
 
 	base = open(TQFTPSERV_RW_DIR, O_RDONLY | O_DIRECTORY);
 	if (base < 0) {
@@ -206,10 +228,24 @@ static int translate_readwrite(const char *file, int flags)
 		return -1;
 	}
 
-	fd = openat(base, file, flags, 0600);
+	fd = openat(base, file, flags, 0666);
 	close(base);
-	if (fd < 0)
+	if (fd < 0) {
+		char persist_path[PATH_MAX];
+		snprintf(persist_path, sizeof(persist_path), "/mnt/persist/rfs/msm/mpss/%s", file);
+		fd = open(persist_path, flags, 0666);
+		if (fd >= 0) {
+			printf("tqftpserv: served '%s' from persist mpss fallback\n", file);
+			return fd;
+		}
+		snprintf(persist_path, sizeof(persist_path), "/mnt/persist/rfs/%s", file);
+		fd = open(persist_path, flags, 0666);
+		if (fd >= 0) {
+			printf("tqftpserv: served '%s' from persist fallback\n", file);
+			return fd;
+		}
 		warn("failed to open %s", file);
+	}
 
 	return fd;
 }
@@ -226,16 +262,40 @@ static int translate_readwrite(const char *file, int flags)
  */
 int translate_open(const char *path, int flags)
 {
+	const char *rel_path = path;
+	if (*rel_path == '/')
+		rel_path++;
+
+	printf("tqftpserv: translate_open requested '%s' (flags=0x%x)\n", path, flags);
+
 	if (!strncmp(path, READONLY_PATH, strlen(READONLY_PATH)))
 		return translate_readonly(path + strlen(READONLY_PATH));
 	else if (!strncmp(path, READONLY_MODEM_PATH, strlen(READONLY_MODEM_PATH)))
 		return translate_readonly(path + strlen(READONLY_FW_BASE));
 	else if (!strncmp(path, READWRITE_PATH, strlen(READWRITE_PATH)))
 		return translate_readwrite(path + strlen(READWRITE_PATH), flags);
+	else if (!strncmp(rel_path, "readwrite/", 10))
+		return translate_readwrite(rel_path + 10, flags);
 	else if (!strncmp(path, READONLY_VENDOR_MNT_PATH, strlen(READONLY_VENDOR_MNT_PATH)))
 		return translate_readonly(path + strlen(READONLY_VENDOR_MNT_PATH));
 	else if (!strncmp(path, READONLY_VENDOR_PATH, strlen(READONLY_VENDOR_PATH)))
 		return translate_readonly(path + strlen(READONLY_VENDOR_PATH));
+	else if (!strncmp(rel_path, "fih_rfs/", 8)) {
+		printf("tqftpserv: serving FIH RFS path %s -> %s/%s\n", path, TQFTPSERV_RW_DIR, rel_path);
+		return translate_readwrite(rel_path, flags);
+	}
+	else if (!strncmp(rel_path, "shared/", 7)) {
+		printf("tqftpserv: serving SHARED path %s -> %s/%s\n", path, TQFTPSERV_RW_DIR, rel_path);
+		return translate_readwrite(rel_path, flags);
+	}
+	else if (!strncmp(rel_path, "hlos/", 5)) {
+		printf("tqftpserv: serving HLOS path %s -> %s/%s\n", path, TQFTPSERV_RW_DIR, rel_path);
+		return translate_readwrite(rel_path, flags);
+	}
+	else if (!strncmp(rel_path, "ramdumps/", 9)) {
+		printf("tqftpserv: serving RAMDUMPS path %s -> %s/%s\n", path, TQFTPSERV_RW_DIR, rel_path);
+		return translate_readwrite(rel_path, flags);
+	}
 
 	fprintf(stderr, "invalid path %s, rejecting\n", path);
 	errno = ENOENT;
