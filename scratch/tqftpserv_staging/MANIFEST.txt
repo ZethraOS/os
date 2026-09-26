@@ -1,0 +1,14 @@
+fih_rfs/data/vendor/.keep
+fih_rfs/data/vendor/FIHOEM/MDM_SIM
+fih_rfs/data/vendor/FIHOEM/SKUID1
+fih_rfs/data/vendor/FIHOEM/fih_cust_list.txt
+fih_rfs/data/vendor/FIHOEM/fih_ims_list.txt
+fih_rfs/data/vendor/nv_items.cfg
+fih_rfs/data/vendor/radio/calibration.nv
+fih_rfs/data/vendor/rf_config.dat
+fih_rfs/data/vendor/sim/sim_config.nv
+hlos/.keep
+ramdumps/.keep
+readwrite/server_check.txt
+shared/.keep
+shared/modem/modem.cfg
