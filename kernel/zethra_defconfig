@@ -138,10 +138,10 @@ CONFIG_BT_HCIUART_QCA=y
 # ─── Qualcomm Platform (SDM636 specific) ────────────────────────────────────
 CONFIG_ARCH_QCOM=y
 CONFIG_ARCH_SDM845=n
-CONFIG_MSM_IPC_ROUTER=y
-CONFIG_QCOM_MDM_SUBSYSTEM=y
+# Removed: CONFIG_MSM_IPC_ROUTER=y  — obsolete CAF symbol; replaced by CONFIG_QRTR
+# Removed: CONFIG_QCOM_MDM_SUBSYSTEM=y  — obsolete CAF symbol; replaced by CONFIG_QCOM_Q6V5_MSS
 CONFIG_QCOM_SMEM=y              # Shared memory between processors
-CONFIG_QCOM_SMD=y               # Qualcomm SMD transport
+# Removed: CONFIG_QCOM_SMD=y  — obsolete CAF symbol; mainline replacement is CONFIG_RPMSG_QCOM_SMD (line 242)
 CONFIG_QCOM_SMD_RPM=y           # RPM over SMD
 CONFIG_QCOM_RPMPD=y             # RPM power domains
 CONFIG_QCOM_RPMCC=y             # RPM clock controller
@@ -241,6 +241,7 @@ CONFIG_QCOM_SMSM=y
 # Level 2: RPMSG transport (needs MAILBOX + QCOM_SMEM)
 CONFIG_RPMSG_QCOM_SMD=y
 CONFIG_RPMSG_QCOM_GLINK_RPM=y
+CONFIG_RPMSG_QCOM_GLINK_SMEM=y  # GLINK SMEM transport for modem/ADSP IPC
 
 # Level 3: RPM power manager (needs RPMSG_QCOM_SMD)
 
@@ -277,9 +278,24 @@ CONFIG_POWER_RESET_QCOM_PON=y
 # Level 8: MMC/eMMC storage (needs SDHCI platform + MSM driver)
 CONFIG_MMC_SDHCI_PLTFM=y
 
-# Level 9: Additional Qualcomm platform support
+# Level 9: Remoteproc subsystem (needs QCOM_SMEM, MAILBOX, RPMSG)
+CONFIG_REMOTEPROC=y              # Core remoteproc framework — gating dependency for all PIL drivers
+CONFIG_REMOTEPROC_CDEV=y         # Remoteproc character device for userspace control
+CONFIG_QCOM_Q6V5_MSS=y          # Hexagon V5 modem subsystem PIL driver (SDM636/660)
+CONFIG_QCOM_WCNSS_PIL=y         # WCNSS PIL (WiFi subsystem)
+CONFIG_QCOM_SYSMON=y            # Subsystem monitor — graceful shutdown coordination
+CONFIG_QCOM_PD_MAPPER=y         # Protection Domain Mapper for remote DSP services
+
+# Level 10: QRTR IPC & QMI (replaces obsolete MSM_IPC_ROUTER; needs RPMSG + NET)
+CONFIG_QRTR=y                   # Qualcomm IPC Router (AF_QIPCRTR sockets)
+CONFIG_QRTR_SMD=y               # QRTR SMD transport channel
+CONFIG_QRTR_TUN=y               # QRTR TUN device for debugging
+CONFIG_QCOM_QMI_HELPERS=y       # QMI encode/decode helper library
+
+# Level 11: Modem shared memory & SoC info
+CONFIG_QCOM_RMTFS_MEM=y         # Remote filesystem shared memory (modem EFS/NV access)
+CONFIG_QCOM_SOCINFO=y           # SoC info driver (/sys/devices/soc0)
 CONFIG_QCOM_GENI_SE=y
-CONFIG_QCOM_WCNSS_PIL=y
 
 # NVMEM / eFuse
 CONFIG_NVMEM=y
