@@ -25,7 +25,8 @@ info "Building minimal initramfs at: $WORK_DIR"
 rm -rf "$WORK_DIR"
 
 # ── Directory skeleton (POSIX minimal) ─────────────────────────────────────────
-for d in bin sbin dev proc sys sys/kernel/debug sys/kernel/config \
+for d in bin sbin usr/bin usr/sbin etc etc/init.d etc/systemd/system \
+          dev proc sys sys/kernel/debug sys/kernel/config \
           tmp run mnt mnt/persist \
           lib/firmware/qcom \
           dev/disk/by-partlabel; do
@@ -39,7 +40,7 @@ chmod 755 "$WORK_DIR/bin/busybox"
 
 # Essential symlinks only — every other applet wastes nothing (busybox is one binary)
 for applet in sh cat echo ls mount umount mkdir mknod sleep dmesg grep sed \
-              awk cut wc ln sync find xargs sort; do
+              awk cut wc ln sync find xargs sort kill killall pidof; do
   ln -sf busybox "$WORK_DIR/bin/$applet"
 done
 
@@ -98,6 +99,120 @@ mkdir -p "$WORK_DIR/lib/firmware/qca"
 cp "$BT_FIRMWARE_DIR/crbtfw21.tlv" "$WORK_DIR/lib/firmware/qca/"
 cp "$BT_FIRMWARE_DIR/crnv21.bin"   "$WORK_DIR/lib/firmware/qca/"
 success "BT firmware staged: lib/firmware/qca/crbtfw21.tlv + lib/firmware/qca/crnv21.bin"
+
+
+# ── Modem Userspace Daemons (qrtr-ns, qrtr-lookup, rmtfs) ─────────────────────
+info "Staging QRTR and RMTFS modem daemons..."
+# If binaries are not in $OUT_DIR, build them from tools/
+if [[ ! -f "$OUT_DIR/qrtr-ns" || ! -f "$OUT_DIR/rmtfs" ]]; then
+  info "Building qrtr-ns and rmtfs from tools/..."
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace/tools/qrtr zethra-build-env:1 bash -c \
+    "make clean && CC=aarch64-linux-gnu-gcc make && aarch64-linux-gnu-strip -s qrtr-ns qrtr-lookup"
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace/tools/rmtfs zethra-build-env:1 bash -c \
+    "make clean && CC=aarch64-linux-gnu-gcc make && aarch64-linux-gnu-strip -s rmtfs"
+  cp "$REPO_ROOT/tools/qrtr/qrtr-ns" "$OUT_DIR/"
+  cp "$REPO_ROOT/tools/qrtr/qrtr-lookup" "$OUT_DIR/"
+  cp "$REPO_ROOT/tools/rmtfs/rmtfs" "$OUT_DIR/"
+fi
+
+cp "$OUT_DIR/qrtr-ns" "$WORK_DIR/usr/bin/qrtr-ns"
+chmod 755 "$WORK_DIR/usr/bin/qrtr-ns"
+ln -sf /usr/bin/qrtr-ns "$WORK_DIR/bin/qrtr-ns"
+
+if [[ -f "$OUT_DIR/qrtr-lookup" ]]; then
+  cp "$OUT_DIR/qrtr-lookup" "$WORK_DIR/usr/bin/qrtr-lookup"
+  chmod 755 "$WORK_DIR/usr/bin/qrtr-lookup"
+  ln -sf /usr/bin/qrtr-lookup "$WORK_DIR/bin/qrtr-lookup"
+fi
+
+cp "$OUT_DIR/rmtfs" "$WORK_DIR/usr/bin/rmtfs"
+chmod 755 "$WORK_DIR/usr/bin/rmtfs"
+ln -sf /usr/bin/rmtfs "$WORK_DIR/bin/rmtfs"
+success "Modem daemons staged to /usr/bin: qrtr-ns, qrtr-lookup, rmtfs"
+
+# ── Service Units & Init Scripts ──────────────────────────────────────────────
+info "Writing systemd units and init scripts for modem daemons..."
+
+cat > "$WORK_DIR/etc/systemd/system/qrtr-ns.service" << 'EOF'
+[Unit]
+Description=QIPCRTR Name Service
+Before=rmtfs.service
+
+[Service]
+ExecStart=/usr/bin/qrtr-ns -f 1
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat > "$WORK_DIR/etc/systemd/system/rmtfs.service" << 'EOF'
+[Unit]
+Description=Qualcomm remotefs service
+After=qrtr-ns.service
+ConditionPathExists=/dev/qcom_rmtfs_mem1
+
+[Service]
+ExecStart=/usr/bin/rmtfs -r -s -o /dev/disk/by-partlabel
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat > "$WORK_DIR/etc/init.d/qrtr-ns" << 'EOF'
+#!/bin/sh
+# /etc/init.d/qrtr-ns — Start/stop QRTR name server daemon
+case "$1" in
+  start)
+    echo "Starting qrtr-ns..."
+    /usr/bin/qrtr-ns &
+    ;;
+  stop)
+    killall qrtr-ns 2>/dev/null || true
+    ;;
+  status)
+    pidof qrtr-ns >/dev/null && echo "qrtr-ns is running" || echo "qrtr-ns is stopped"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOF
+chmod 755 "$WORK_DIR/etc/init.d/qrtr-ns"
+
+cat > "$WORK_DIR/etc/init.d/rmtfs" << 'EOF'
+#!/bin/sh
+# /etc/init.d/rmtfs — Start/stop Qualcomm remote filesystem daemon
+case "$1" in
+  start)
+    echo "Starting rmtfs..."
+    /usr/bin/rmtfs -r -s -o /dev/disk/by-partlabel &
+    ;;
+  stop)
+    killall rmtfs 2>/dev/null || true
+    ;;
+  status)
+    pidof rmtfs >/dev/null && echo "rmtfs is running" || echo "rmtfs is stopped"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOF
+chmod 755 "$WORK_DIR/etc/init.d/rmtfs"
+success "Service units and init scripts created"
+
+# ── Optional Modem Firmware Staging (Phase 5B hybrid strategy) ────────────────
+if [[ -n "${MODEM_FIRMWARE_DIR:-}" ]]; then
+  info "Staging modem MBA firmware via stage_modem_firmware.sh..."
+  INITRAMFS_DIR="$WORK_DIR" MODEM_FIRMWARE_DIR="$MODEM_FIRMWARE_DIR" \
+    bash "$REPO_ROOT/build/scripts/stage_modem_firmware.sh"
+fi
 
 
 # ── /dev nodes (minimal set — devtmpfs will populate more at runtime) ──────────
@@ -181,6 +296,19 @@ if mount -t ext4 /dev/disk/by-partlabel/persist /mnt/persist 2>/dev/null || \
   (while true; do dmesg > /mnt/persist/zethra_boot.log 2>&1; sync; sleep 1; done) &
 else
   echo "[minit] ⚠ persist partition not mounted (dmesg not saved)"
+fi
+
+# ── Modem Userspace Daemons (qrtr-ns, rmtfs) ──────────────────────────────────
+export PATH=/usr/bin:/bin:/sbin:/usr/sbin
+if [ -x /usr/bin/qrtr-ns ]; then
+  echo "[minit] Starting qrtr-ns daemon..."
+  /usr/bin/qrtr-ns &
+  sleep 0.1
+fi
+
+if [ -x /usr/bin/rmtfs ]; then
+  echo "[minit] Starting rmtfs daemon (storage: /dev/disk/by-partlabel)..."
+  /usr/bin/rmtfs -r -s -o /dev/disk/by-partlabel &
 fi
 
 # ── USB CDC-ACM Serial Gadget ─────────────────────────────────────────────────
