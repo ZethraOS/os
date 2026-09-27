@@ -47,23 +47,28 @@ def run_cmd(cmd):
 
     # Send command
     os.set_blocking(fd, True)
-    os.write(fd, b"\n\x03\n")
-    time.sleep(0.1)
+    os.write(fd, b"\n")
+    time.sleep(0.15)
+    os.set_blocking(fd, False)
+    try: os.read(fd, 65536)
+    except: pass
+    os.set_blocking(fd, True)
     os.write(fd, cmd.encode() + b"\n")
     
     # Read output
     response = b""
     start_time = time.time()
     no_data_count = 0
-    while time.time() - start_time < 5.0 and no_data_count < 25:
-        time.sleep(0.08)
+    timeout = 15.0 if "dmesg" in cmd or "log" in cmd else 6.0
+    while time.time() - start_time < timeout and no_data_count < 30:
+        time.sleep(0.05)
         os.set_blocking(fd, False)
         try:
-            chunk = os.read(fd, 4096)
+            chunk = os.read(fd, 8192)
             if chunk:
                 response += chunk
                 no_data_count = 0
-                if b"/ # " in response[len(cmd):]:
+                if b"/ # " in response[-10:]:
                     break
             else:
                 no_data_count += 1

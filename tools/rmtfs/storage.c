@@ -39,10 +39,10 @@ static int storage_read_only;
 static int storage_use_partitions;
 
 static const struct partition partition_table[] = {
-	{ "/boot/modem_fs1", "modem_fs1", "modemst1" },
-	{ "/boot/modem_fs2", "modem_fs2", "modemst2" },
-	{ "/boot/modem_fsc", "modem_fsc", "fsc" },
-	{ "/boot/modem_fsg", "modem_fsg", "fsg" },
+	{ "/boot/modem_fs1", "modemst1", "modemst1" },
+	{ "/boot/modem_fs2", "modemst2", "modemst2" },
+	{ "/boot/modem_fsc", "fsc", "fsc" },
+	{ "/boot/modem_fsg", "fsg", "fsg" },
 	{ "/boot/modem_study", "modem_study", "study" },
 	{ "/boot/modem_tunning", "modem_tunning", "tunning" },
 	{ "/boot/modem_tng", "modem_tng", "tunning" },
@@ -236,6 +236,11 @@ struct rmtfd *storage_get(unsigned node, int caller_id)
 int storage_get_caller_id(const struct rmtfd *rmtfd)
 {
 	return rmtfd->id;
+}
+
+const char *storage_get_name(const struct rmtfd *rmtfd)
+{
+	return (rmtfd && rmtfd->partition) ? rmtfd->partition->actual : "unknown";
 }
 
 int storage_get_error(const struct rmtfd *rmtfd)

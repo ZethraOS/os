@@ -7,7 +7,7 @@ import glob
 
 ports = glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/tty.usbmodem*")
 port = sorted(ports)[0] if ports else "/dev/cu.usbmodem2101"
-binary_path = "/Users/nomad/workstation/work/code/OS/Mobile/zethraos/scratch/scan_diag_v2"
+binary_path = "/Users/nomad/workstation/work/code/OS/Mobile/zethraos/scratch/scan_diag_v4"
 
 def push_and_run():
     if not os.path.exists(binary_path):
@@ -54,8 +54,8 @@ def push_and_run():
     time.sleep(0.2)
 
     # Start writing base64 file
-    print("Writing base64 encoded binary to /tmp/scan_diag_v2.b64...")
-    os.write(fd, b"cat << 'EOF' > /tmp/scan_diag_v2.b64\n")
+    print("Writing base64 encoded binary to /tmp/scan_diag_v4.b64...")
+    os.write(fd, b"cat << 'EOF' > /tmp/scan_diag_v4.b64\n")
     for line in lines:
         os.write(fd, (line + "\n").encode())
         time.sleep(0.01)
@@ -63,16 +63,16 @@ def push_and_run():
     time.sleep(0.2)
 
     print("Decoding binary and setting executable permissions...")
-    os.write(fd, b"busybox base64 -d /tmp/scan_diag_v2.b64 > /tmp/scan_diag_v2 && chmod +x /tmp/scan_diag_v2\n")
+    os.write(fd, b"busybox base64 -d /tmp/scan_diag_v4.b64 > /tmp/scan_diag_v4 && chmod +x /tmp/scan_diag_v4\n")
     time.sleep(0.3)
 
-    print("Executing /tmp/scan_diag_v2...")
-    os.write(fd, b"/tmp/scan_diag_v2\n")
+    print("Executing /tmp/scan_diag_v4...")
+    os.write(fd, b"/tmp/scan_diag_v4\n")
 
     # Read output
     response = b""
     no_data_count = 0
-    while no_data_count < 25:  # 2.5 second timeout of inactivity
+    while no_data_count < 40:  # 4 second timeout of inactivity
         time.sleep(0.1)
         os.set_blocking(fd, False)
         try:

@@ -30,7 +30,7 @@ for d in bin sbin usr/bin usr/sbin etc etc/init.d etc/systemd/system \
           tmp run mnt mnt/persist mnt/modem \
           var var/lib var/lib/tqftpserv \
           lib/firmware/qcom lib/firmware/qcom/sdm636 \
-          dev/disk/by-partlabel; do
+          dev/disk/by-partlabel skuid skuid/profile; do
   mkdir -p "$WORK_DIR/$d"
 done
 
@@ -262,7 +262,7 @@ cat > "$WORK_DIR/etc/init.d/tqftpserv" << 'EOF'
 case "$1" in
   start)
     echo "Starting tqftpserv..."
-    /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
+    /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /mnt/persist/rfs /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
     ;;
   stop)
     killall tqftpserv 2>/dev/null || true
@@ -295,7 +295,24 @@ if [ -d "$REPO_ROOT/scratch/tqftpserv_staging" ]; then
   success "Staged FIH RFS directories from scratch/tqftpserv_staging"
 fi
 
+# ── Stage /skuid/profile with 600WW|2 ─────────────────────────────────────────
+info "Staging /skuid/profile with 600WW|2..."
+mkdir -p "$WORK_DIR/skuid/profile"
+printf "600WW|2" > "$WORK_DIR/skuid/profile/600WW"
+printf "600WW|2" > "$WORK_DIR/skuid/profile/profile"
+printf "600WW|2" > "$WORK_DIR/skuid/profile/skuid"
+rm -rf "$WORK_DIR/var/lib/tqftpserv/skuid/profile"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/skuid/profile"
+printf "600WW|2" > "$WORK_DIR/var/lib/tqftpserv/skuid/profile/600WW"
+printf "600WW|2" > "$WORK_DIR/var/lib/tqftpserv/skuid/profile/profile"
+success "Staged /skuid/profile/600WW"
+
 # Stage candidate FSC cookie and restore utility
+if [ -f "$REPO_ROOT/scratch/fsc_clean_sector0.img" ]; then
+  cp "$REPO_ROOT/scratch/fsc_clean_sector0.img" "$WORK_DIR/etc/fsc_clean_sector0.img"
+  chmod 0644 "$WORK_DIR/etc/fsc_clean_sector0.img"
+  success "Staged fsc_clean_sector0.img -> /etc/fsc_clean_sector0.img (clean CRC bytes 508-511)"
+fi
 if [ -f "$REPO_ROOT/scratch/fsc_active_gen1.img" ]; then
   cp "$REPO_ROOT/scratch/fsc_active_gen1.img" "$WORK_DIR/etc/fsc_candidate.img"
   success "Staged fsc_active_gen1.img -> /etc/fsc_candidate.img"
@@ -303,13 +320,18 @@ fi
 
 cat > "$WORK_DIR/usr/bin/restore_fsc_cookie" << 'EOF'
 #!/bin/sh
-if [ ! -f /etc/fsc_candidate.img ]; then
-  echo "No /etc/fsc_candidate.img found!"
+if [ -f /etc/fsc_clean_sector0.img ]; then
+  echo "Writing /etc/fsc_clean_sector0.img to /dev/disk/by-partlabel/fsc..."
+  dd if=/etc/fsc_clean_sector0.img of=/dev/disk/by-partlabel/fsc bs=512 count=1 conv=fsync 2>&1
+  echo "Done. Clean FSC cookie written (CRC bytes zeroed)."
+elif [ -f /etc/fsc_candidate.img ]; then
+  echo "Writing /etc/fsc_candidate.img to /dev/disk/by-partlabel/fsc..."
+  dd if=/etc/fsc_candidate.img of=/dev/disk/by-partlabel/fsc bs=1024 count=1 conv=fsync 2>&1
+  echo "Done. FSC cookie written."
+else
+  echo "No FSC image found!"
   exit 1
 fi
-echo "Writing /etc/fsc_candidate.img to /dev/disk/by-partlabel/fsc..."
-dd if=/etc/fsc_candidate.img of=/dev/disk/by-partlabel/fsc bs=1024 count=1 conv=fsync 2>&1
-echo "Done. FSC cookie written."
 EOF
 chmod 755 "$WORK_DIR/usr/bin/restore_fsc_cookie"
 ln -sf /usr/bin/restore_fsc_cookie "$WORK_DIR/bin/restore_fsc_cookie"
@@ -358,8 +380,45 @@ mount -t debugfs  none    /sys/kernel/debug  2>/dev/null || true
 mkdir -p /sys/kernel/config
 mount -t configfs none    /sys/kernel/config 2>/dev/null || true
 
+# Disable automatic reboot on panic / RCU stall so we never bootloop
+echo 0 > /proc/sys/kernel/panic 2>/dev/null || true
+echo 0 > /proc/sys/kernel/panic_on_rcu_stall 2>/dev/null || true
+echo 0 > /proc/sys/kernel/panic_on_warn 2>/dev/null || true
+
 echo "[minit] ZethraOS minimal debug initramfs booted"
 echo "[minit] Kernel: $(uname -r) | cmdline: $(cat /proc/cmdline)"
+
+# ── Early USB CDC-ACM Serial Gadget (bring up serial ASAP) ────────────────────
+echo "[minit] Configuring early USB CDC-ACM gadget..."
+if [ -d /sys/kernel/config/usb_gadget ]; then
+  GADGET=/sys/kernel/config/usb_gadget/g1
+  mkdir -p "$GADGET/strings/0x409"
+  mkdir -p "$GADGET/functions/acm.usb0"
+  mkdir -p "$GADGET/configs/c.1/strings/0x409"
+  echo 0x18D1          > "$GADGET/idVendor"
+  echo 0x0001          > "$GADGET/idProduct"
+  echo "ZethraOS"      > "$GADGET/strings/0x409/manufacturer"
+  echo "Nokia 6.1 Plus"> "$GADGET/strings/0x409/product"
+  echo "ZETHRA000001"  > "$GADGET/strings/0x409/serialnumber"
+  echo "CDC ACM Debug" > "$GADGET/configs/c.1/strings/0x409/configuration"
+  ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
+
+  # Wait up to 5s for UDC to appear
+  udc_retries=0
+  while [ -z "$(ls /sys/class/udc/ 2>/dev/null)" ] && [ $udc_retries -lt 100 ]; do
+    sleep 0.05; udc_retries=$((udc_retries+1))
+  done
+
+  UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
+  if [ -n "$UDC" ]; then
+    echo "$UDC" > "$GADGET/UDC" 2>/dev/null
+    echo "[minit] USB ACM gadget bound to UDC: $UDC"
+  else
+    echo "[minit] ⚠ UDC not found — USB serial unavailable"
+  fi
+fi
+
+
 
 # ── Hardware watchdog keeper ──────────────────────────────────────────────────
 (while true; do
@@ -401,9 +460,21 @@ if mount -t ext4 /dev/disk/by-partlabel/persist /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
   echo "[minit] persist mounted — continuous dmesg logging to /mnt/persist/zethra_boot.log"
   (while true; do dmesg > /mnt/persist/zethra_boot.log 2>&1; sync; sleep 1; done) &
+  if [ -d /mnt/persist/rfs ]; then
+    echo "[minit] Staging /mnt/persist/rfs files into /var/lib/tqftpserv..."
+    mkdir -p /var/lib/tqftpserv
+    cp -r /mnt/persist/rfs/* /var/lib/tqftpserv/ 2>/dev/null || true
+    chmod -R 755 /mnt/persist/rfs /var/lib/tqftpserv 2>/dev/null || true
+  fi
 else
   echo "[minit] ⚠ persist partition not mounted (dmesg not saved)"
 fi
+
+# Stage /skuid/profile at runtime
+mkdir -p /skuid/profile
+printf "600WW|2" > /skuid/profile/600WW
+printf "600WW|2" > /skuid/profile/profile
+printf "600WW|2" > /skuid/profile/skuid
 
 # ── Mount Modem Partition (VFAT) & Symlink Firmware Files ─────────────────────
 echo "[minit] Mounting modem firmware partition..."
@@ -426,10 +497,17 @@ fi
 # ── Modem Userspace Daemons (qrtr-ns, rmtfs) ──────────────────────────────────
 export PATH=/usr/bin:/bin:/sbin:/usr/sbin
 
-# Ensure EFS partition symlinks exist for rmtfs (modemst2 has active Gen 17 matching fsc)
-ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+# Ensure EFS partition symlinks exist for rmtfs
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
 ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
+
+# Write clean FSC cookie (CRC bytes 508-511 = 00 00 00 00)
+if [ -f /etc/fsc_clean_sector0.img ] && [ -b /dev/disk/by-partlabel/fsc ]; then
+  echo "[minit] Writing clean FSC cookie..."
+  dd if=/etc/fsc_clean_sector0.img of=/dev/disk/by-partlabel/fsc bs=512 conv=fsync 2>/dev/null
+  echo "[minit] FSC cookie written (CRC bytes zeroed)"
+fi
 
 # Detect active slot (cmdline check)
 ACTIVE_SLOT="b"
@@ -453,8 +531,9 @@ else
 fi
 
 ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg 2>/dev/null || true
-ln -sf /tmp/fsg_clean.img /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null || true
-ln -sf /tmp/fsg_clean.img /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null || true
+# nvcust is empty on this device, use fsg for valid stock NV
+ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/rf_nv /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null || true
 echo "[minit] OEM FSG symlinks: modem_fsg_oem_1 -> $(readlink /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null), modem_fsg_oem_2 -> $(readlink /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null)"
 
 # Verify EFS has valid data (non-zero)
@@ -462,15 +541,15 @@ EFS_HASH=$(dd if=/dev/disk/by-partlabel/fsg bs=4096 count=512 2>/dev/null | sha2
 echo "[minit] EFS SHA-256: $EFS_HASH"
 
 
-# Disable remoteproc auto-recovery (keep crash state intact)
+# Disable remoteproc auto-recovery and blocking coredump (prevents CPU lockup on fatal error)
 if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
   echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/recovery 2>/dev/null || true
-  echo enabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
-  echo "[minit] Disabled remoteproc recovery, enabled coredump"
+  echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
+  echo "[minit] Disabled remoteproc recovery and coredump (prevents CPU lockup)"
 fi
 
-# Enable devcoredump
-echo 0 > /sys/class/devcoredump/disabled 2>/dev/null || true
+# Disable devcoredump to prevent memory stall
+echo 1 > /sys/class/devcoredump/disabled 2>/dev/null || true
 
 if [ -x /usr/bin/qrtr-ns ]; then
   echo "[minit] Starting qrtr-ns daemon..."
@@ -485,8 +564,8 @@ if [ -x /usr/bin/rmtfs ]; then
 fi
 
 if [ -x /usr/bin/tqftpserv ]; then
-  echo "[minit] Starting tqftpserv daemon (serving /mnt/modem, /lib/firmware, and /var/lib/tqftpserv)..."
-  /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
+  echo "[minit] Starting tqftpserv daemon (serving /mnt/modem, /lib/firmware, /mnt/persist/rfs, and /var/lib/tqftpserv)..."
+  /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /mnt/persist/rfs /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
   sleep 0.1
   echo "[minit] Started tqftpserv daemon"
 fi
@@ -504,10 +583,10 @@ fi
 
 # ── Trigger Remoteproc Modem Boot ────────────────────────────────────────────
 if [ -d /sys/class/remoteproc/remoteproc0 ]; then
-  # Re-verify debugfs options before starting
+  # Ensure recovery and coredump are disabled to prevent CPU lockup
   if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
     echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/recovery 2>/dev/null || true
-    echo enabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
+    echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
   fi
   state=$(cat /sys/class/remoteproc/remoteproc0/state 2>/dev/null)
   if [ "$state" = "offline" ]; then
@@ -520,38 +599,8 @@ if [ -d /sys/class/remoteproc/remoteproc0 ]; then
   fi
 fi
 
-# ── USB CDC-ACM Serial Gadget ─────────────────────────────────────────────────
-echo "[minit] Configuring USB CDC-ACM gadget..."
-if [ -d /sys/kernel/config/usb_gadget ]; then
-  GADGET=/sys/kernel/config/usb_gadget/g1
-  mkdir -p "$GADGET/strings/0x409"
-  mkdir -p "$GADGET/functions/acm.usb0"
-  mkdir -p "$GADGET/configs/c.1/strings/0x409"
-  echo 0x18D1          > "$GADGET/idVendor"
-  echo 0x0001          > "$GADGET/idProduct"
-  echo "ZethraOS"      > "$GADGET/strings/0x409/manufacturer"
-  echo "Nokia 6.1 Plus"> "$GADGET/strings/0x409/product"
-  echo "ZETHRA000001"  > "$GADGET/strings/0x409/serialnumber"
-  echo "CDC ACM Debug" > "$GADGET/configs/c.1/strings/0x409/configuration"
-  ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
-
-  # Wait up to 5s for UDC to appear
-  udc_retries=0
-  while [ -z "$(ls /sys/class/udc/ 2>/dev/null)" ] && [ $udc_retries -lt 100 ]; do
-    sleep 0.05; udc_retries=$((udc_retries+1))
-  done
-
-  UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
-  if [ -n "$UDC" ]; then
-    echo "$UDC" > "$GADGET/UDC" 2>/dev/null
-    echo "[minit] USB ACM gadget bound to UDC: $UDC"
-  else
-    echo "[minit] ⚠ UDC not found — USB serial unavailable"
-  fi
-fi
-
 # ── Drop into serial shell ────────────────────────────────────────────────────
-echo "[minit] ✓ Init complete. Spawning shell on /dev/ttyGS0 and /dev/ttyMSM0"
+echo "[minit] ✓ Init complete. Spawning foreground shell on /dev/ttyGS0 and /dev/ttyMSM0"
 echo "[minit] Run 'dmesg | grep -i drm' to inspect display driver probing"
 
 # Shell on UART (hardware serial — always available)
@@ -562,7 +611,7 @@ if [ -c /dev/ttyMSM0 ]; then
   done) &
 fi
 
-# Shell on USB ACM (enumerated ~3-5s after boot)
+# Shell on USB ACM
 while true; do
   [ -c /dev/ttyGS0 ] && /bin/sh < /dev/ttyGS0 > /dev/ttyGS0 2>&1
   sleep 1

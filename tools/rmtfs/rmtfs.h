@@ -31,6 +31,7 @@ struct rmtfd *storage_open(unsigned node, const char *path, const char *slot_suf
 struct rmtfd *storage_get(unsigned node, int caller_id);
 void storage_close(struct rmtfd *rmtfd);
 int storage_get_caller_id(const struct rmtfd *rmtfd);
+const char *storage_get_name(const struct rmtfd *rmtfd);
 int storage_get_error(const struct rmtfd *rmtfd);
 void storage_exit(void);
 ssize_t storage_pread(const struct rmtfd *rmtfd, void *buf, size_t nbyte, off_t offset);

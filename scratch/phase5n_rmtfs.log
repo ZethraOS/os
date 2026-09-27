@@ -1,0 +1,49 @@
+cat /tmp/rmtfs.log
+registering services
+[RMTFS] packet; from: 0:8
+[4.696288] [RMTFS] open /boot/modem_fs1 => 0 (0:0)
+[RMTFS] packet; from: 0:10
+[4.698592] [RMTFS] open /boot/modem_fs2 => 1 (0:0)
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:8
+[RMTFS] packet; from: 0:11
+[4.700699] [RMTFS] open /boot/modem_fsg => 2 (0:0)
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:10
+[RMTFS] packet; from: 0:12
+[4.702887] [RMTFS] open /boot/modem_fsc => 3 (0:0)
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:11
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:12
+[RMTFS] packet; from: 0:13
+[4.703140] [RMTFS] open /boot/modem_fsg_oem_1 => 4 (0:0)
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:13
+[RMTFS] packet; from: 0:14
+[4.703358] [RMTFS] open /boot/modem_fsg_oem_2 => 5 (0:0)
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:14
+[RMTFS] packet; from: 0:16
+[4.704642] [RMTFS] alloc caller=0, size=2097152 => 0x85e00000 (0:0)
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:16
+[RMTFS] packet; from: 0:17
+[4.705126] [RMTFS] iovec READ: caller=0 (modemst1) sector_addr=1 num_sector=1 phys=0x85e00200
+[RMTFS] iovec 0, not forced => (0:0)
+[RMTFS]       read 1:1 0x85e00200
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:17
+[RMTFS] packet; from: 0:18
+[4.706662] [RMTFS] iovec READ: caller=1 (modemst2) sector_addr=1 num_sector=1 phys=0x85e00200
+[RMTFS] iovec 1, not forced => (0:0)
+[RMTFS]       read 1:1 0x85e00200
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:18
+[RMTFS] packet; from: 0:19
+[4.710028] [RMTFS] iovec READ: caller=0 (modemst1) sector_addr=2 num_sector=4094 phys=0x85e00400
+[RMTFS] iovec 0, not forced => (0:0)
+[RMTFS]       read 2:4094 0x85e00400
+[RMTFS] packet; from: 1:-2
+[RMTFS] del_client 0:19
+/ # [6n

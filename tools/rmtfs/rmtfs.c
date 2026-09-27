@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "qmi_rmtfs.h"
@@ -82,8 +83,14 @@ static void rmtfs_open(int sock, const struct qrtr_packet *pkt)
 	resp.caller_id_valid = true;
 
 respond:
-	dbgprintf("[RMTFS] open %s => %d (%d:%d)\n",
-		  req.path, caller_id, resp.result.result, resp.result.error);
+	{
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		printf("[%ld.%06ld] [RMTFS] open %s => %d (%d:%d)\n",
+		       (long)ts.tv_sec, (long)(ts.tv_nsec / 1000),
+		       req.path, caller_id, resp.result.result, resp.result.error);
+		fflush(stdout);
+	}
 
 	len = qmi_encode_message(&resp_buf,
 				 QMI_RESPONSE, QMI_RMTFS_OPEN, txn, &resp,
@@ -128,8 +135,14 @@ static void rmtfs_close(int sock, const struct qrtr_packet *pkt)
 	rmtfs_mem_free(rmem);
 
 respond:
-	dbgprintf("[RMTFS] close %s => %d (%d:%d)\n",
-		  req.caller_id, resp.result.result, resp.result.error);
+	{
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		printf("[%ld.%06ld] [RMTFS] close caller=%u => (%d:%d)\n",
+		       (long)ts.tv_sec, (long)(ts.tv_nsec / 1000),
+		       req.caller_id, resp.result.result, resp.result.error);
+		fflush(stdout);
+	}
 
 	len = qmi_encode_message(&resp_buf,
 				 QMI_RESPONSE, QMI_RMTFS_CLOSE, txn, &resp,
@@ -189,28 +202,54 @@ static void rmtfs_iovec(int sock, struct qrtr_packet *pkt)
 		goto respond;
 	}
 
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	const char *part_name = storage_get_name(rmtfd);
+
 	for (i = 0; i < num_entries; i++) {
+		printf("[%ld.%06ld] [RMTFS] iovec %s: caller=%d (%s) sector_addr=%u num_sector=%u phys=0x%x\n",
+		       (long)ts.tv_sec, (long)(ts.tv_nsec / 1000),
+		       is_write ? "WRITE" : "READ",
+		       caller_id, part_name,
+		       entries[i].sector_addr, entries[i].num_sector,
+		       entries[i].phys_offset);
+		fflush(stdout);
+
 		phys_base = entries[i].phys_offset;
 		sector_base = entries[i].sector_addr * SECTOR_SIZE;
 		offset = 0;
 
 		for (j = 0; j < entries[i].num_sector; j++) {
+			uint32_t current_sec = entries[i].sector_addr + j;
 			if (is_write) {
 				n = rmtfs_mem_read(rmem, phys_base + offset, buf, SECTOR_SIZE);
-				if (n == SECTOR_SIZE)
+				if (n == SECTOR_SIZE) {
+					if (current_sec == 0) {
+						printf("[%ld.%06ld] [RMTFS] *** SECTOR 0 WRITE (%s) ***\n",
+						       (long)ts.tv_sec, (long)(ts.tv_nsec / 1000), part_name);
+						print_hex_dump("[RMTFS-SEC0-WR]", buf, 64);
+						fflush(stdout);
+					}
 					n = storage_pwrite(rmtfd, buf, n, sector_base + offset);
+				}
 			} else {
 				n = storage_pread(rmtfd, buf, SECTOR_SIZE, sector_base + offset);
 				if (n >= 0) {
 					if (n < SECTOR_SIZE)
 						memset(buf + n, 0, SECTOR_SIZE - n);
+					if (current_sec == 0) {
+						printf("[%ld.%06ld] [RMTFS] *** SECTOR 0 READ (%s) ***\n",
+						       (long)ts.tv_sec, (long)(ts.tv_nsec / 1000), part_name);
+						print_hex_dump("[RMTFS-SEC0-RD]", buf, 64);
+						fflush(stdout);
+					}
 					n = rmtfs_mem_write(rmem, phys_base + offset, buf, SECTOR_SIZE);
 				}
 			}
 
 			if (n != SECTOR_SIZE) {
 				fprintf(stderr, "[RMTFS] failed to %s sector %d\n",
-					is_write ? "write" : "read", entries[i].sector_addr + j);
+					is_write ? "write" : "read", current_sec);
 				qmi_result_error(&resp.result, QMI_RMTFS_ERR_INTERNAL);
 				goto respond;
 			}
@@ -280,7 +319,14 @@ static void rmtfs_alloc_buf(int sock, struct qrtr_packet *pkt)
 	resp.buff_address = address;
 	resp.buff_address_valid = true;
 respond:
-	dbgprintf("[RMTFS] alloc %d, %d => 0x%lx (%d:%d)\n", caller_id, alloc_size, address, resp.result.result, resp.result.error);
+	{
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		printf("[%ld.%06ld] [RMTFS] alloc caller=%d, size=%d => 0x%lx (%d:%d)\n",
+		       (long)ts.tv_sec, (long)(ts.tv_nsec / 1000),
+		       caller_id, alloc_size, (unsigned long)address, resp.result.result, resp.result.error);
+		fflush(stdout);
+	}
 
 	len = qmi_encode_message(&resp_buf,
 				 QMI_RESPONSE, QMI_RMTFS_ALLOC_BUFF, txn, &resp,

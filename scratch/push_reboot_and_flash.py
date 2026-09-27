@@ -217,7 +217,7 @@ print("\n--- FIH SKUID Log ---")
 print(exec_cmd("cat /tmp/fih_skuid.log").strip())
 
 print("\n--- Dmesg Modem Logs ---")
-print(exec_cmd("dmesg | grep -i -E 'remoteproc0|q6v5|fatal|crash|mba' | tail -n 25").strip())
+print(exec_cmd("dmesg | grep -i -E 'remoteproc0|q6v5|fatal|crash|mba|diag|smem' | tail -n 80").strip())
 
 os.close(fd)
 print("\n[✓] Complete!")
