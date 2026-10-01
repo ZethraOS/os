@@ -498,10 +498,8 @@ fi
 export PATH=/usr/bin:/bin:/sbin:/usr/sbin
 
 # Ensure EFS partition symlinks exist for rmtfs
-# modemst2 is Gen 17 (active), modemst1 is Gen 16 (stale)
-# Hexagon always mounts modem_fs1, so point it to Gen 17
-ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
 ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
 
 # Write clean FSC cookie (CRC bytes 508-511 = 00 00 00 00)
@@ -557,6 +555,14 @@ if [ -x /usr/bin/qrtr-ns ]; then
   echo "[minit] Starting qrtr-ns daemon..."
   /usr/bin/qrtr-ns &
   sleep 0.1
+fi
+
+# Sync dual-bank EFS (both banks must have same generation)
+# modemst2 is Gen 17 (active), sync modemst1 to match
+if [ -b /dev/disk/by-partlabel/modemst1 ] && [ -b /dev/disk/by-partlabel/modemst2 ]; then
+  echo "[minit] Syncing EFS dual-bank (modemst2 → modemst1)..."
+  dd if=/dev/disk/by-partlabel/modemst2 of=/dev/disk/by-partlabel/modemst1 bs=65536 conv=fsync
+  echo "[minit] EFS dual-bank synced (both Gen 17)"
 fi
 
 if [ -x /usr/bin/rmtfs ]; then
