@@ -498,8 +498,10 @@ fi
 export PATH=/usr/bin:/bin:/sbin:/usr/sbin
 
 # Ensure EFS partition symlinks exist for rmtfs
-ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+# modemst2 is Gen 17 (active), modemst1 is Gen 16 (stale)
+# Hexagon always mounts modem_fs1, so point it to Gen 17
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
 ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
 
 # Write clean FSC cookie (CRC bytes 508-511 = 00 00 00 00)
