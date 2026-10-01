@@ -1,0 +1,768 @@
+
+/ # dmesg
+[    0.000000] Booting Linux on physical CPU 0x0000000000 [0x51af8014]
+[    0.000000] Linux version 7.1.0 (zethra@zethra-build) (aarch64-linux-gnu-gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #1 SMP PREEMPT Fri Jun 12 17:00:00 UTC 2026
+[    0.000000] KASLR enabled
+[    0.000000] Machine model: Nokia 6.1 Plus
+[    0.000000] efi: UEFI not found.
+[    0.000000] [Firmware Bug]: Kernel image misaligned at boot, please fix your bootloader!
+[    0.000000] OF: reserved mem: 0x00000000bfffc000..0x00000000bfffffff (16 KiB) nomap non-reusable mpss-metadata
+[    0.000000] OF: reserved mem: 0x0000000085600000..0x00000000856fffff (1024 KiB) nomap non-reusable wlan-msa-guard@85600000
+[    0.000000] OF: reserved mem: 0x0000000085700000..0x00000000857fffff (1024 KiB) nomap non-reusable wlan-msa-mem@85700000
+[    0.000000] OF: reserved mem: 0x0000000085800000..0x0000000085dfffff (6144 KiB) nomap non-reusable qhee-code@85800000
+[    0.000000] OF: reserved mem: 0x0000000085e00000..0x0000000085ffffff (2048 KiB) nomap non-reusable memory@85e00000
+[    0.000000] OF: reserved mem: 0x0000000086000000..0x00000000861fffff (2048 KiB) nomap non-reusable smem-mem@86000000
+[    0.000000] OF: reserved mem: 0x0000000086200000..0x0000000088efffff (46080 KiB) nomap non-reusable memory@86200000
+[    0.000000] OF: reserved mem: 0x000000008ac00000..0x00000000929fffff (129024 KiB) nomap non-reusable mpss@8ac00000
+[    0.000000] OF: reserved mem: 0x0000000092a00000..0x00000000947fffff (30720 KiB) nomap non-reusable adsp@92a00000
+[    0.000000] OF: reserved mem: 0x0000000094800000..0x00000000949fffff (2048 KiB) nomap non-reusable mba@94800000
+[    0.000000] OF: reserved mem: 0x0000000094a00000..0x0000000094afffff (1024 KiB) nomap non-reusable tzbuffer@94a00000
+[    0.000000] OF: reserved mem: 0x000000009f800000..0x000000009fffffff (8192 KiB) nomap non-reusable venus@9f800000
+[    0.000000] OF: reserved mem: 0x00000000ac000000..0x00000000ac7fffff (8192 KiB) nomap non-reusable fih_nv@AC000000
+[    0.000000] OF: reserved mem: 0x00000000ac800000..0x00000000acafffff (3072 KiB) nomap non-reusable fih_mem@AC800000
+[    0.000000] OF: reserved mem: 0x000000009d400000..0x000000009f7fffff (36864 KiB) nomap non-reusable splash_region@9d400000
+[    0.000000] OF: reserved mem: 0x000000009f7ff000..0x000000009f7fffff (4 KiB) map non-reusable dfps_data_mem@9f7ff000
+[    0.000000] OF: reserved mem: 0x00000000acb00000..0x00000000accfffff (2048 KiB) nomap non-reusable ramoops@acb00000
+[    0.000000] OF: reserved mem: OVERLAP DETECTED!
+[    0.000000] splash_region@9d400000 (0x000000009d400000--0x000000009f800000) overlaps with dfps_data_mem@9f7ff000 (0x000000009f7ff000--0x000000009f800000)
+[    0.000000] psci: probing for conduit method from DT.
+[    0.000000] psci: PSCIv1.0 detected in firmware.
+[    0.000000] psci: Using standard PSCI v0.2 function IDs
+[    0.000000] psci: MIGRATE_INFO_TYPE not supported.
+[    0.000000] psci: SMC Calling Convention v1.0
+[    0.000000] psci: OSI mode supported.
+[    0.000000] psci: [Firmware Bug]: failed to set PC mode: -3
+[    0.000000] Zone ranges:
+[    0.000000]   DMA      [mem 0x0000000080000000-0x00000000ffffffff]
+[    0.000000]   DMA32    empty
+[    0.000000]   Normal   [mem 0x0000000100000000-0x000000017e4bffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080000000-0x00000000855fffff]
+[    0.000000]   node   0: [mem 0x0000000085600000-0x0000000088efffff]
+[    0.000000]   node   0: [mem 0x0000000088f00000-0x000000008abfffff]
+[    0.000000]   node   0: [mem 0x000000008ac00000-0x0000000094afffff]
+[    0.000000]   node   0: [mem 0x0000000094b00000-0x000000009d3fffff]
+[    0.000000]   node   0: [mem 0x000000009d400000-0x000000009fffffff]
+[    0.000000]   node   0: [mem 0x00000000a0000000-0x00000000abffffff]
+[    0.000000]   node   0: [mem 0x00000000ac000000-0x00000000accfffff]
+[    0.000000]   node   0: [mem 0x00000000acd00000-0x00000000bfffbfff]
+[    0.000000]   node   0: [mem 0x00000000bfffc000-0x00000000bfffffff]
+[    0.000000]   node   0: [mem 0x00000000c0000000-0x000000017e4bffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080000000-0x000000017e4bffff]
+[    0.000000] On node 0, zone Normal: 6976 pages in unavailable ranges
+[    0.000000] percpu: Embedded 18 pages/cpu s42584 r0 d31144 u73728
+[    0.000000] pcpu-alloc: s42584 r0 d31144 u73728 alloc=18*4096
+[    0.000000] pcpu-alloc: [0] 0 [0] 1 [0] 2 [0] 3 [0] 4 [0] 5 [0] 6 [0] 7 
+[    0.000000] Detected VIPT I-cache on CPU0
+[    0.000000] CPU features: detected: GICv3 CPU interface
+[    0.000000] CPU features: detected: Spectre-v4
+[    0.000000] CPU features: kernel page table isolation forced ON by KASLR
+[    0.000000] CPU features: detected: Kernel page table isolation (KPTI)
+[    0.000000] alternatives: applying boot alternatives
+[    0.000000] Kernel command line: console=tty0 earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 console=ttyGS0,115200 androidboot.hardware=qcom msm.separate_gpu_kms=1 lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=userdebug panic=10 fw_devlink=permissive root=/dev/dm-0 dm="system none ro,0 1 android-verity /dev/mmcblk0p82" androidboot.verifiedbootstate=orange androidboot.keymaster=1  androidboot.veritymode=enforcing androidboot.bootdevice=c0c4000.sdhci androidboot.serialno=DRGID18100509899 androidboot.baseband=sdm mdss_mdp.panel=1:dsi:0:fih,mdss_dsi_ctc_otm1911a_fhd_video:config0:1:none:cfg:single_dsi androidboot.device=DRG androidbsp.device=DRG androidboot.securityfused=true androidboot.fihmode=0 androidboot.slot_suffix=_b skip_initramfs rootwait ro init=/init androidboot.bbox=8 androidboot.diag=0 androidboot.cause=0x00000011 androidboot.fac=0 androidboot.abupdate_unsuccessful=1 androidboot.colorver=B androidboot.fp=gxfp3258_drg androidboot.skuid=600WW androidboot.simslot=2 \
+[    0.000000] Kernel command line: androidboot.hwmodel=DGI androidboot.smartamp=nxp androidboot.nfc=none androidboot.hardware.revision=3.0 download_mode=0
+[    0.000000] Unknown kernel command line parameters "earlycon=msm_serial_dm,0xc170000 buildvariant=userdebug dm=system none ro,0 1 android-verity /dev/mmcblk0p82 download_mode=0", will be passed to user space.
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    0.000000] software IO TLB: area num 8.
+[    0.000000] software IO TLB: mapped [mem 0x00000000fbfff000-0x00000000fffff000] (64MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 1041600
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:on, heap free:on
+[    0.000000] mem auto-init: clearing system memory may take some time...
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
+[    0.000000] rcu: Preemptible hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] GICv3: 608 SPIs implemented
+[    0.000000] GICv3: 0 Extended SPIs implemented
+[    0.000000] Root IRQ handler: gic_handle_irq
+[    0.000000] GICv3: GICv3 features: 16 PPIs
+[    0.000000] GICv3: GICD_CTLR.DS=0, SCR_EL3.FIQ=1
+[    0.000000] GICv3: CPU0: found redistributor 0 region 0:0x0000000017b00000
+[    0.000000] ITS: No ITS available, not enabling LPIs
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] arch_timer: cp15 timer running at 19.20MHz (virt).
+[    0.000000] clocksource: arch_sys_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
+[    0.000000] sched_clock: 56 bits at 19MHz, resolution 52ns, wraps every 4398046511078ns
+[    0.000094] Console: colour dummy device 80x25
+[    0.000105] printk: legacy console [tty0] enabled
+[    0.000794] Calibrating delay loop (skipped), value calculated using timer frequency.. 38.40 BogoMIPS (lpj=76800)
+[    0.000815] pid_max: default: 32768 minimum: 301
+[    0.001072] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.001092] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.001387] VFS: Finished mounting rootfs on nullfs
+[    0.003094] rcu: Hierarchical SRCU implementation.
+[    0.003106] rcu: 	Max phase no-delay instances is 1000.
+[    0.003294] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.003410] EFI services will not be available.
+[    0.003711] smp: Bringing up secondary CPUs ...
+[    0.005738] CPU features: detected: Spectre-v2
+[    0.005755] CPU features: detected: Spectre-BHB
+[    0.005772] Detected VIPT I-cache on CPU1
+[    0.005943] GICv3: CPU1: found redistributor 100 region 0:0x0000000017b80000
+[    0.006021] CPU1: Booted secondary processor 0x0000000100 [0x51af8002]
+[    0.007824] Detected VIPT I-cache on CPU2
+[    0.007983] GICv3: CPU2: found redistributor 101 region 0:0x0000000017ba0000
+[    0.008049] CPU2: Booted secondary processor 0x0000000101 [0x51af8002]
+[    0.009802] Detected VIPT I-cache on CPU3
+[    0.009966] GICv3: CPU3: found redistributor 102 region 0:0x0000000017bc0000
+[    0.010030] CPU3: Booted secondary processor 0x0000000102 [0x51af8002]
+[    0.011779] Detected VIPT I-cache on CPU4
+[    0.011948] GICv3: CPU4: found redistributor 103 region 0:0x0000000017be0000
+[    0.012013] CPU4: Booted secondary processor 0x0000000103 [0x51af8002]
+[    0.013763] Detected VIPT I-cache on CPU5
+[    0.013887] GICv3: CPU5: found redistributor 1 region 0:0x0000000017b20000
+[    0.013959] CPU5: Booted secondary processor 0x0000000001 [0x51af8014]
+[    0.015648] Detected VIPT I-cache on CPU6
+[    0.015754] GICv3: CPU6: found redistributor 2 region 0:0x0000000017b40000
+[    0.015810] CPU6: Booted secondary processor 0x0000000002 [0x51af8014]
+[    0.017469] Detected VIPT I-cache on CPU7
+[    0.017578] GICv3: CPU7: found redistributor 3 region 0:0x0000000017b60000
+[    0.017633] CPU7: Booted secondary processor 0x0000000003 [0x51af8014]
+[    0.017705] smp: Brought up 1 node, 8 CPUs
+[    0.017860] SMP: Total of 8 processors activated.
+[    0.017870] CPU: All CPU(s) started at EL1
+[    0.017880] CPU features: detected: 32-bit EL0 Support
+[    0.017890] CPU features: detected: CRC32 instructions
+[    0.017961] alternatives: applying system-wide alternatives
+[    0.019280] Memory: 3715460K/4166400K available (9088K kernel code, 1028K rwdata, 2956K rodata, 2176K init, 309K bss, 444424K reserved, 0K cma-reserved)
+[    0.020409] devtmpfs: initialized
+[    0.033586] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.033642] posixtimers hash table entries: 4096 (order: 4, 65536 bytes, linear)
+[    0.033750] futex hash table entries: 2048 (131072 bytes on 1 NUMA nodes, total 128 KiB, linear).
+[    0.034538] DMI: not present or invalid.
+[    0.035217] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.036619] DMA: preallocated 512 KiB GFP_KERNEL pool for atomic allocations
+[    0.036926] DMA: preallocated 512 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
+[    0.038411] thermal_sys: Registered thermal governor 'step_wise'
+[    0.038528] NET: Registered PF_QIPCRTR protocol family
+[    0.039211] ASID allocator initialised with 32768 entries
+[    0.042643] pstore: Using crash dump compression: deflate
+[    0.042669] printk: legacy console [ramoops-1] enabled
+[    0.043576] pstore: Registered ramoops as persistent store backend
+[    0.043602] ramoops: using 0x200000@0xacb00000, ecc: 0
+[    0.052035] /soc@0/clock-controller@c8c0000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/phy@c994400
+[    0.052142] /soc@0/display-subsystem@c900000/display-controller@c901000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.052238] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.052309] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/display-controller@c901000
+[    0.052441] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.052504] /soc@0/display-subsystem@c900000/phy@c994400: Fixed dependency cycle(s) with /soc@0/clock-controller@c8c0000
+[    0.052651] /soc@0/interrupt-controller@17a00000: Fixed dependency cycle(s) with /soc@0/interrupt-controller@17a00000
+[    0.056013] ANTIGRAVITY [52000000 ns]: hwspinlock probe START for 1f40000.hwlock
+[    0.056137] ANTIGRAVITY [56000000 ns]: hwspinlock probe DONE for 1f40000.hwlock, ret=0
+[    0.056588] ANTIGRAVITY [56000000 ns]: msm_pinctrl_probe start for 3100000.pinctrl
+[    0.056625] ANTIGRAVITY [56000000 ns]: mapping tile north
+[    0.056702] ANTIGRAVITY [56000000 ns]: mapping tile center
+[    0.056768] ANTIGRAVITY [56000000 ns]: mapping tile south
+[    0.056832] ANTIGRAVITY [56000000 ns]: setting up PM reset notifier...
+[    0.056852] ANTIGRAVITY [56000000 ns]: setup_pm_reset enter
+[    0.056879] ANTIGRAVITY [56000000 ns]: setup_pm_reset exit
+[    0.056898] ANTIGRAVITY [56000000 ns]: requesting IRQ...
+[    0.058876] ANTIGRAVITY [56000000 ns]: msm_gpio_init enter, ngpios=114
+[    0.058907] ANTIGRAVITY [56000000 ns]: msm_gpio_init calling devm_gpiochip_add_data
+[    0.058960] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=3100000.pinctrl: dev=gpiochip0, size=2, parent_size=2
+[    0.058992] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=3100000.pinctrl: dev=gpiochip0, size=2, parent_size=2
+[    0.059021] ANTIGRAVITY: cleared valid mask for reserved range [8, 11]
+[    0.059118] ANTIGRAVITY: of_gpiochip_add start
+[    0.059142] ANTIGRAVITY: of_gpiochip_add returned 0
+[    0.059160] ANTIGRAVITY: gpiochip_add_pin_ranges start
+[    0.059178] ANTIGRAVITY: gpiochip_add_pin_ranges returned 0
+[    0.059223] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start
+[    0.059246] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned 0
+[    0.059266] ANTIGRAVITY: gpiochip_irqchip_init_hw start
+[    0.059284] ANTIGRAVITY: gpiochip_irqchip_init_hw returned 0
+[    0.059302] ANTIGRAVITY: gpiochip_add_irqchip start
+[    0.059352] ANTIGRAVITY: gpiochip_add_irqchip returned 0
+[    0.059373] ANTIGRAVITY: gpiochip_add_data_with_key entry
+[    0.059657] ANTIGRAVITY [56000000 ns]: msm_gpio_init devm_gpiochip_add_data returned 0
+[    0.059687] ANTIGRAVITY [56000000 ns]: msm_pinctrl_probe success for 3100000.pinctrl
+[    0.062033] /soc@0/clock-controller@c8c0000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/phy@c994400
+[    0.062311] /soc@0/display-subsystem@c900000: Fixed dependency cycle(s) with /soc@0/clock-controller@c8c0000
+[    0.062470] /soc@0/display-subsystem@c900000/display-controller@c901000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.062673] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.062739] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/display-controller@c901000
+[    0.062861] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.062972] /soc@0/display-subsystem@c900000/phy@c994400: Fixed dependency cycle(s) with /soc@0/clock-controller@c8c0000
+[    0.068926] iommu: Default domain type: Translated
+[    0.068958] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.069753] SCSI subsystem initialized
+[    0.069868] usbcore: registered new interface driver usbfs
+[    0.069919] usbcore: registered new interface driver hub
+[    0.069979] usbcore: registered new device driver usb
+[    0.070306] qcom_scm: convention: smc arm 64
+[    0.072900] Bluetooth: Core ver 2.22
+[    0.072953] NET: Registered PF_BLUETOOTH protocol family
+[    0.072976] Bluetooth: HCI device and connection manager initialized
+[    0.073001] Bluetooth: HCI socket layer initialized
+[    0.073022] Bluetooth: L2CAP socket layer initialized
+[    0.073049] Bluetooth: SCO socket layer initialized
+[    0.073981] clocksource: Switched to clocksource arch_sys_counter
+[    0.081886] NET: Registered PF_INET protocol family
+[    0.082095] IP idents hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.084570] s1: Bringing 0uV into 1125000-1125000uV
+[    0.084796] s2: Bringing 0uV into 1050000-1050000uV
+[    0.084957] l1: Bringing 0uV into 920000-920000uV
+[    0.085132] l2: Bringing 0uV into 1648000-1648000uV
+[    0.085308] l3: Bringing 0uV into 1700000-1700000uV
+[    0.085499] l4: Bringing 0uV into 2944000-2944000uV
+[    0.085526] l4: Operation of current configuration missing
+[    0.085700] l5: Bringing 0uV into 1800000-1800000uV
+[    0.085885] l7: Bringing 0uV into 2700000-2700000uV
+[    0.086080] l8: Bringing 0uV into 3200000-3200000uV
+[    0.086284] bob: Bringing 0uV into 3300000-3300000uV
+[    0.086729] tcp_listen_portaddr_hash hash table entries: 2048 (order: 3, 32768 bytes, linear)
+[    0.086795] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.086832] TCP established hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    0.086916] s4: Bringing 0uV into 2040000-2040000uV
+[    0.087092] TCP bind hash table entries: 32768 (order: 8, 1048576 bytes, linear)
+[    0.087531] s5: Bringing 0uV into 1224000-1224000uV
+[    0.087697] TCP: Hash tables configured (established 32768 bind 32768)
+[    0.087742] s6: Bringing 0uV into 504000-504000uV
+[    0.087823] UDP hash table entries: 2048 (order: 5, 131072 bytes, linear)
+[    0.087920] l1: Bringing 0uV into 1150000-1150000uV
+[    0.088091] l2: Bringing 0uV into 950000-950000uV
+[    0.088126] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.088271] l3: Bringing 0uV into 950000-950000uV
+[    0.088389] Unpacking initramfs...
+[    0.088432] l5: Bringing 0uV into 525000-525000uV
+[    0.088596] l6: Bringing 0uV into 1200000-1200000uV
+[    0.088762] l7: Bringing 0uV into 1200000-1200000uV
+[    0.088952] l8: Bringing 0uV into 1750000-1750000uV
+[    0.089116] l9: Bringing 0uV into 1750000-1750000uV
+[    0.089277] l10: Bringing 0uV into 1780000-1780000uV
+[    0.089450] l11: Bringing 0uV into 1780000-1780000uV
+[    0.089615] l12: Bringing 0uV into 1780000-1780000uV
+[    0.089824] l13: Bringing 0uV into 1780000-1780000uV
+[    0.090419] l14: Bringing 0uV into 1710000-1710000uV
+[    0.090621] l15: Bringing 0uV into 1650000-1650000uV
+[    0.090869] l16: Bringing 0uV into 2800000-2800000uV
+[    0.091315] workingset: timestamp_bits=46 (anon: 42) max_order=20 bucket_order=0 (anon: 0)
+[    0.091826] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    0.091858] io scheduler mq-deadline registered
+[    0.091878] io scheduler kyber registered
+[    0.091921] io scheduler bfq registered
+[    0.092562] l17: Bringing 0uV into 1648000-1648000uV
+[    0.092840] l19: Bringing 0uV into 3312000-3312000uV
+[    0.096168] simple-framebuffer 9d400000.framebuffer: framebuffer at 0x9d400000, 0x964b00 bytes
+[    0.096211] simple-framebuffer 9d400000.framebuffer: format=a8r8g8b8, mode=1080x2280x32, linelength=4320
+[    0.105505] Console: switching to colour frame buffer device 135x142
+[    0.114600] simple-framebuffer 9d400000.framebuffer: fb0: simplefb registered!
+[    0.168143] msm_serial c170000.serial: msm_serial: detected port #0
+[    0.168297] msm_serial c170000.serial: uartclk = 1843200
+[    0.168658] c170000.serial: ttyMSM0 at MMIO 0xc170000 (irq = 17, base_baud = 115200) is a MSM
+[    0.169663] msm_serial c1af000.serial: msm_serial: detected port #1
+[    0.169780] msm_serial c1af000.serial: uartclk = 19200000
+[    0.170138] c1af000.serial: ttyMSM1 at MMIO 0xc1af000 (irq = 18, base_baud = 1200000) is a MSM
+[    0.170445] serial serial0: tty port ttyMSM1 registered
+[    0.170956] msm_serial: driver initialized
+[    0.172677] arm-smmu 16c0000.iommu: probing hardware configuration...
+[    0.172745] arm-smmu 16c0000.iommu: SMMUv2 with:
+[    0.172820] arm-smmu 16c0000.iommu: 	stage 1 translation
+[    0.172880] arm-smmu 16c0000.iommu: 	address translation ops
+[    0.172934] arm-smmu 16c0000.iommu: 	non-coherent table walk
+[    0.172987] arm-smmu 16c0000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.173049] arm-smmu 16c0000.iommu: 	stream matching with 6 register groups
+[    0.173131] arm-smmu 16c0000.iommu: 	21 context banks (0 stage-2 only)
+[    0.173341] arm-smmu 16c0000.iommu: 	Supported page sizes: 0x63315000
+[    0.173408] arm-smmu 16c0000.iommu: 	Stage-1: 36-bit VA -> 36-bit IPA
+[    0.173597] arm-smmu 16c0000.iommu: 	preserved 0 boot mappings
+[    0.175119] arm-smmu 5040000.iommu: probing hardware configuration...
+[    0.175189] arm-smmu 5040000.iommu: SMMUv2 with:
+[    0.175257] arm-smmu 5040000.iommu: 	stage 1 translation
+[    0.175316] arm-smmu 5040000.iommu: 	address translation ops
+[    0.175370] arm-smmu 5040000.iommu: 	non-coherent table walk
+[    0.175422] arm-smmu 5040000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.175483] arm-smmu 5040000.iommu: 	stream matching with 3 register groups
+[    0.175561] arm-smmu 5040000.iommu: 	5 context banks (0 stage-2 only)
+[    0.175646] arm-smmu 5040000.iommu: 	Supported page sizes: 0x61311000
+[    0.175712] arm-smmu 5040000.iommu: 	Stage-1: 48-bit VA -> 36-bit IPA
+[    0.175843] arm-smmu 5040000.iommu: 	preserved 0 boot mappings
+[    0.178518] arm-smmu 5100000.iommu: probing hardware configuration...
+[    0.178589] arm-smmu 5100000.iommu: SMMUv2 with:
+[    0.178655] arm-smmu 5100000.iommu: 	stage 1 translation
+[    0.178714] arm-smmu 5100000.iommu: 	address translation ops
+[    0.178768] arm-smmu 5100000.iommu: 	non-coherent table walk
+[    0.178821] arm-smmu 5100000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.178883] arm-smmu 5100000.iommu: 	stream matching with 13 register groups
+[    0.178969] arm-smmu 5100000.iommu: 	13 context banks (0 stage-2 only)
+[    0.179255] arm-smmu 5100000.iommu: 	Supported page sizes: 0x63315000
+[    0.179322] arm-smmu 5100000.iommu: 	Stage-1: 36-bit VA -> 36-bit IPA
+[    0.179443] arm-smmu 5100000.iommu: 	preserved 0 boot mappings
+[    0.182418] arm-smmu cd00000.iommu: probing hardware configuration...
+[    0.182489] arm-smmu cd00000.iommu: SMMUv2 with:
+[    0.182558] arm-smmu cd00000.iommu: 	stage 1 translation
+[    0.182617] arm-smmu cd00000.iommu: 	address translation ops
+[    0.182671] arm-smmu cd00000.iommu: 	non-coherent table walk
+[    0.182723] arm-smmu cd00000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.182786] arm-smmu cd00000.iommu: 	stream matching with 52 register groups
+[    0.182878] arm-smmu cd00000.iommu: 	17 context banks (0 stage-2 only)
+[    0.183775] arm-smmu cd00000.iommu: 	Supported page sizes: 0x63315000
+[    0.183842] arm-smmu cd00000.iommu: 	Stage-1: 32-bit VA -> 36-bit IPA
+[    0.183967] arm-smmu cd00000.iommu: 	preserved 0 boot mappings
+[    0.187303] ANTIGRAVITY: drm_core_init enter
+[    0.187418] ANTIGRAVITY: drm_core_init SUCCESS!
+[    0.187481] ANTIGRAVITY: msm_drm_register STARTED (modeset=1)
+[    0.187983] ANTIGRAVITY: msm_mdss probe ENTER for c900000.display-subsystem (is_mdp5=1)
+[    0.188160] ANTIGRAVITY: msm_mdss_init FAILED ret=-517
+[    0.188465] ANTIGRAVITY: msm_mdss_register platform_driver_register returned 0
+[    0.190821] ANTIGRAVITY: msm_drm_register complete
+[    0.192691] zram: Added device: zram0
+[    0.192937] spmi_pmic_arb 800f000.spmi: PMIC arbiter version v3 (0x30000000)
+[    0.196730] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=800f000.spmi:pmic@0:gpio@c000: dev=gpiochip1, size=-22, parent_size=-22
+[    0.196842] ANTIGRAVITY: of_gpiochip_add start
+[    0.196894] ANTIGRAVITY: of_gpiochip_add returned 0
+[    0.196942] ANTIGRAVITY: gpiochip_add_pin_ranges start
+[    0.196989] ANTIGRAVITY: gpiochip_add_pin_ranges returned 0
+[    0.197039] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start
+[    0.197091] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned 0
+[    0.197143] ANTIGRAVITY: gpiochip_irqchip_init_hw start
+[    0.197190] ANTIGRAVITY: gpiochip_irqchip_init_hw returned 0
+[    0.197239] ANTIGRAVITY: gpiochip_add_irqchip start
+[    0.197298] ANTIGRAVITY: gpiochip_add_irqchip returned 0
+[    0.197347] ANTIGRAVITY: gpiochip_add_data_with_key entry
+[    0.200400] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=800f000.spmi:pmic@2:gpio@c000: dev=gpiochip2, size=-22, parent_size=-22
+[    0.200516] ANTIGRAVITY: of_gpiochip_add start
+[    0.200568] ANTIGRAVITY: of_gpiochip_add returned 0
+[    0.200615] ANTIGRAVITY: gpiochip_add_pin_ranges start
+[    0.200661] ANTIGRAVITY: gpiochip_add_pin_ranges returned 0
+[    0.200710] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start
+[    0.200760] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned 0
+[    0.200813] ANTIGRAVITY: gpiochip_irqchip_init_hw start
+[    0.200859] ANTIGRAVITY: gpiochip_irqchip_init_hw returned 0
+[    0.200907] ANTIGRAVITY: gpiochip_add_irqchip start
+[    0.200968] ANTIGRAVITY: gpiochip_add_irqchip returned 0
+[    0.201016] ANTIGRAVITY: gpiochip_add_data_with_key entry
+[    0.202813] spmi spmi-0: cleanup_irq apid=52 sid=0x3 per=0xd8 irq=1
+[    0.202878] irq 99, desc: (____ptrval____), depth: 0, count: 0, unhandled: 0
+[    0.202927] ->handle_irq():  (____ptrval____), pmic_arb_chained_irq+0x0/0x2f4
+[    0.202985] ->irq_data.chip(): (____ptrval____), gic_chip+0x0/0x118
+[    0.203037] ->action(): (____ptrval____)
+[    0.203068] ->action->handler(): (____ptrval____), bad_chained_irq+0x0/0x50
+[    0.203121]      IRQ_LEVEL set
+[    0.203147]    IRQ_NOPROBE set
+[    0.203174]  IRQ_NOREQUEST set
+[    0.203200]   IRQ_NOTHREAD set
+[    0.214480] printk: legacy console [ttyGS0] enabled
+[    0.215617] g_serial gadget.0: Gadget Serial v2.4
+[    0.215671] g_serial gadget.0: g_serial ready
+[    0.218757] Bluetooth: HCI UART driver ver 2.3
+[    0.218818] Bluetooth: HCI UART protocol H4 registered
+[    0.218912] Bluetooth: HCI UART protocol QCA registered
+[    0.219832] clocksource: arch_mmio_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
+[    0.219937] arch-timer-mmio 17920000.timer: mmio timer running at 19.20MHz (virt)
+[    0.220117] Bluetooth: hci0: setting up wcn399x
+[    0.220470] usbcore: registered new interface driver usbhid
+[    0.220535] usbhid: USB HID core driver
+[    0.221779] remoteproc remoteproc0: releasing 4080000.remoteproc
+[    0.224130] NET: Registered PF_INET6 protocol family
+[    0.225047] Segment Routing with IPv6
+[    0.228281] In-situ OAM (IOAM) with IPv6
+[    0.230707] Freeing initrd memory: 2488K
+[    0.231583] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.272529] ANTIGRAVITY: msm_mdss probe ENTER for c900000.display-subsystem (is_mdp5=1)
+[    0.276462] ANTIGRAVITY: msm_mdss_init FAILED ret=-517
+[    0.281651] remoteproc remoteproc0: 4080000.remoteproc is available
+[    0.297620] ANTIGRAVITY: msm_mdss probe ENTER for c900000.display-subsystem (is_mdp5=1)
+[    0.301656] platform c901000.display-controller: Adding to iommu group 0
+[    0.305233] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9db24b00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.305423] /soc@0/display-subsystem@c900000/display-controller@c901000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.307855] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.307865] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.307902] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9dcac400, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.322534] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.325177] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.327879] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d505000, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.330573] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.333263] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.336005] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d9abd00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.338726] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.341432] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.344166] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d4cec00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.346879] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.349578] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.352306] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d976d00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.355019] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.357732] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.360471] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d49a000, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.363188] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.365905] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.368644] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d946c00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.371362] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.374076] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.376822] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d46bd00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.379564] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.382311] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.385107] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d929000, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.387904] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.390697] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.398191] Bluetooth: hci0: QCA Product ID   :0x0000000a
+[    0.401800] Bluetooth: hci0: QCA SOC Version  :0x40020140
+[    0.405415] Bluetooth: hci0: QCA ROM Version  :0x00000201
+[    0.409066] Bluetooth: hci0: QCA Patch Version:0x00000001
+[    0.412133] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.420364] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.428233] Bluetooth: hci0: QCA controller version 0x01400201
+[    0.432033] Bluetooth: hci0: QCA Downloading qca/crbtfw21.tlv
+[    0.478396] ANTIGRAVITY [DSI-PHY]: Starting dsi_phy_driver_probe for c994400.phy...
+[    0.483049] ANTIGRAVITY: msm_mdss probe DONE for c900000.display-subsystem
+[    0.494359] mmc1: CQHCI version 5.10
+[    0.510573] ANTIGRAVITY [DSI-CTRL]: Starting dsi_init for c994000.dsi...
+[    0.515158] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.523111] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.531284] panel-orisetech-otm1911a c994000.dsi.0: ANTIGRAVITY: otm1911a_probe starting...
+[    0.535829] msm_dpu c901000.display-controller: bound c994000.dsi (ops dsi_ops)
+[    0.537116] mmc1: SDHCI controller on c0c4000.mmc [c0c4000.mmc] using ADMA 64-bit
+[    0.544072] sdhci_msm c0c4000.mmc: mmc1: CQE init: success
+[    0.544126] Console: switching to colour dummy device 80x25
+[    0.547225] ------------[ cut here ]------------
+[    0.547256] mdp_clk_src: rcg didn't update its configuration.
+[    0.547293] WARNING: drivers/clk/qcom/clk-rcg2.c:136 at update_config+0xd4/0xe4, CPU#1: kworker/u34:0/56
+[    0.547366] CPU: 1 UID: 0 PID: 56 Comm: kworker/u34:0 Not tainted 7.1.0 #1 PREEMPT 
+[    0.547401] Hardware name: Nokia 6.1 Plus (DT)
+[    0.547424] Workqueue: events_unbound deferred_probe_work_func
+[    0.547460] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.547490] pc : update_config+0xd4/0xe4
+[    0.547522] lr : update_config+0xd4/0xe4
+[    0.547551] sp : ffffffc08035b300
+[    0.547571] x29: ffffffc08035b310 x28: 0000000000000000 x27: ffffff8080d3f1c0
+[    0.547614] x26: ffffffe30f74fdf8 x25: 00000000ffffffff x24: ffffffc08035b508
+[    0.547653] x23: ffffff80803b6e00 x22: 0000000011e1a300 x21: ffffffe30f3cbb60
+[    0.547692] x20: ffffffe30f72bf98 x19: 0000000000000000 x18: fffffffffffe0000
+[    0.547731] x17: 6f5f697364207370 x16: 28f5c28f5c28f5c3 x15: ffffffc08035ac70
+[    0.547769] x14: 00000000ffffffea x13: ffffffc08035b058 x12: ffffffe30f708c68
+[    0.547808] x11: ffffffe30f6f0c80 x10: 0000000000017fe8 x9 : 0000000000000001
+[    0.547846] x8 : ffffffffffffefff x7 : ffffffffffffffff x6 : 0000000000057fa8
+[    0.547884] x5 : ffffffe30f6f0c28 x4 : 0000000000000000 x3 : 0000000000000000
+[    0.547922] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff8080843e80
+[    0.547960] Call trace:
+[    0.547981]  update_config+0xd4/0xe4 (P)
+[    0.548013]  clk_rcg2_configure+0xb8/0xc0
+[    0.548045]  clk_rcg2_set_rate_and_parent+0x2c/0x44
+[    0.548078]  clk_change_rate+0x7c/0x2b4
+[    0.548110]  clk_core_set_rate_nolock+0x16c/0x278
+[    0.548139]  clk_set_rate+0x38/0x14c
+[    0.548167]  _opp_config_clk_single+0x30/0xa8
+[    0.548197]  _set_opp+0x120/0x508
+[    0.548225]  dev_pm_opp_set_rate+0x198/0x2bc
+[    0.548254]  dpu_kms_init+0x74/0x15c
+[    0.548284]  msm_drm_kms_init+0x80/0x3d8
+[    0.548311]  msm_drm_init+0x124/0x300
+[    0.548337]  msm_drm_bind+0x30/0x3c
+[    0.548361]  try_to_bring_up_aggregate_device+0x164/0x1d0
+[    0.548392]  __component_add+0xac/0x178
+[    0.548418]  component_add+0x14/0x20
+[    0.548444]  dsi_dev_attach+0x20/0x2c
+[    0.548473]  dsi_host_attach+0x70/0x108
+[    0.548502]  mipi_dsi_attach+0x30/0x54
+[    0.548536]  otm1911a_probe+0x100/0x1d0
+[    0.548562]  mipi_dsi_drv_probe+0x20/0x2c
+[    0.548588]  really_probe+0xbc/0x298
+[    0.548615]  __driver_probe_device+0x80/0x160
+[    0.548641]  driver_probe_device+0xd4/0x164
+[    0.548668]  __device_attach_driver+0xd8/0x170
+[    0.548695]  bus_for_each_drv+0x88/0xe8
+[    0.548727]  __device_attach+0xa0/0x190
+[    0.548753]  device_initial_probe+0x50/0x54
+[    0.548780]  bus_probe_device+0x38/0xa4
+[    0.548804]  device_add+0x594/0x780
+[    0.548833]  mipi_dsi_device_register_full+0xf4/0x1cc
+[    0.548860]  mipi_dsi_host_register+0x9c/0x19c
+[    0.548886]  msm_dsi_host_register+0x40/0x60
+[    0.548915]  msm_dsi_manager_register+0x15c/0x218
+[    0.548946]  dsi_dev_probe+0x198/0x214
+[    0.548974]  platform_probe+0x5c/0x9c
+[    0.549003]  really_probe+0xbc/0x298
+[    0.549028]  __driver_probe_device+0x80/0x160
+[    0.549054]  driver_probe_device+0xd4/0x164
+[    0.549081]  __device_attach_driver+0xd8/0x170
+[    0.549107]  bus_for_each_drv+0x88/0xe8
+[    0.549137]  __device_attach+0xa0/0x190
+[    0.549163]  device_initial_probe+0x50/0x54
+[    0.549190]  bus_probe_device+0x38/0xa4
+[    0.549214]  deferred_probe_work_func+0x88/0xc0
+[    0.549240]  process_one_work+0x174/0x2c8
+[    0.549269]  worker_thread+0x18c/0x308
+[    0.549294]  kthread+0x11c/0x128
+[    0.549324]  ret_from_fork+0x10/0x20
+[    0.549354] ---[ end trace 0000000000000000 ]---
+[    0.550093] [drm:dpu_kms_hw_init:1197] dpu hardware revision:0x30020000
+[    0.553988] [drm] Initialized msm-kms 1.13.0 for c901000.display-controller on minor 0
+[    0.554085] msm_dpu c901000.display-controller: no GPU device was found
+[    0.579002] ------------[ cut here ]------------
+[    0.579015] pclk0_clk_src: rcg didn't update its configuration.
+[    0.579050] WARNING: drivers/clk/qcom/clk-rcg2.c:136 at update_config+0xd4/0xe4, CPU#1: kworker/u34:0/56
+[    0.579090] CPU: 1 UID: 0 PID: 56 Comm: kworker/u34:0 Tainted: G        W           7.1.0 #1 PREEMPT 
+[    0.579106] Tainted: [W]=WARN
+[    0.579111] Hardware name: Nokia 6.1 Plus (DT)
+[    0.579121] Workqueue: events_unbound deferred_probe_work_func
+[    0.579141] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.579152] pc : update_config+0xd4/0xe4
+[    0.579165] lr : update_config+0xd4/0xe4
+[    0.579179] sp : ffffffc08035a9b0
+[    0.579183] x29: ffffffc08035a9c0 x28: ffffff8081e85080 x27: 0000000000000000
+[    0.579201] x26: ffffff8081e85080 x25: 0000000000000000 x24: 000000001e3834c0
+[    0.579215] x23: ffffffe30f72bf20 x22: 000000001e3834c0 x21: ffffffe30f3cbb50
+[    0.579230] x20: ffffffe30f72bf08 x19: 0000000000000000 x18: fffffffffffe0000
+[    0.579244] x17: 0000000000000025 x16: ffffffc080a9571c x15: ffffff8080843f00
+[    0.579257] x14: fffffffffffc8b40 x13: 2e6e6f6974617275 x12: 6769666e6f632073
+[    0.579271] x11: 7469206574616470 x10: 752074276e646964 x9 : 72756769666e6f63
+[    0.579285] x8 : 2073746920657461 x7 : ffffffe30f698c00 x6 : ffffffc08035a760
+[    0.579298] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 00000000ffffffff
+[    0.579311] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff8080843e80
+[    0.579326] Call trace:
+[    0.579330]  update_config+0xd4/0xe4 (P)
+[    0.579347]  clk_rcg2_configure+0xb8/0xc0
+[    0.579363]  clk_pixel_set_rate+0x138/0x180
+[    0.579377]  clk_change_rate+0x144/0x2b4
+[    0.579392]  clk_change_rate+0xec/0x2b4
+[    0.579404]  clk_change_rate+0xec/0x2b4
+[    0.579416]  clk_change_rate+0xec/0x2b4
+[    0.579428]  clk_change_rate+0xec/0x2b4
+[    0.579440]  clk_core_set_rate_nolock+0x16c/0x278
+[    0.579452]  clk_set_rate+0x38/0x14c
+[    0.579465]  _opp_config_clk_single+0x30/0xa8
+[    0.579479]  _set_opp+0x14c/0x508
+[    0.579491]  dev_pm_opp_set_rate+0x198/0x2bc
+[    0.579504]  dsi_link_clk_set_rate_6g+0x44/0x12c
+[    0.579519]  msm_dsi_host_power_on+0xc0/0x990
+[    0.579533]  dsi_mgr_bridge_pre_enable+0x184/0x2ec
+[    0.579546]  drm_atomic_bridge_call_pre_enable+0x40/0x4c
+[    0.579564]  drm_atomic_bridge_chain_pre_enable+0xc0/0x134
+[    0.579579]  drm_atomic_helper_commit_encoder_bridge_pre_enable+0xb8/0xf4
+[    0.579597]  drm_atomic_helper_commit_modeset_enables+0x28/0x50
+[    0.579611]  msm_atomic_commit_tail+0x1ac/0x554
+[    0.579629]  commit_tail+0xa4/0x18c
+[    0.579644]  drm_atomic_helper_commit+0x164/0x178
+[    0.579659]  drm_atomic_commit+0x8c/0xcc
+[    0.579671]  drm_client_modeset_commit_atomic+0x218/0x278
+[    0.579683]  drm_client_modeset_commit_locked+0x5c/0x18c
+[    0.579693]  drm_client_modeset_commit+0x30/0x58
+[    0.579703]  __drm_fb_helper_restore_fbdev_mode_unlocked.part.0+0x90/0x98
+[    0.579721]  drm_fb_helper_set_par+0x70/0x8c
+[    0.579734]  fbcon_init+0x4ec/0x510
+[    0.579748]  visual_init+0x90/0xdc
+[    0.579764]  do_bind_con_driver.isra.0+0x15c/0x350
+[    0.579779]  do_take_over_console+0x11c/0x194
+[    0.579793]  do_fbcon_takeover+0x70/0xe8
+[    0.579804]  fbcon_fb_registered+0x1e0/0x1e8
+[    0.579817]  do_register_framebuffer+0x14c/0x254
+[    0.579828]  register_framebuffer+0x2c/0x50
+[    0.579837]  __drm_fb_helper_initial_config_and_unlock+0x38c/0x76c
+[    0.579853]  drm_fb_helper_initial_config+0x44/0x54
+[    0.579866]  drm_fbdev_client_hotplug+0xa8/0x178
+[    0.579879]  drm_client_register+0x78/0x148
+[    0.579888]  drm_fbdev_client_setup+0xc4/0x278
+[    0.579899]  drm_client_setup+0xf8/0x1a4
+[    0.579909]  msm_drm_kms_post_init+0x3c/0xac
+[    0.579918]  msm_drm_init+0x1cc/0x300
+[    0.579928]  msm_drm_bind+0x30/0x3c
+[    0.579937]  try_to_bring_up_aggregate_device+0x164/0x1d0
+[    0.579949]  __component_add+0xac/0x178
+[    0.579960]  component_add+0x14/0x20
+[    0.579969]  dsi_dev_attach+0x20/0x2c
+[    0.579981]  dsi_host_attach+0x70/0x108
+[    0.579993]  mipi_dsi_attach+0x30/0x54
+[    0.580008]  otm1911a_probe+0x100/0x1d0
+[    0.580018]  mipi_dsi_drv_probe+0x20/0x2c
+[    0.580027]  really_probe+0xbc/0x298
+[    0.580038]  __driver_probe_device+0x80/0x160
+[    0.580048]  driver_probe_device+0xd4/0x164
+[    0.580058]  __device_attach_driver+0xd8/0x170
+[    0.580068]  bus_for_each_drv+0x88/0xe8
+[    0.580084]  __device_attach+0xa0/0x190
+[    0.580094]  device_initial_probe+0x50/0x54
+[    0.580104]  bus_probe_device+0x38/0xa4
+[    0.580113]  device_add+0x594/0x780
+[    0.580126]  mipi_dsi_device_register_full+0xf4/0x1cc
+[    0.580137]  mipi_dsi_host_register+0x9c/0x19c
+[    0.580146]  msm_dsi_host_register+0x40/0x60
+[    0.580159]  msm_dsi_manager_register+0x15c/0x218
+[    0.580173]  dsi_dev_probe+0x198/0x214
+[    0.580184]  platform_probe+0x5c/0x9c
+[    0.580197]  really_probe+0xbc/0x298
+[    0.580207]  __driver_probe_device+0x80/0x160
+[    0.580216]  driver_probe_device+0xd4/0x164
+[    0.580227]  __device_attach_driver+0xd8/0x170
+[    0.580236]  bus_for_each_drv+0x88/0xe8
+[    0.580251]  __device_attach+0xa0/0x190
+[    0.580261]  device_initial_probe+0x50/0x54
+[    0.580271]  bus_probe_device+0x38/0xa4
+[    0.580279]  deferred_probe_work_func+0x88/0xc0
+[    0.580289]  process_one_work+0x174/0x2c8
+[    0.580303]  worker_thread+0x18c/0x308
+[    0.580312]  kthread+0x11c/0x128
+[    0.580326]  ret_from_fork+0x10/0x20
+[    0.580341] ---[ end trace 0000000000000000 ]---
+[    0.581325] ------------[ cut here ]------------
+[    0.581328] pclk0_clk_src: rcg didn't update its configuration.
+[    0.581357] WARNING: drivers/clk/qcom/clk-rcg2.c:136 at update_config+0xd4/0xe4, CPU#1: kworker/u34:0/56
+[    0.581379] CPU: 1 UID: 0 PID: 56 Comm: kworker/u34:0 Tainted: G        W           7.1.0 #1 PREEMPT 
+[    0.581391] Tainted: [W]=WARN
+[    0.581395] Hardware name: Nokia 6.1 Plus (DT)
+[    0.581400] Workqueue: events_unbound deferred_probe_work_func
+[    0.581411] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.581421] pc : update_config+0xd4/0xe4
+[    0.581433] lr : update_config+0xd4/0xe4
+[    0.581445] sp : ffffffc08035ab70
+[    0.581449] x29: ffffffc08035ab80 x28: ffffff8081e85080 x27: 0000000000000000
+[    0.581463] x26: ffffff8081e85080 x25: 0000000000000000 x24: 000000000a12bc40
+[    0.581477] x23: ffffffe30f72bf20 x22: 000000000a12bc40 x21: ffffffe30f3cbb50
+[    0.581491] x20: ffffffe30f72bf08 x19: 0000000000000000 x18: fffffffffffe0000
+[    0.581504] x17: 0000000000000025 x16: ffffffc080a9571c x15: ffffff8080843f00
+[    0.581518] x14: fffffffffffc9fd0 x13: 2e6e6f6974617275 x12: 6769666e6f632073
+[    0.581531] x11: 7469206574616470 x10: 752074276e646964 x9 : 72756769666e6f63
+[    0.581545] x8 : 2073746920657461 x7 : ffffffe30f698c00 x6 : ffffffc08035a920
+[    0.581558] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 00000000ffffffff
+[    0.581571] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff8080843e80
+[    0.581584] Call trace:
+[    0.581588]  update_config+0xd4/0xe4 (P)
+[    0.581602]  clk_rcg2_configure+0xb8/0xc0
+[    0.581616]  clk_pixel_set_rate+0x138/0x180
+[    0.581630]  clk_change_rate+0x144/0x2b4
+[    0.581643]  clk_change_rate+0xec/0x2b4
+[    0.581655]  clk_core_set_rate_nolock+0x16c/0x278
+[    0.581667]  clk_set_rate+0x38/0x14c
+[    0.581680]  dsi_link_clk_set_rate_6g+0x68/0x12c
+[    0.581693]  msm_dsi_host_power_on+0xc0/0x990
+[    0.581706]  dsi_mgr_bridge_pre_enable+0x184/0x2ec
+[    0.581720]  drm_atomic_bridge_call_pre_enable+0x40/0x4c
+[    0.581736]  drm_atomic_bridge_chain_pre_enable+0xc0/0x134
+[    0.581750]  drm_atomic_helper_commit_encoder_bridge_pre_enable+0xb8/0xf4
+[    0.581767]  drm_atomic_helper_commit_modeset_enables+0x28/0x50
+[    0.581782]  msm_atomic_commit_tail+0x1ac/0x554
+[    0.581797]  commit_tail+0xa4/0x18c
+[    0.581812]  drm_atomic_helper_commit+0x164/0x178
+[    0.581827]  drm_atomic_commit+0x8c/0xcc
+[    0.581840]  drm_client_modeset_commit_atomic+0x218/0x278
+[    0.581851]  drm_client_modeset_commit_locked+0x5c/0x18c
+[    0.581861]  drm_client_modeset_commit+0x30/0x58
+[    0.581871]  __drm_fb_helper_restore_fbdev_mode_unlocked.part.0+0x90/0x98
+[    0.581887]  drm_fb_helper_set_par+0x70/0x8c
+[    0.581901]  fbcon_init+0x4ec/0x510
+[    0.581914]  visual_init+0x90/0xdc
+[    0.581928]  do_bind_con_driver.isra.0+0x15c/0x350
+[    0.581942]  do_take_over_console+0x11c/0x194
+[    0.581957]  do_fbcon_takeover+0x70/0xe8
+[    0.581969]  fbcon_fb_registered+0x1e0/0x1e8
+[    0.581981]  do_register_framebuffer+0x14c/0x254
+[    0.581991]  register_framebuffer+0x2c/0x50
+[    0.582001]  __drm_fb_helper_initial_config_and_unlock+0x38c/0x76c
+[    0.582017]  drm_fb_helper_initial_config+0x44/0x54
+[    0.582031]  drm_fbdev_client_hotplug+0xa8/0x178
+[    0.582043]  drm_client_register+0x78/0x148
+[    0.582052]  drm_fbdev_client_setup+0xc4/0x278
+[    0.582063]  drm_client_setup+0xf8/0x1a4
+[    0.582073]  msm_drm_kms_post_init+0x3c/0xac
+[    0.582082]  msm_drm_init+0x1cc/0x300
+[    0.582091]  msm_drm_bind+0x30/0x3c
+[    0.582099]  try_to_bring_up_aggregate_device+0x164/0x1d0
+[    0.582111]  __component_add+0xac/0x178
+[    0.582122]  component_add+0x14/0x20
+[    0.582131]  dsi_dev_attach+0x20/0x2c
+[    0.582143]  dsi_host_attach+0x70/0x108
+[    0.582155]  mipi_dsi_attach+0x30/0x54
+[    0.582170]  otm1911a_probe+0x100/0x1d0
+[    0.582180]  mipi_dsi_drv_probe+0x20/0x2c
+[    0.582189]  really_probe+0xbc/0x298
+[    0.582199]  __driver_probe_device+0x80/0x160
+[    0.582209]  driver_probe_device+0xd4/0x164
+[    0.582219]  __device_attach_driver+0xd8/0x170
+[    0.582230]  bus_for_each_drv+0x88/0xe8
+[    0.582245]  __device_attach+0xa0/0x190
+[    0.582254]  device_initial_probe+0x50/0x54
+[    0.582265]  bus_probe_device+0x38/0xa4
+[    0.582274]  device_add+0x594/0x780
+[    0.582287]  mipi_dsi_device_register_full+0xf4/0x1cc
+[    0.582297]  mipi_dsi_host_register+0x9c/0x19c
+[    0.582307]  msm_dsi_host_register+0x40/0x60
+[    0.582320]  msm_dsi_manager_register+0x15c/0x218
+[    0.582334]  dsi_dev_probe+0x198/0x214
+[    0.582346]  platform_probe+0x5c/0x9c
+[    0.582358]  really_probe+0xbc/0x298
+[    0.582367]  __driver_probe_device+0x80/0x160
+[    0.582377]  driver_probe_device+0xd4/0x164
+[    0.582387]  __device_attach_driver+0xd8/0x170
+[    0.582397]  bus_for_each_drv+0x88/0xe8
+[    0.582412]  __device_attach+0xa0/0x190
+[    0.582422]  device_initial_probe+0x50/0x54
+[    0.582432]  bus_probe_device+0x38/0xa4
+[    0.582441]  deferred_probe_work_func+0x88/0xc0
+[    0.582451]  process_one_work+0x174/0x2c8
+[    0.582461]  worker_thread+0x18c/0x308
+[    0.582470]  kthread+0x11c/0x128
+[    0.582485]  ret_from_fork+0x10/0x20
+[    0.582496] ---[ end trace 0000000000000000 ]---
+[    0.632295] mmc1: Command Queue Engine enabled
+[    0.632316] mmc1: new HS400 Enhanced strobe MMC card at address 0001
+[    0.633035] mmcblk1: mmc1:0001 DA4064 58.2 GiB
+[    0.648793]  mmcblk1: p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26 p27 p28 p29 p30 p31 p32 p33 p34 p35 p36 p37 p38 p39 p40 p41 p42 p43 p44 p45 p46 p47 p48 p49 p50 p51 p52 p53 p54 p55 p56 p57 p58 p59 p60 p61 p62 p63 p64 p65 p66 p67 p68 p69 p70 p71 p72 p73 p74 p75 p76 p77 p78 p79 p80 p81 p82 p83 p84 p85
+[    0.659769] mmcblk1boot0: mmc1:0001 DA4064 4.00 MiB
+[    0.664752] mmcblk1boot1: mmc1:0001 DA4064 4.00 MiB
+[    0.669153] mmcblk1rpmb: mmc1:0001 DA4064 16.0 MiB, chardev (244:0)
+[    0.938093] [drm:programmable_fetch_get_num_lines:194] low vbp+vfp may lead to perf issues in some cases
+[    0.938381] fb0: sys_fillrect: framebuffer is not in virtual address space.
+[    0.938426] fb0: sys_imageblit: framebuffer is not in virtual address space.
+[    0.950004] ------------[ cut here ]------------
+[    0.950009] Unbalanced enable for IRQ 101
+[    0.950027] WARNING: kernel/irq/manage.c:774 at __enable_irq+0x4c/0x7c, CPU#1: kworker/1:0/23
+[    0.950060] CPU: 1 UID: 0 PID: 23 Comm: kworker/1:0 Tainted: G        W           7.1.0 #1 PREEMPT 
+[    0.950074] Tainted: [W]=WARN
+[    0.950079] Hardware name: Nokia 6.1 Plus (DT)
+[    0.950086] Workqueue: events wled_ovp_work
+[    0.950109] pstate: 600000c5 (nZCv daIF -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.950121] pc : __enable_irq+0x4c/0x7c
+[    0.950132] lr : __enable_irq+0x4c/0x7c
+[    0.950142] sp : ffffffc080253d40
+[    0.950146] x29: ffffffc080253d40 x28: 0000000000000000 x27: 0000000000000000
+[    0.950162] x26: ffffff80fdc78428 x25: 0000000000000000 x24: ffffff8080208000
+[    0.950176] x23: ffffff808004e405 x22: 0000000000000001 x21: 0000000000000000
+[    0.950191] x20: 0000000000000065 x19: ffffff8081df4e00 x18: 00000000ffffffff
+[    0.950206] x17: 0000000000000043 x16: 28f5c28f5c28f5c3 x15: ffffffc0802538e0
+[    0.950221] x14: 00000000ffffffea x13: ffffffc0802539a8 x12: ffffffe30f708c68
+[    0.950235] x11: ffffffe30f6f0c80 x10: 0000000000017fe8 x9 : 0000000000000001
+[    0.950249] x8 : ffffffffffffefff x7 : ffffffffffffffff x6 : 0000000000057fa8
+[    0.950262] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 00000000ffffffff
+[    0.950275] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff8080208000
+[    0.950289] Call trace:
+[    0.950294]  __enable_irq+0x4c/0x7c (P)
+[    0.950308]  enable_irq+0x6c/0xd8
+[    0.950319]  wled_ovp_work+0x14/0x20
+[    0.950334]  process_one_work+0x174/0x2c8
+[    0.950347]  worker_thread+0x18c/0x308
+[    0.950356]  kthread+0x11c/0x128
+[    0.950373]  ret_from_fork+0x10/0x20
+[    0.950387] ---[ end trace 0000000000000000 ]---
+[    0.977751] Console: switching to colour frame buffer device 135x142
+[    1.025995] Bluetooth: hci0: QCA Downloading qca/crnv21.bin
+[    1.161241] Bluetooth: hci0: QCA setup on UART is completed
+[    1.161810] msm_dpu c901000.display-controller: [drm] fb0: msm-kmsdrmfb frame buffer device
+[    1.466652] gcc-sdm660 100000.clock-controller: sync_state() pending due to 793000.rng
+[    1.469955] gcc-sdm660 100000.clock-controller: sync_state() pending due to c144000.dma-controller
+[    1.473255] gcc-sdm660 100000.clock-controller: sync_state() pending due to c184000.dma-controller
+[    1.476666] clk: Disabling unused clocks
+[    1.480689] PM: genpd: Disabling unused power domains
+[    1.487739] Freeing unused kernel memory: 2176K
+[    1.491242] Run /init as init process
+[    1.494623]   with arguments:
+[    1.494632]     /init
+[    1.494640]   with environment:
+[    1.494647]     HOME=/
+[    1.494655]     TERM=linux
+[    1.494662]     earlycon=msm_serial_dm,0xc170000
+[    1.494670]     buildvariant=userdebug
+[    1.494677]     dm=system none ro,0 1 android-verity /dev/mmcblk0p82
+[    1.494686]     download_mode=0
+[    2.086643] EXT4-fs (mmcblk1p73): warning: maximal mount count reached, running e2fsck is recommended
+[    2.089657] EXT4-fs (mmcblk1p73): recovery complete
+[    2.092234] EXT4-fs (mmcblk1p73): mounted filesystem 57f8f4bc-abf4-655f-bf67-946fc0f9f25b r/w with ordered data mode. Quota mode: disabled.
+[    2.200660] remoteproc remoteproc0: powering up 4080000.remoteproc
+[    2.203060] remoteproc remoteproc0: Booting fw image qcom/sdm636/mba.mbn, size 238256
+[    2.205096] qcom-q6v5-mss 4080000.remoteproc: Direct firmware load for qcom/sdm636/modem.mdt failed with error -2
+[    2.207123] qcom-q6v5-mss 4080000.remoteproc: unable to load qcom/sdm636/modem.mdt
+[    2.207180] UDC core: g1: couldn't find an available UDC or it's busy
+[    2.209203] remoteproc remoteproc0: Boot failed: -2
+[   19.386010] random: crng init done
+/ # [6n

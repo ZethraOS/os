@@ -1,0 +1,5 @@
+*.o
+qrtr-ns
+qrtr-lookup
+qrtr-cfg
+build/

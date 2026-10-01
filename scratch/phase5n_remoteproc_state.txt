@@ -1,0 +1,133 @@
+CM gadget...
+[minit] USB ACM gadget bound to UDC: a800000.usb
+[minit] Waiting for eMMC partitions...
+[minit] /dev/disk/by-partlabel: 85 entries
+[minit] Marking boot-successful...
+SLOT _b: Marked boot successful
+[minit] ✓ boot-successful written
+[minit] persist mounted — continuous dmesg logging to /mnt/persist/zethra_boot.log
+[minit] Staging /mnt/persist/rfs files into /var/lib/tqftpserv...
+[minit] Mounting modem firmware partition...
+[minit] ✓ modem partition mounted at /mnt/modem
+[minit] ✓ Symlinked 290 modem firmware files to /lib/firmware/qcom/sdm636/
+[minit] Writing clean FSC cookie...
+[minit] FSC cookie written (CRC bytes zeroed)
+[minit] Extracting Qualcomm FSG (skipping 512B FIH header) from /dev/disk/by-partlabel/nvdef_b...
+[minit] Mapped /tmp/fsg_clean.img → fsg for EFS
+[minit] OEM FSG symlinks: modem_fsg_oem_1 -> /dev/disk/by-partlabel/fsg, modem_fsg_oem_2 -> /dev/disk/by-partlabel/rf_nv
+[minit] EFS SHA-256: be964db9c190c7e64a95b96705767fc1d755a8bd04eb6a2557484fc43456c999
+[minit] Disabled remoteproc recovery and coredump (prevents CPU lockup)
+[minit] Starting qrtr-ns daemon...
+ERROR qrtr-ns: nameserver already running, going dormant: Address already in use
+[minit] Starting rmtfs daemon (storage: /dev/disk/by-partlabel)...
+[minit] Starting tqftpserv daemon (serving /mnt/modem, /lib/firmware, /mnt/persist/rfs, and /var/lib/tqftpserv)...
+[minit] Started tqftpserv daemon
+[minit] Starting fih_skuid_emulator (persistent daemon)...
+[minit] fih_skuid_emulator launched (PID=1383) — log: /tmp/fih_skuid.log
+[minit] Triggering remoteproc0 boot (echo start)...
+[minit] remoteproc0 state: running
+[minit] ✓ Init complete. Spawning foreground shell on /dev/ttyGS0 and /dev/ttyMSM0
+[minit] Run 'dmesg | grep -i drm' to inspect display driver probing
+
+
+BusyBox v1.35.0 (Debian 1:1.35.0-4+deb12u1+b1) built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+/bin/sh: can't access tty; job control turned off
+/ # [6n00bfffc000..0x00000000bfffffff (16 KiB) nomap non-reusable mpss-metadata
+[    0.000000] OF: reserved mem: 0x0000000085600000..0x00000000856fffff (1024 KiB) nomap non-reusable wlan-msa-guard@85600000
+[    0.000000] OF: reserved mem: 0x0000000085700000..0x00000000857fffff (1024 KiB) nomap non-reusable wlan-msa-mem@85700000
+[    0.000000] OF: reserved mem: 0x0000000085800000..0x0000000085dfffff (6144 KiB) nomap non-reusable qhee-code@85800000
+[    0.000000] OF: reserved mem: 0x0000000085e00000..0x0000000085ffffff (2048 KiB) nomap non-reusable memory@85e00000
+[    0.000000] OF: reserved mem: 0x0000000086000000..0x00000000861fffff (2048 KiB) nomap non-reusable smem-mem@86000000
+[    0.000000] OF: reserved mem: 0x0000000086200000..0x0000000088efffff (46080 KiB) nomap non-reusable memory@86200000
+[    0.000000] OF: reserved mem: 0x000000008ac00000..0x00000000929fffff (129024 KiB) nomap non-reusable mpss@8ac00000
+[    0.000000] OF: reserved mem: 0x0000000092a00000..0x00000000947fffff (30720 KiB) nomap non-reusable adsp@92a00000
+[    0.000000] OF: reserved mem: 0x0000000094800000..0x00000000949fffff (2048 KiB) nomap non-reusable mba@94800000
+[    0.000000] OF: reserved mem: 0x0000000094a00000..0x0000000094afffff (1024 KiB) nomap non-reusable tzbuffer@94a00000
+[    0.000000] OF: reserved mem: 0x000000009f800000..0x000000009fffffff (8192 KiB) nomap non-reusable venus@9f800000
+[    0.000000] OF: reserved mem: 0x00000000ac000000..0x00000000ac7fffff (8192 KiB) nomap non-reusable fih_nv@AC000000
+[    0.000000] OF: reserved mem: 0x00000000ac800000..0x00000000acafffff (3072 KiB) nomap non-reusable fih_mem@AC800000
+[    0.000000] OF: reserved mem: 0x000000009d400000..0x000000009f7fffff (36864 KiB) nomap non-reusable splash_region@9d400000
+[    0.000000] OF: reserved mem: 0x000000009f7ff000..0x000000009f7fffff (4 KiB) map non-reusable dfps_data_mem@9f7ff000
+[    0.000000] OF: reserved mem: 0x00000000acb00000..0x00000000accfffff (2048 KiB) nomap non-reusable ramoops@acb00000
+[    0.000000] OF: reserved mem: OVERLAP DETECTED!
+[    0.000000] splash_region@9d400000 (0x000000009d400000--0x000000009f800000) overlaps with dfps_data_mem@9f7ff000 (0x000000009f7ff000--0x000000009f800000)
+[    0.000000] psci: probing for conduit method from DT.
+[    0.000000] psci: PSCIv1.0 detected in firmware.
+[    0.000000] psci: Using standard PSCI v0.2 function IDs
+[    0.000000] psci: MIGRATE_INFO_TYPE not supported.
+[    0.000000] psci: SMC Calling Convention v1.0
+[    0.000000] psci: OSI mode supported.
+[    0.000000] psci: [Firmware Bug]: failed to set PC mode: -3
+[    0.000000] Zone ranges:
+[    0.000000]   DMA      [mem 0x0000000080000000-0x00000000ffffffff]
+[    0.000000]   DMA32    empty
+[    0.000000]   Normal   [mem 0x0000000100000000-0x000000017e4bffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080000000-0x00000000855fffff]
+[    0.000000]   node   0: [mem 0x0000000085600000-0x0000000088efffff]
+[    0.000000]   node   0: [mem 0x0000000088f00000-0x000000008abfffff]
+[    0.000000]   node   0: [mem 0x000000008ac00000-0x0000000094afffff]
+[    0.000000]   node   0: [mem 0x0000000094b00000-0x000000009d3fffff]
+[    0.000000]   node   0: [mem 0x000000009d400000-0x000000009fffffff]
+[    0.000000]   node   0: [mem 0x00000000a0000000-0x00000000abffffff]
+[    0.000000]   node   0: [mem 0x00000000ac000000-0x00000000accfffff]
+[    0.000000]   node   0: [mem 0x00000000acd00000-0x00000000bfffbfff]
+[    0.000000]   node   0: [mem 0x00000000bfffc000-0x00000000bfffffff]
+[    0.000000]   node   0: [mem 0x00000000c0000000-0x000000017e4bffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080000000-0x000000017e4bffff]
+[    0.000000] On node 0, zone Normal: 6976 pages in unavailable ranges
+[    0.000000] percpu: Embedded 18 pages/cpu s42584 r0 d31144 u73728
+[    0.000000] Detected VIPT I-cache on CPU0
+[    0.000000] CPU features: detected: GICv3 CPU interface
+[    0.000000] CPU features: detected: Spectre-v4
+[    0.000000] CPU features: kernel page table isolation forced ON by KASLR
+[    0.000000] CPU features: detected: Kernel page table isolation (KPTI)
+[    0.000000] alternatives: applying boot alternatives
+[    0.000000] Kernel command line: console=tty0 earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 console=ttyGS0,115200 androidboot.hardware=qcom msm.separate_gpu_kms=1 panic=10 buildvariant=userdebug  root=/dev/dm-0 dm="system none ro,0 1 android-verity /dev/mmcblk0p82" androidboot.verifiedbootstate=orange androidboot.keymaster=1  androidboot.veritymode=enforcing androidboot.bootdevice=c0c4000.sdhci androidboot.serialno=DRGID18100509899 androidboot.baseband=sdm mdss_mdp.panel=1:dsi:0:fih,mdss_dsi_ctc_otm1911a_fhd_video:config0:1:none:cfg:single_dsi androidboot.device=DRG androidbsp.device=DRG androidboot.securityfused=true androidboot.fihmode=0 androidboot.slot_suffix=_b skip_initramfs rootwait ro init=/init androidboot.bbox=8 androidboot.diag=0 androidboot.cause=0x00000011 androidboot.fac=0 androidboot.abupdate_unsuccessful=1 androidboot.colorver=B androidboot.fp=gxfp3258_drg androidboot.skuid=600WW androidboot.simslot=2 androidboot.hwmodel=DGI androidboot.smartamp=nxp androidboot.nfc=none \
+[    0.000000] Kernel command line: androidboot.hardware.revision=3.0 download_mode=0
+[    0.000000] Unknown kernel command line parameters "earlycon=msm_serial_dm,0xc170000 buildvariant=userdebug dm=system none ro,0 1 android-verity /dev/mmcblk0p82 download_mode=0", will be passed to user space.
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    0.000000] software IO TLB: area num 8.
+[    0.000000] software IO TLB: mapped [mem 0x00000000fbfff000-0x00000000fffff000] (64MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 1041600
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:on, heap free:on
+[    0.000000] mem auto-init: clearing system memory may take some time...
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
+[    0.000000] rcu: Preemptible hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] GICv3: 608 SPIs implemented
+[    0.000000] GICv3: 0 Extended SPIs implemented
+[    0.000000] Root IRQ handler: gic_handle_irq
+[    0.000000] GICv3: GICv3 features: 16 PPIs
+[    0.000000] GICv3: GICD_CTLR.DS=0, SCR_EL3.FIQ=1
+[    0.000000] GICv3: CPU0: found redistributor 0 region 0:0x0000000017b00000
+[    0.000000] ITS: No ITS available, not enabling LPIs
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] arch_timer: cp15 timer running at 19.20MHz (virt).
+[    0.000000] clocksource: arch_sys_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
+[    0.000000] sched_clock: 56 bits at 19MHz, resolution 52ns, wraps every 4398046511078ns
+[    0.000092] Console: colour dummy device 80x25
+[    0.000103] printk: legacy console [tty0] enabled
+[    0.000786] Calibrating delay loop (skipped), value calculated using timer frequency.. 38.40 BogoMIPS (lpj=76800)
+[    0.000807] pid_max: default: 32768 minimum: 301
+[    0.001060] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.001080] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[  
+[missed 22196 bytes]
+[    0.417504] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.420448] Bluetooth: hci0: QCA controller version 0x01400201
+[    0.425487] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.427929] Bluetooth: hci0: QCA Downloading qca/crbtfw21.tlv
+[    0.490584] ANTIGRAVITY [DSI-PHY]: Starting dsi_phy_driver_probe f
+[missed 99992 bytes]
+
+/ # [6ncat /sys/class/remoteproc/remoteproc0/state
+crashed
+/ # [6n

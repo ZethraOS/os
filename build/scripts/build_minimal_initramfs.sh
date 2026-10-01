@@ -25,10 +25,12 @@ info "Building minimal initramfs at: $WORK_DIR"
 rm -rf "$WORK_DIR"
 
 # ── Directory skeleton (POSIX minimal) ─────────────────────────────────────────
-for d in bin sbin dev proc sys sys/kernel/debug sys/kernel/config \
-          tmp run mnt mnt/persist \
-          lib/firmware/qcom \
-          dev/disk/by-partlabel; do
+for d in bin sbin usr/bin usr/sbin etc etc/init.d etc/systemd/system \
+          dev proc sys sys/kernel/debug sys/kernel/config \
+          tmp run mnt mnt/persist mnt/modem \
+          var var/lib var/lib/tqftpserv \
+          lib/firmware/qcom lib/firmware/qcom/sdm636 \
+          dev/disk/by-partlabel skuid skuid/profile; do
   mkdir -p "$WORK_DIR/$d"
 done
 
@@ -39,7 +41,7 @@ chmod 755 "$WORK_DIR/bin/busybox"
 
 # Essential symlinks only — every other applet wastes nothing (busybox is one binary)
 for applet in sh cat echo ls mount umount mkdir mknod sleep dmesg grep sed \
-              awk cut wc ln sync find xargs sort; do
+              awk cut wc ln sync find xargs sort kill killall pidof; do
   ln -sf busybox "$WORK_DIR/bin/$applet"
 done
 
@@ -47,6 +49,14 @@ done
 info "Copying qbootctl..."
 cp "$OUT_DIR/qbootctl" "$WORK_DIR/sbin/qbootctl"
 chmod 755 "$WORK_DIR/sbin/qbootctl"
+
+# ── reboot_bootloader ─────────────────────────────────────────────────────────
+if [[ -f "$REPO_ROOT/tools/reboot_bootloader/reboot_bootloader_tiny" ]]; then
+  info "Copying reboot_bootloader..."
+  cp "$REPO_ROOT/tools/reboot_bootloader/reboot_bootloader_tiny" "$WORK_DIR/sbin/reboot_bootloader"
+  chmod 755 "$WORK_DIR/sbin/reboot_bootloader"
+  ln -sf /sbin/reboot_bootloader "$WORK_DIR/bin/reboot_bootloader"
+fi
 
 # ── Qcom GPU firmware blobs (required for DPU/GPU probe on SDM636) ─────────────
 info "Copying Qcom firmware blobs..."
@@ -71,6 +81,7 @@ fi
 EXPECTED_CRBTFW21_SHA256="49c9358d5488d4836626b8e0e49a31fea01b4e80394d40528253d19afba52ca8"
 EXPECTED_CRNV21_SHA256="2bd75139a0dccb75470a453c299fd1861bc34ceb9502ea419557a9ebe405b016"
 
+BT_FIRMWARE_DIR="${BT_FIRMWARE_DIR:-$REPO_ROOT/scratch/bt_firmware}"
 if [[ -z "${BT_FIRMWARE_DIR:-}" ]]; then
   err "BT_FIRMWARE_DIR is not set. Set it to the absolute path containing crbtfw21.tlv and crnv21.bin."
 fi
@@ -98,6 +109,239 @@ mkdir -p "$WORK_DIR/lib/firmware/qca"
 cp "$BT_FIRMWARE_DIR/crbtfw21.tlv" "$WORK_DIR/lib/firmware/qca/"
 cp "$BT_FIRMWARE_DIR/crnv21.bin"   "$WORK_DIR/lib/firmware/qca/"
 success "BT firmware staged: lib/firmware/qca/crbtfw21.tlv + lib/firmware/qca/crnv21.bin"
+
+
+# ── Modem Userspace Daemons (qrtr-ns, qrtr-lookup, rmtfs) ─────────────────────
+info "Staging QRTR and RMTFS modem daemons..."
+# Always copy updated binaries from tools/ if present
+if [[ -f "$REPO_ROOT/tools/rmtfs/rmtfs" ]]; then
+  cp "$REPO_ROOT/tools/rmtfs/rmtfs" "$OUT_DIR/rmtfs"
+fi
+if [[ -f "$REPO_ROOT/tools/tqftpserv/tqftpserv" ]]; then
+  cp "$REPO_ROOT/tools/tqftpserv/tqftpserv" "$OUT_DIR/tqftpserv"
+fi
+
+# If binaries are not in $OUT_DIR, build them from tools/
+if [[ ! -f "$OUT_DIR/qrtr-ns" || ! -f "$OUT_DIR/rmtfs" ]]; then
+  info "Building qrtr-ns and rmtfs from tools/..."
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace/tools/qrtr zethra-build-env:1 bash -c \
+    "make clean && CC=aarch64-linux-gnu-gcc make && aarch64-linux-gnu-strip -s qrtr-ns qrtr-lookup"
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace/tools/rmtfs zethra-build-env:1 bash -c \
+    "make clean && CC=aarch64-linux-gnu-gcc make && aarch64-linux-gnu-strip -s rmtfs"
+  cp "$REPO_ROOT/tools/qrtr/qrtr-ns" "$OUT_DIR/"
+  cp "$REPO_ROOT/tools/qrtr/qrtr-lookup" "$OUT_DIR/"
+  cp "$REPO_ROOT/tools/rmtfs/rmtfs" "$OUT_DIR/"
+fi
+
+cp "$OUT_DIR/qrtr-ns" "$WORK_DIR/usr/bin/qrtr-ns"
+chmod 755 "$WORK_DIR/usr/bin/qrtr-ns"
+ln -sf /usr/bin/qrtr-ns "$WORK_DIR/bin/qrtr-ns"
+
+if [[ -f "$OUT_DIR/qrtr-lookup" ]]; then
+  cp "$OUT_DIR/qrtr-lookup" "$WORK_DIR/usr/bin/qrtr-lookup"
+  chmod 755 "$WORK_DIR/usr/bin/qrtr-lookup"
+  ln -sf /usr/bin/qrtr-lookup "$WORK_DIR/bin/qrtr-lookup"
+fi
+
+cp "$OUT_DIR/rmtfs" "$WORK_DIR/usr/bin/rmtfs"
+chmod 755 "$WORK_DIR/usr/bin/rmtfs"
+ln -sf /usr/bin/rmtfs "$WORK_DIR/bin/rmtfs"
+
+if [[ ! -f "$OUT_DIR/tqftpserv" ]]; then
+  info "Building tqftpserv from tools/..."
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace/tools/tqftpserv zethra-build-env:1 bash -c \
+    "make clean && CC=aarch64-linux-gnu-gcc make && aarch64-linux-gnu-strip -s tqftpserv"
+  cp "$REPO_ROOT/tools/tqftpserv/tqftpserv" "$OUT_DIR/"
+fi
+
+cp "$OUT_DIR/tqftpserv" "$WORK_DIR/usr/bin/tqftpserv"
+chmod 755 "$WORK_DIR/usr/bin/tqftpserv"
+ln -sf /usr/bin/tqftpserv "$WORK_DIR/bin/tqftpserv"
+success "Modem daemons staged to /usr/bin: qrtr-ns, qrtr-lookup, rmtfs, tqftpserv"
+
+# ── FIH SKUID Emulator ─────────────────────────────────────────────────────────
+# Emulates Android RIL's QMI SKUID delivery to prevent fih_nv_qmi_skuid2() crash.
+# Must run BEFORE remoteproc modem boot so it is ready when FIH service registers.
+info "Staging FIH SKUID emulator..."
+FIH_SKUID_BIN="$REPO_ROOT/services/telephony/fih_skuid_emulator"
+if [[ ! -f "$FIH_SKUID_BIN" ]]; then
+  info "Building fih_skuid_emulator from source..."
+  docker run --rm -v "$REPO_ROOT:/workspace" -w /workspace zethra-build-env:1 bash -c \
+    "aarch64-linux-gnu-gcc -static -Os -ffunction-sections -fdata-sections -Wl,--gc-sections \
+     -Itools/qrtr/include tools/qrtr/lib/qrtr.c tools/qrtr/lib/logging.c \
+     services/telephony/fih_skuid_emulator.c -o services/telephony/fih_skuid_emulator && \
+     aarch64-linux-gnu-strip services/telephony/fih_skuid_emulator"
+fi
+cp "$FIH_SKUID_BIN" "$WORK_DIR/usr/bin/fih_skuid_emulator"
+chmod 755 "$WORK_DIR/usr/bin/fih_skuid_emulator"
+ln -sf /usr/bin/fih_skuid_emulator "$WORK_DIR/bin/fih_skuid_emulator"
+success "FIH SKUID emulator staged to /usr/bin/fih_skuid_emulator"
+
+# ── Service Units & Init Scripts ──────────────────────────────────────────────
+info "Writing systemd units and init scripts for modem daemons..."
+
+if [[ -f "$REPO_ROOT/tools/tqftpserv/tqftpserv.service" ]]; then
+  cp "$REPO_ROOT/tools/tqftpserv/tqftpserv.service" "$WORK_DIR/etc/systemd/system/"
+fi
+
+cat > "$WORK_DIR/etc/systemd/system/qrtr-ns.service" << 'EOF'
+[Unit]
+Description=QIPCRTR Name Service
+Before=rmtfs.service
+
+[Service]
+ExecStart=/usr/bin/qrtr-ns -f 1
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat > "$WORK_DIR/etc/systemd/system/rmtfs.service" << 'EOF'
+[Unit]
+Description=Qualcomm remotefs service
+After=qrtr-ns.service
+ConditionPathExists=/dev/qcom_rmtfs_mem1
+
+[Service]
+ExecStart=/usr/bin/rmtfs -s -P -o /dev/disk/by-partlabel
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat > "$WORK_DIR/etc/init.d/qrtr-ns" << 'EOF'
+#!/bin/sh
+# /etc/init.d/qrtr-ns — Start/stop QRTR name server daemon
+case "$1" in
+  start)
+    echo "Starting qrtr-ns..."
+    /usr/bin/qrtr-ns &
+    ;;
+  stop)
+    killall qrtr-ns 2>/dev/null || true
+    ;;
+  status)
+    pidof qrtr-ns >/dev/null && echo "qrtr-ns is running" || echo "qrtr-ns is stopped"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOF
+chmod 755 "$WORK_DIR/etc/init.d/qrtr-ns"
+
+cat > "$WORK_DIR/etc/init.d/rmtfs" << 'EOF'
+#!/bin/sh
+# /etc/init.d/rmtfs — Start/stop Qualcomm remote filesystem daemon
+case "$1" in
+  start)
+    echo "Starting rmtfs..."
+    /usr/bin/rmtfs -s -P -o /dev/disk/by-partlabel &
+    ;;
+  stop)
+    killall rmtfs 2>/dev/null || true
+    ;;
+  status)
+    pidof rmtfs >/dev/null && echo "rmtfs is running" || echo "rmtfs is stopped"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOF
+chmod 755 "$WORK_DIR/etc/init.d/rmtfs"
+
+cat > "$WORK_DIR/etc/init.d/tqftpserv" << 'EOF'
+#!/bin/sh
+case "$1" in
+  start)
+    echo "Starting tqftpserv..."
+    /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /mnt/persist/rfs /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
+    ;;
+  stop)
+    killall tqftpserv 2>/dev/null || true
+    ;;
+  status)
+    pidof tqftpserv >/dev/null && echo "tqftpserv is running" || echo "tqftpserv is stopped"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOF
+chmod 755 "$WORK_DIR/etc/init.d/tqftpserv"
+success "Service units and init scripts created"
+
+# ── FIH RFS Staging & FSC Candidate ──────────────────────────────────────────
+info "Staging FIH RFS directory tree..."
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/fih_rfs/data/vendor"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/shared"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/hlos"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/ramdumps"
+touch "$WORK_DIR/var/lib/tqftpserv/fih_rfs/data/vendor/.keep"
+touch "$WORK_DIR/var/lib/tqftpserv/shared/.keep"
+touch "$WORK_DIR/var/lib/tqftpserv/hlos/.keep"
+touch "$WORK_DIR/var/lib/tqftpserv/ramdumps/.keep"
+
+if [ -d "$REPO_ROOT/scratch/tqftpserv_staging" ]; then
+  cp -r "$REPO_ROOT/scratch/tqftpserv_staging/"* "$WORK_DIR/var/lib/tqftpserv/" 2>/dev/null || true
+  success "Staged FIH RFS directories from scratch/tqftpserv_staging"
+fi
+
+# ── Stage /skuid/profile with 600WW|2 ─────────────────────────────────────────
+info "Staging /skuid/profile with 600WW|2..."
+mkdir -p "$WORK_DIR/skuid/profile"
+printf "600WW|2" > "$WORK_DIR/skuid/profile/600WW"
+printf "600WW|2" > "$WORK_DIR/skuid/profile/profile"
+printf "600WW|2" > "$WORK_DIR/skuid/profile/skuid"
+rm -rf "$WORK_DIR/var/lib/tqftpserv/skuid/profile"
+mkdir -p "$WORK_DIR/var/lib/tqftpserv/skuid/profile"
+printf "600WW|2" > "$WORK_DIR/var/lib/tqftpserv/skuid/profile/600WW"
+printf "600WW|2" > "$WORK_DIR/var/lib/tqftpserv/skuid/profile/profile"
+success "Staged /skuid/profile/600WW"
+
+# Stage candidate FSC cookie and restore utility
+if [ -f "$REPO_ROOT/scratch/fsc_clean_sector0.img" ]; then
+  cp "$REPO_ROOT/scratch/fsc_clean_sector0.img" "$WORK_DIR/etc/fsc_clean_sector0.img"
+  chmod 0644 "$WORK_DIR/etc/fsc_clean_sector0.img"
+  success "Staged fsc_clean_sector0.img -> /etc/fsc_clean_sector0.img (clean CRC bytes 508-511)"
+fi
+if [ -f "$REPO_ROOT/scratch/fsc_active_gen1.img" ]; then
+  cp "$REPO_ROOT/scratch/fsc_active_gen1.img" "$WORK_DIR/etc/fsc_candidate.img"
+  success "Staged fsc_active_gen1.img -> /etc/fsc_candidate.img"
+fi
+
+cat > "$WORK_DIR/usr/bin/restore_fsc_cookie" << 'EOF'
+#!/bin/sh
+if [ -f /etc/fsc_clean_sector0.img ]; then
+  echo "Writing /etc/fsc_clean_sector0.img to /dev/disk/by-partlabel/fsc..."
+  dd if=/etc/fsc_clean_sector0.img of=/dev/disk/by-partlabel/fsc bs=512 count=1 conv=fsync 2>&1
+  echo "Done. Clean FSC cookie written (CRC bytes zeroed)."
+elif [ -f /etc/fsc_candidate.img ]; then
+  echo "Writing /etc/fsc_candidate.img to /dev/disk/by-partlabel/fsc..."
+  dd if=/etc/fsc_candidate.img of=/dev/disk/by-partlabel/fsc bs=1024 count=1 conv=fsync 2>&1
+  echo "Done. FSC cookie written."
+else
+  echo "No FSC image found!"
+  exit 1
+fi
+EOF
+chmod 755 "$WORK_DIR/usr/bin/restore_fsc_cookie"
+ln -sf /usr/bin/restore_fsc_cookie "$WORK_DIR/bin/restore_fsc_cookie"
+
+# ── Optional Modem Firmware Staging (Phase 5B hybrid strategy) ────────────────
+if [[ -n "${MODEM_FIRMWARE_DIR:-}" ]]; then
+  info "Staging modem MBA firmware via stage_modem_firmware.sh..."
+  INITRAMFS_DIR="$WORK_DIR" MODEM_FIRMWARE_DIR="$MODEM_FIRMWARE_DIR" \
+    bash "$REPO_ROOT/build/scripts/stage_modem_firmware.sh"
+fi
 
 
 # ── /dev nodes (minimal set — devtmpfs will populate more at runtime) ──────────
@@ -136,8 +380,45 @@ mount -t debugfs  none    /sys/kernel/debug  2>/dev/null || true
 mkdir -p /sys/kernel/config
 mount -t configfs none    /sys/kernel/config 2>/dev/null || true
 
+# Disable automatic reboot on panic / RCU stall so we never bootloop
+echo 0 > /proc/sys/kernel/panic 2>/dev/null || true
+echo 0 > /proc/sys/kernel/panic_on_rcu_stall 2>/dev/null || true
+echo 0 > /proc/sys/kernel/panic_on_warn 2>/dev/null || true
+
 echo "[minit] ZethraOS minimal debug initramfs booted"
 echo "[minit] Kernel: $(uname -r) | cmdline: $(cat /proc/cmdline)"
+
+# ── Early USB CDC-ACM Serial Gadget (bring up serial ASAP) ────────────────────
+echo "[minit] Configuring early USB CDC-ACM gadget..."
+if [ -d /sys/kernel/config/usb_gadget ]; then
+  GADGET=/sys/kernel/config/usb_gadget/g1
+  mkdir -p "$GADGET/strings/0x409"
+  mkdir -p "$GADGET/functions/acm.usb0"
+  mkdir -p "$GADGET/configs/c.1/strings/0x409"
+  echo 0x18D1          > "$GADGET/idVendor"
+  echo 0x0001          > "$GADGET/idProduct"
+  echo "ZethraOS"      > "$GADGET/strings/0x409/manufacturer"
+  echo "Nokia 6.1 Plus"> "$GADGET/strings/0x409/product"
+  echo "ZETHRA000001"  > "$GADGET/strings/0x409/serialnumber"
+  echo "CDC ACM Debug" > "$GADGET/configs/c.1/strings/0x409/configuration"
+  ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
+
+  # Wait up to 5s for UDC to appear
+  udc_retries=0
+  while [ -z "$(ls /sys/class/udc/ 2>/dev/null)" ] && [ $udc_retries -lt 100 ]; do
+    sleep 0.05; udc_retries=$((udc_retries+1))
+  done
+
+  UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
+  if [ -n "$UDC" ]; then
+    echo "$UDC" > "$GADGET/UDC" 2>/dev/null
+    echo "[minit] USB ACM gadget bound to UDC: $UDC"
+  else
+    echo "[minit] ⚠ UDC not found — USB serial unavailable"
+  fi
+fi
+
+
 
 # ── Hardware watchdog keeper ──────────────────────────────────────────────────
 (while true; do
@@ -179,42 +460,147 @@ if mount -t ext4 /dev/disk/by-partlabel/persist /mnt/persist 2>/dev/null || \
    mount -t ext4 /dev/mmcblk1p73 /mnt/persist 2>/dev/null; then
   echo "[minit] persist mounted — continuous dmesg logging to /mnt/persist/zethra_boot.log"
   (while true; do dmesg > /mnt/persist/zethra_boot.log 2>&1; sync; sleep 1; done) &
+  if [ -d /mnt/persist/rfs ]; then
+    echo "[minit] Staging /mnt/persist/rfs files into /var/lib/tqftpserv..."
+    mkdir -p /var/lib/tqftpserv
+    cp -r /mnt/persist/rfs/* /var/lib/tqftpserv/ 2>/dev/null || true
+    chmod -R 755 /mnt/persist/rfs /var/lib/tqftpserv 2>/dev/null || true
+  fi
 else
   echo "[minit] ⚠ persist partition not mounted (dmesg not saved)"
 fi
 
-# ── USB CDC-ACM Serial Gadget ─────────────────────────────────────────────────
-echo "[minit] Configuring USB CDC-ACM gadget..."
-if [ -d /sys/kernel/config/usb_gadget ]; then
-  GADGET=/sys/kernel/config/usb_gadget/g1
-  mkdir -p "$GADGET/strings/0x409"
-  mkdir -p "$GADGET/functions/acm.usb0"
-  mkdir -p "$GADGET/configs/c.1/strings/0x409"
-  echo 0x18D1          > "$GADGET/idVendor"
-  echo 0x0001          > "$GADGET/idProduct"
-  echo "ZethraOS"      > "$GADGET/strings/0x409/manufacturer"
-  echo "Nokia 6.1 Plus"> "$GADGET/strings/0x409/product"
-  echo "ZETHRA000001"  > "$GADGET/strings/0x409/serialnumber"
-  echo "CDC ACM Debug" > "$GADGET/configs/c.1/strings/0x409/configuration"
-  ln -sf "$GADGET/functions/acm.usb0" "$GADGET/configs/c.1/acm.usb0" 2>/dev/null || true
+# Stage /skuid/profile at runtime
+mkdir -p /skuid/profile
+printf "600WW|2" > /skuid/profile/600WW
+printf "600WW|2" > /skuid/profile/profile
+printf "600WW|2" > /skuid/profile/skuid
 
-  # Wait up to 5s for UDC to appear
-  udc_retries=0
-  while [ -z "$(ls /sys/class/udc/ 2>/dev/null)" ] && [ $udc_retries -lt 100 ]; do
-    sleep 0.05; udc_retries=$((udc_retries+1))
+# ── Mount Modem Partition (VFAT) & Symlink Firmware Files ─────────────────────
+echo "[minit] Mounting modem firmware partition..."
+mkdir -p /mnt/modem /lib/firmware/qcom/sdm636 /var/lib/tqftpserv
+if mount -t vfat -o ro /dev/disk/by-partlabel/modem_b /mnt/modem 2>/dev/null || \
+   mount -t vfat -o ro /dev/disk/by-partlabel/modem_a /mnt/modem 2>/dev/null; then
+  echo "[minit] ✓ modem partition mounted at /mnt/modem"
+  fw_count=0
+  for f in /mnt/modem/image/*; do
+    if [ -e "$f" ]; then
+      ln -sf "$f" "/lib/firmware/qcom/sdm636/$(basename "$f")"
+      fw_count=$((fw_count+1))
+    fi
   done
+  echo "[minit] ✓ Symlinked $fw_count modem firmware files to /lib/firmware/qcom/sdm636/"
+else
+  echo "[minit] ⚠ modem partition mount failed"
+fi
 
-  UDC=$(ls /sys/class/udc/ 2>/dev/null | head -1)
-  if [ -n "$UDC" ]; then
-    echo "$UDC" > "$GADGET/UDC" 2>/dev/null
-    echo "[minit] USB ACM gadget bound to UDC: $UDC"
+# ── Modem Userspace Daemons (qrtr-ns, rmtfs) ──────────────────────────────────
+export PATH=/usr/bin:/bin:/sbin:/usr/sbin
+
+# Ensure EFS partition symlinks exist for rmtfs
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
+
+# Write clean FSC cookie (CRC bytes 508-511 = 00 00 00 00)
+if [ -f /etc/fsc_clean_sector0.img ] && [ -b /dev/disk/by-partlabel/fsc ]; then
+  echo "[minit] Writing clean FSC cookie..."
+  dd if=/etc/fsc_clean_sector0.img of=/dev/disk/by-partlabel/fsc bs=512 conv=fsync 2>/dev/null
+  echo "[minit] FSC cookie written (CRC bytes zeroed)"
+fi
+
+# Detect active slot (cmdline check)
+ACTIVE_SLOT="b"
+case "$(cat /proc/cmdline 2>/dev/null)" in
+  *slot_suffix=_a*|*androidboot.slot_suffix=_a*) ACTIVE_SLOT="a" ;;
+  *) ACTIVE_SLOT="b" ;;
+esac
+
+# Map nvdef_${slot} → fsg for rmtfs
+# Note: Nokia FIH prepends a 512-byte partition table header at sector 0 of nvdef.
+# The Qualcomm FSG image (magic 0xCDABCDAB) begins at sector 1 (offset 512).
+# Hexagon firmware requests sectors 0:4096 and expects 0xCDABCDAB at sector 0.
+NVDEF_PART="/dev/disk/by-partlabel/nvdef_${ACTIVE_SLOT}"
+if [ -b "$NVDEF_PART" ]; then
+  echo "[minit] Extracting Qualcomm FSG (skipping 512B FIH header) from $NVDEF_PART..."
+  dd if="$NVDEF_PART" of=/tmp/fsg_clean.img bs=512 skip=1 2>/dev/null
+  ln -sf /tmp/fsg_clean.img /dev/disk/by-partlabel/fsg
+  echo "[minit] Mapped /tmp/fsg_clean.img → fsg for EFS"
+else
+  echo "[minit] ⚠ $NVDEF_PART not found!"
+fi
+
+ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg 2>/dev/null || true
+# nvcust is empty on this device, use fsg for valid stock NV
+ln -sf /dev/disk/by-partlabel/fsg /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/rf_nv /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null || true
+echo "[minit] OEM FSG symlinks: modem_fsg_oem_1 -> $(readlink /dev/disk/by-partlabel/modem_fsg_oem_1 2>/dev/null), modem_fsg_oem_2 -> $(readlink /dev/disk/by-partlabel/modem_fsg_oem_2 2>/dev/null)"
+
+# Verify EFS has valid data (non-zero)
+EFS_HASH=$(dd if=/dev/disk/by-partlabel/fsg bs=4096 count=512 2>/dev/null | sha256sum | cut -d' ' -f1)
+echo "[minit] EFS SHA-256: $EFS_HASH"
+
+
+# Disable remoteproc auto-recovery and blocking coredump (prevents CPU lockup on fatal error)
+if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
+  echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/recovery 2>/dev/null || true
+  echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
+  echo "[minit] Disabled remoteproc recovery and coredump (prevents CPU lockup)"
+fi
+
+# Disable devcoredump to prevent memory stall
+echo 1 > /sys/class/devcoredump/disabled 2>/dev/null || true
+
+if [ -x /usr/bin/qrtr-ns ]; then
+  echo "[minit] Starting qrtr-ns daemon..."
+  /usr/bin/qrtr-ns &
+  sleep 0.1
+fi
+
+if [ -x /usr/bin/rmtfs ]; then
+  echo "[minit] Starting rmtfs daemon (storage: /dev/disk/by-partlabel)..."
+  /usr/bin/rmtfs -v -s -P -o /dev/disk/by-partlabel > /tmp/rmtfs.log 2>&1 &
+  sleep 0.1
+fi
+
+if [ -x /usr/bin/tqftpserv ]; then
+  echo "[minit] Starting tqftpserv daemon (serving /mnt/modem, /lib/firmware, /mnt/persist/rfs, and /var/lib/tqftpserv)..."
+  /usr/bin/tqftpserv -d -v -t /mnt/modem /lib/firmware /mnt/persist/rfs /var/lib/tqftpserv/fih_rfs /var/lib/tqftpserv/shared /var/lib/tqftpserv/hlos > /tmp/tqftpserv.log 2>&1 &
+  sleep 0.1
+  echo "[minit] Started tqftpserv daemon"
+fi
+
+# ── FIH SKUID Emulator (persistent daemon for Service 15) ────────────────────
+# Delivers SKUID1="600WW" to Hexagon modem via QMI (service 15, msg 6).
+# Runs persistently as a daemon listening for Service 15 on QRTR.
+if [ -x /usr/bin/fih_skuid_emulator ]; then
+  echo "[minit] Starting fih_skuid_emulator (persistent daemon)..."
+  /usr/bin/fih_skuid_emulator > /tmp/fih_skuid.log 2>&1 &
+  FIH_SKUID_PID=$!
+  sleep 0.1
+  echo "[minit] fih_skuid_emulator launched (PID=$FIH_SKUID_PID) — log: /tmp/fih_skuid.log"
+fi
+
+# ── Trigger Remoteproc Modem Boot ────────────────────────────────────────────
+if [ -d /sys/class/remoteproc/remoteproc0 ]; then
+  # Ensure recovery and coredump are disabled to prevent CPU lockup
+  if [ -d /sys/kernel/debug/remoteproc/remoteproc0 ]; then
+    echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/recovery 2>/dev/null || true
+    echo disabled > /sys/kernel/debug/remoteproc/remoteproc0/coredump 2>/dev/null || true
+  fi
+  state=$(cat /sys/class/remoteproc/remoteproc0/state 2>/dev/null)
+  if [ "$state" = "offline" ]; then
+    echo "[minit] Triggering remoteproc0 boot (echo start)..."
+    echo start > /sys/class/remoteproc/remoteproc0/state 2>/dev/null || true
+    sleep 0.5
+    echo "[minit] remoteproc0 state: $(cat /sys/class/remoteproc/remoteproc0/state 2>/dev/null)"
   else
-    echo "[minit] ⚠ UDC not found — USB serial unavailable"
+    echo "[minit] remoteproc0 state is already: $state"
   fi
 fi
 
 # ── Drop into serial shell ────────────────────────────────────────────────────
-echo "[minit] ✓ Init complete. Spawning shell on /dev/ttyGS0 and /dev/ttyMSM0"
+echo "[minit] ✓ Init complete. Spawning foreground shell on /dev/ttyGS0 and /dev/ttyMSM0"
 echo "[minit] Run 'dmesg | grep -i drm' to inspect display driver probing"
 
 # Shell on UART (hardware serial — always available)
@@ -225,7 +611,7 @@ if [ -c /dev/ttyMSM0 ]; then
   done) &
 fi
 
-# Shell on USB ACM (enumerated ~3-5s after boot)
+# Shell on USB ACM
 while true; do
   [ -c /dev/ttyGS0 ] && /bin/sh < /dev/ttyGS0 > /dev/ttyGS0 2>&1
   sleep 1
@@ -250,7 +636,7 @@ info "Packing minimal initramfs..."
 CPIO_OUT="$OUT_DIR/initramfs-minimal.cpio.gz"
 (
   cd "$WORK_DIR"
-  find . | sort | cpio -H newc -o 2>/dev/null | gzip -9 > "$CPIO_OUT"
+  find . | sort | cpio -H newc -o 2>/dev/null | xz --check=crc32 -9 > "$CPIO_OUT"
 )
 
 CPIO_SIZE=$(ls -lh "$CPIO_OUT" | awk '{print $5}')

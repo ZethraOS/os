@@ -1,0 +1,1167 @@
+Running command on device: dmesg
+=== DEVICE OUTPUT ===
+
+/ # 
+/ # 
+/ # [6ndmesg
+[    0.000000] Booting Linux on physical CPU 0x0000000000 [0x51af8014]
+[    0.000000] Linux version 7.1.0 (zethra@zethra-build) (aarch64-linux-gnu-gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #1 SMP PREEMPT Fri Jun 12 17:00:00 UTC 2026
+[    0.000000] KASLR enabled
+[    0.000000] Machine model: Nokia 6.1 Plus
+[    0.000000] efi: UEFI not found.
+[    0.000000] [Firmware Bug]: Kernel image misaligned at boot, please fix your bootloader!
+[    0.000000] OF: reserved mem: 0x00000000bfffc000..0x00000000bfffffff (16 KiB) nomap non-reusable mpss-metadata
+[    0.000000] OF: reserved mem: 0x0000000085600000..0x00000000856fffff (1024 KiB) nomap non-reusable wlan-msa-guard@85600000
+[    0.000000] OF: reserved mem: 0x0000000085700000..0x00000000857fffff (1024 KiB) nomap non-reusable wlan-msa-mem@85700000
+[    0.000000] OF: reserved mem: 0x0000000085800000..0x0000000085dfffff (6144 KiB) nomap non-reusable qhee-code@85800000
+[    0.000000] OF: reserved mem: 0x0000000085e00000..0x0000000085ffffff (2048 KiB) nomap non-reusable memory@85e00000
+[    0.000000] OF: reserved mem: 0x0000000086000000..0x00000000861fffff (2048 KiB) nomap non-reusable smem-mem@86000000
+[    0.000000] OF: reserved mem: 0x0000000086200000..0x0000000088efffff (46080 KiB) nomap non-reusable memory@86200000
+[    0.000000] OF: reserved mem: 0x000000008ac00000..0x00000000929fffff (129024 KiB) nomap non-reusable mpss@8ac00000
+[    0.000000] OF: reserved mem: 0x0000000092a00000..0x00000000947fffff (30720 KiB) nomap non-reusable adsp@92a00000
+[    0.000000] OF: reserved mem: 0x0000000094800000..0x00000000949fffff (2048 KiB) nomap non-reusable mba@94800000
+[    0.000000] OF: reserved mem: 0x0000000094a00000..0x0000000094afffff (1024 KiB) nomap non-reusable tzbuffer@94a00000
+[    0.000000] OF: reserved mem: 0x000000009f800000..0x000000009fffffff (8192 KiB) nomap non-reusable venus@9f800000
+[    0.000000] OF: reserved mem: 0x00000000ac000000..0x00000000ac7fffff (8192 KiB) nomap non-reusable fih_nv@AC000000
+[    0.000000] OF: reserved mem: 0x00000000ac800000..0x00000000acafffff (3072 KiB) nomap non-reusable fih_mem@AC800000
+[    0.000000] OF: reserved mem: 0x000000009d400000..0x000000009f7fffff (36864 KiB) nomap non-reusable splash_region@9d400000
+[    0.000000] OF: reserved mem: 0x000000009f7ff000..0x000000009f7fffff (4 KiB) map non-reusable dfps_data_mem@9f7ff000
+[    0.000000] OF: reserved mem: 0x00000000acb00000..0x00000000accfffff (2048 KiB) nomap non-reusable ramoops@acb00000
+[    0.000000] OF: reserved mem: OVERLAP DETECTED!
+[    0.000000] splash_region@9d400000 (0x000000009d400000--0x000000009f800000) overlaps with dfps_data_mem@9f7ff000 (0x000000009f7ff000--0x000000009f800000)
+[    0.000000] psci: probing for conduit method from DT.
+[    0.000000] psci: PSCIv1.0 detected in firmware.
+[    0.000000] psci: Using standard PSCI v0.2 function IDs
+[    0.000000] psci: MIGRATE_INFO_TYPE not supported.
+[    0.000000] psci: SMC Calling Convention v1.0
+[    0.000000] psci: OSI mode supported.
+[    0.000000] psci: [Firmware Bug]: failed to set PC mode: -3
+[    0.000000] Zone ranges:
+[    0.000000]   DMA      [mem 0x0000000080000000-0x00000000ffffffff]
+[    0.000000]   DMA32    empty
+[    0.000000]   Normal   [mem 0x0000000100000000-0x000000017e4bffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080000000-0x00000000855fffff]
+[    0.000000]   node   0: [mem 0x0000000085600000-0x0000000088efffff]
+[    0.000000]   node   0: [mem 0x0000000088f00000-0x000000008abfffff]
+[    0.000000]   node   0: [mem 0x000000008ac00000-0x0000000094afffff]
+[    0.000000]   node   0: [mem 0x0000000094b00000-0x000000009d3fffff]
+[    0.000000]   node   0: [mem 0x000000009d400000-0x000000009fffffff]
+[    0.000000]   node   0: [mem 0x00000000a0000000-0x00000000abffffff]
+[    0.000000]   node   0: [mem 0x00000000ac000000-0x00000000accfffff]
+[    0.000000]   node   0: [mem 0x00000000acd00000-0x00000000bfffbfff]
+[    0.000000]   node   0: [mem 0x00000000bfffc000-0x00000000bfffffff]
+[    0.000000]   node   0: [mem 0x00000000c0000000-0x000000017e4bffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080000000-0x000000017e4bffff]
+[    0.000000] On node 0, zone Normal: 6976 pages in unavailable ranges
+[    0.000000] percpu: Embedded 18 pages/cpu s42584 r0 d31144 u73728
+[    0.000000] pcpu-alloc: s42584 r0 d31144 u73728 alloc=18*4096
+[    0.000000] pcpu-alloc: [0] 0 [0] 1 [0] 2 [0] 3 [0] 4 [0] 5 [0] 6 [0] 7 
+[    0.000000] Detected VIPT I-cache on CPU0
+[    0.000000] CPU features: detected: GICv3 CPU interface
+[    0.000000] CPU features: detected: Spectre-v4
+[    0.000000] CPU features: kernel page table isolation forced ON by KASLR
+[    0.000000] CPU features: detected: Kernel page table isolation (KPTI)
+[    0.000000] alternatives: applying boot alternatives
+[    0.000000] Kernel command line: console=tty0 earlycon=msm_serial_dm,0xc170000 console=ttyMSM0,115200,n8 console=ttyGS0,115200 androidboot.hardware=qcom msm.separate_gpu_kms=1 lpm_levels.sleep_disabled=1 loop.max_part=7 buildvariant=userdebug panic=10 fw_devlink=permissive root=/dev/dm-0 dm="system none ro,0 1 android-verity /dev/mmcblk0p82" androidboot.verifiedbootstate=orange androidboot.keymaster=1  androidboot.veritymode=enforcing androidboot.bootdevice=c0c4000.sdhci androidboot.serialno=DRGID18100509899 androidboot.baseband=sdm mdss_mdp.panel=1:dsi:0:fih,mdss_dsi_ctc_otm1911a_fhd_video:config0:1:none:cfg:single_dsi androidboot.device=DRG androidbsp.device=DRG androidboot.securityfused=true androidboot.fihmode=0 androidboot.slot_suffix=_b skip_initramfs rootwait ro init=/init androidboot.bbox=8 androidboot.diag=0 androidboot.cause=0x00000011 androidboot.fac=0 androidboot.abupdate_unsuccessful=1 androidboot.colorver=B androidboot.fp=gxfp3258_drg androidboot.skuid=600WW androidboot.simslot=2 \
+[    0.000000] Kernel command line: androidboot.hwmodel=DGI androidboot.smartamp=nxp androidboot.nfc=none androidboot.hardware.revision=3.0 download_mode=0
+[    0.000000] Unknown kernel command line parameters "earlycon=msm_serial_dm,0xc170000 buildvariant=userdebug dm=system none ro,0 1 android-verity /dev/mmcblk0p82 download_mode=0", will be passed to user space.
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    0.000000] software IO TLB: area num 8.
+[    0.000000] software IO TLB: mapped [mem 0x00000000fbfff000-0x00000000fffff000] (64MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 1041600
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:on, heap free:on
+[    0.000000] mem auto-init: clearing system memory may take some time...
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=1
+[    0.000000] rcu: Preemptible hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] GICv3: 608 SPIs implemented
+[    0.000000] GICv3: 0 Extended SPIs implemented
+[    0.000000] Root IRQ handler: gic_handle_irq
+[    0.000000] GICv3: GICv3 features: 16 PPIs
+[    0.000000] GICv3: GICD_CTLR.DS=0, SCR_EL3.FIQ=1
+[    0.000000] GICv3: CPU0: found redistributor 0 region 0:0x0000000017b00000
+[    0.000000] ITS: No ITS available, not enabling LPIs
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] arch_timer: cp15 timer running at 19.20MHz (virt).
+[    0.000000] clocksource: arch_sys_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
+[    0.000000] sched_clock: 56 bits at 19MHz, resolution 52ns, wraps every 4398046511078ns
+[    0.000092] Console: colour dummy device 80x25
+[    0.000102] printk: legacy console [tty0] enabled
+[    0.000789] Calibrating delay loop (skipped), value calculated using timer frequency.. 38.40 BogoMIPS (lpj=76800)
+[    0.000811] pid_max: default: 32768 minimum: 301
+[    0.001062] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.001081] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.001372] VFS: Finished mounting rootfs on nullfs
+[    0.003084] rcu: Hierarchical SRCU implementation.
+[    0.003097] rcu: 	Max phase no-delay instances is 1000.
+[    0.003280] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.003396] EFI services will not be available.
+[    0.003692] smp: Bringing up secondary CPUs ...
+[    0.005718] CPU features: detected: Spectre-v2
+[    0.005736] CPU features: detected: Spectre-BHB
+[    0.005752] Detected VIPT I-cache on CPU1
+[    0.005925] GICv3: CPU1: found redistributor 100 region 0:0x0000000017b80000
+[    0.006003] CPU1: Booted secondary processor 0x0000000100 [0x51af8002]
+[    0.007792] Detected VIPT I-cache on CPU2
+[    0.007951] GICv3: CPU2: found redistributor 101 region 0:0x0000000017ba0000
+[    0.008016] CPU2: Booted secondary processor 0x0000000101 [0x51af8002]
+[    0.009774] Detected VIPT I-cache on CPU3
+[    0.009938] GICv3: CPU3: found redistributor 102 region 0:0x0000000017bc0000
+[    0.010002] CPU3: Booted secondary processor 0x0000000102 [0x51af8002]
+[    0.011747] Detected VIPT I-cache on CPU4
+[    0.011917] GICv3: CPU4: found redistributor 103 region 0:0x0000000017be0000
+[    0.011982] CPU4: Booted secondary processor 0x0000000103 [0x51af8002]
+[    0.013750] Detected VIPT I-cache on CPU5
+[    0.013875] GICv3: CPU5: found redistributor 1 region 0:0x0000000017b20000
+[    0.013945] CPU5: Booted secondary processor 0x0000000001 [0x51af8014]
+[    0.015633] Detected VIPT I-cache on CPU6
+[    0.015739] GICv3: CPU6: found redistributor 2 region 0:0x0000000017b40000
+[    0.015795] CPU6: Booted secondary processor 0x0000000002 [0x51af8014]
+[    0.017456] Detected VIPT I-cache on CPU7
+[    0.017565] GICv3: CPU7: found redistributor 3 region 0:0x0000000017b60000
+[    0.017621] CPU7: Booted secondary processor 0x0000000003 [0x51af8014]
+[    0.017693] smp: Brought up 1 node, 8 CPUs
+[    0.017848] SMP: Total of 8 processors activated.
+[    0.017858] CPU: All CPU(s) started at EL1
+[    0.017868] CPU features: detected: 32-bit EL0 Support
+[    0.017879] CPU features: detected: CRC32 instructions
+[    0.017946] alternatives: applying system-wide alternatives
+[    0.019303] Memory: 3716668K/4166400K available (9152K kernel code, 1030K rwdata, 2980K rodata, 2176K init, 307K bss, 443216K reserved, 0K cma-reserved)
+[    0.020422] devtmpfs: initialized
+[    0.033646] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.033702] posixtimers hash table entries: 4096 (order: 4, 65536 bytes, linear)
+[    0.033808] futex hash table entries: 2048 (131072 bytes on 1 NUMA nodes, total 128 KiB, linear).
+[    0.034614] DMI: not present or invalid.
+[    0.035299] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.036698] DMA: preallocated 512 KiB GFP_KERNEL pool for atomic allocations
+[    0.037005] DMA: preallocated 512 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
+[    0.038489] thermal_sys: Registered thermal governor 'step_wise'
+[    0.038608] NET: Registered PF_QIPCRTR protocol family
+[    0.039292] ASID allocator initialised with 32768 entries
+[    0.042715] pstore: Using crash dump compression: deflate
+[    0.042741] printk: legacy console [ramoops-1] enabled
+[    0.043652] pstore: Registered ramoops as persistent store backend
+[    0.043677] ramoops: using 0x200000@0xacb00000, ecc: 0
+[    0.052088] /soc@0/clock-controller@c8c0000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/phy@c994400
+[    0.052195] /soc@0/display-subsystem@c900000/display-controller@c901000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.052290] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.052362] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/display-controller@c901000
+[    0.052494] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.052558] /soc@0/display-subsystem@c900000/phy@c994400: Fixed dependency cycle(s) with /soc@0/clock-controller@c8c0000
+[    0.052708] /soc@0/interrupt-controller@17a00000: Fixed dependency cycle(s) with /soc@0/interrupt-controller@17a00000
+[    0.056114] ANTIGRAVITY [56000000 ns]: hwspinlock probe START for 1f40000.hwlock
+[    0.056237] ANTIGRAVITY [56000000 ns]: hwspinlock probe DONE for 1f40000.hwlock, ret=0
+[    0.056692] ANTIGRAVITY [56000000 ns]: msm_pinctrl_probe start for 3100000.pinctrl
+[    0.056729] ANTIGRAVITY [56000000 ns]: mapping tile north
+[    0.056807] ANTIGRAVITY [56000000 ns]: mapping tile center
+[    0.056874] ANTIGRAVITY [56000000 ns]: mapping tile south
+[    0.056939] ANTIGRAVITY [56000000 ns]: setting up PM reset notifier...
+[    0.056961] ANTIGRAVITY [56000000 ns]: setup_pm_reset enter
+[    0.056988] ANTIGRAVITY [56000000 ns]: setup_pm_reset exit
+[    0.057007] ANTIGRAVITY [56000000 ns]: requesting IRQ...
+[    0.058995] ANTIGRAVITY [56000000 ns]: msm_gpio_init enter, ngpios=114
+[    0.059026] ANTIGRAVITY [56000000 ns]: msm_gpio_init calling devm_gpiochip_add_data
+[    0.059079] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=3100000.pinctrl: dev=gpiochip0, size=2, parent_size=2
+[    0.059112] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=3100000.pinctrl: dev=gpiochip0, size=2, parent_size=2
+[    0.059140] ANTIGRAVITY: cleared valid mask for reserved range [8, 11]
+[    0.059240] ANTIGRAVITY: of_gpiochip_add start
+[    0.059265] ANTIGRAVITY: of_gpiochip_add returned 0
+[    0.059283] ANTIGRAVITY: gpiochip_add_pin_ranges start
+[    0.059301] ANTIGRAVITY: gpiochip_add_pin_ranges returned 0
+[    0.059346] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start
+[    0.059368] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned 0
+[    0.059386] ANTIGRAVITY: gpiochip_irqchip_init_hw start
+[    0.059404] ANTIGRAVITY: gpiochip_irqchip_init_hw returned 0
+[    0.059421] ANTIGRAVITY: gpiochip_add_irqchip start
+[    0.059468] ANTIGRAVITY: gpiochip_add_irqchip returned 0
+[    0.059487] ANTIGRAVITY: gpiochip_add_data_with_key entry
+[    0.059769] ANTIGRAVITY [56000000 ns]: msm_gpio_init devm_gpiochip_add_data returned 0
+[    0.059798] ANTIGRAVITY [56000000 ns]: msm_pinctrl_probe success for 3100000.pinctrl
+[    0.062160] /soc@0/clock-controller@c8c0000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/phy@c994400
+[    0.062467] /soc@0/display-subsystem@c900000: Fixed dependency cycle(s) with /soc@0/clock-controller@c8c0000
+[    0.062612] /soc@0/display-subsystem@c900000/display-controller@c901000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.062813] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.062880] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/display-controller@c901000
+[    0.063001] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.063115] /soc@0/display-subsystem@c900000/phy@c994400: Fixed dependency cycle(s) with /soc@0/clock-controller@c8c0000
+[    0.069086] iommu: Default domain type: Translated
+[    0.069118] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.069921] SCSI subsystem initialized
+[    0.070036] usbcore: registered new interface driver usbfs
+[    0.070087] usbcore: registered new interface driver hub
+[    0.070147] usbcore: registered new device driver usb
+[    0.070491] qcom_scm: convention: smc arm 64
+[    0.073056] Bluetooth: Core ver 2.22
+[    0.073109] NET: Registered PF_BLUETOOTH protocol family
+[    0.073131] Bluetooth: HCI device and connection manager initialized
+[    0.073157] Bluetooth: HCI socket layer initialized
+[    0.073179] Bluetooth: L2CAP socket layer initialized
+[    0.073205] Bluetooth: SCO socket layer initialized
+[    0.074152] clocksource: Switched to clocksource arch_sys_counter
+[    0.082031] NET: Registered PF_INET protocol family
+[    0.082237] IP idents hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.084664] s1: Bringing 0uV into 1125000-1125000uV
+[    0.084889] s2: Bringing 0uV into 1050000-1050000uV
+[    0.085050] l1: Bringing 0uV into 920000-920000uV
+[    0.085224] l2: Bringing 0uV into 1648000-1648000uV
+[    0.085401] l3: Bringing 0uV into 1700000-1700000uV
+[    0.085593] l4: Bringing 0uV into 2944000-2944000uV
+[    0.085620] l4: Operation of current configuration missing
+[    0.085802] l5: Bringing 0uV into 1800000-1800000uV
+[    0.085987] l7: Bringing 0uV into 2700000-2700000uV
+[    0.086178] l8: Bringing 0uV into 3200000-3200000uV
+[    0.086382] bob: Bringing 0uV into 3300000-3300000uV
+[    0.086884] tcp_listen_portaddr_hash hash table entries: 2048 (order: 3, 32768 bytes, linear)
+[    0.086951] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.086966] s4: Bringing 0uV into 2040000-2040000uV
+[    0.087003] TCP established hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    0.087261] TCP bind hash table entries: 32768 (order: 8, 1048576 bytes, linear)
+[    0.087564] s5: Bringing 0uV into 1224000-1224000uV
+[    0.087857] TCP: Hash tables configured (established 32768 bind 32768)
+[    0.087870] s6: Bringing 0uV into 504000-504000uV
+[    0.087969] UDP hash table entries: 2048 (order: 5, 131072 bytes, linear)
+[    0.088046] l1: Bringing 0uV into 1150000-1150000uV
+[    0.088219] l2: Bringing 0uV into 950000-950000uV
+[    0.088272] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.088400] l3: Bringing 0uV into 950000-950000uV
+[    0.088535] Unpacking initramfs...
+[    0.088557] l5: Bringing 0uV into 525000-525000uV
+[    0.088737] l6: Bringing 0uV into 1200000-1200000uV
+[    0.088922] l7: Bringing 0uV into 1200000-1200000uV
+[    0.089133] l8: Bringing 0uV into 1750000-1750000uV
+[    0.089305] l9: Bringing 0uV into 1750000-1750000uV
+[    0.089465] l10: Bringing 0uV into 1780000-1780000uV
+[    0.089636] l11: Bringing 0uV into 1780000-1780000uV
+[    0.089799] l12: Bringing 0uV into 1780000-1780000uV
+[    0.090010] l13: Bringing 0uV into 1780000-1780000uV
+[    0.090605] l14: Bringing 0uV into 1710000-1710000uV
+[    0.090807] l15: Bringing 0uV into 1650000-1650000uV
+[    0.091058] l16: Bringing 0uV into 2800000-2800000uV
+[    0.091571] workingset: timestamp_bits=46 (anon: 42) max_order=20 bucket_order=0 (anon: 0)
+[    0.092112] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+[    0.092144] io scheduler mq-deadline registered
+[    0.092165] io scheduler kyber registered
+[    0.092210] io scheduler bfq registered
+[    0.092777] l17: Bringing 0uV into 1648000-1648000uV
+[    0.093007] l19: Bringing 0uV into 3312000-3312000uV
+[    0.096381] simple-framebuffer 9d400000.framebuffer: framebuffer at 0x9d400000, 0x964b00 bytes
+[    0.096424] simple-framebuffer 9d400000.framebuffer: format=a8r8g8b8, mode=1080x2280x32, linelength=4320
+[    0.105708] Console: switching to colour frame buffer device 135x142
+[    0.114796] simple-framebuffer 9d400000.framebuffer: fb0: simplefb registered!
+[    0.167857] msm_serial c170000.serial: msm_serial: detected port #0
+[    0.168014] msm_serial c170000.serial: uartclk = 1843200
+[    0.168385] c170000.serial: ttyMSM0 at MMIO 0xc170000 (irq = 17, base_baud = 115200) is a MSM
+[    0.169390] msm_serial c1af000.serial: msm_serial: detected port #1
+[    0.169508] msm_serial c1af000.serial: uartclk = 19200000
+[    0.169835] c1af000.serial: ttyMSM1 at MMIO 0xc1af000 (irq = 18, base_baud = 1200000) is a MSM
+[    0.170169] serial serial0: tty port ttyMSM1 registered
+[    0.170689] msm_serial: driver initialized
+[    0.172431] arm-smmu 16c0000.iommu: probing hardware configuration...
+[    0.172498] arm-smmu 16c0000.iommu: SMMUv2 with:
+[    0.172573] arm-smmu 16c0000.iommu: 	stage 1 translation
+[    0.172632] arm-smmu 16c0000.iommu: 	address translation ops
+[    0.172687] arm-smmu 16c0000.iommu: 	non-coherent table walk
+[    0.172741] arm-smmu 16c0000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.172803] arm-smmu 16c0000.iommu: 	stream matching with 6 register groups
+[    0.172886] arm-smmu 16c0000.iommu: 	21 context banks (0 stage-2 only)
+[    0.173096] arm-smmu 16c0000.iommu: 	Supported page sizes: 0x63315000
+[    0.173163] arm-smmu 16c0000.iommu: 	Stage-1: 36-bit VA -> 36-bit IPA
+[    0.173351] arm-smmu 16c0000.iommu: 	preserved 0 boot mappings
+[    0.174854] arm-smmu 5040000.iommu: probing hardware configuration...
+[    0.174924] arm-smmu 5040000.iommu: SMMUv2 with:
+[    0.174992] arm-smmu 5040000.iommu: 	stage 1 translation
+[    0.175051] arm-smmu 5040000.iommu: 	address translation ops
+[    0.175106] arm-smmu 5040000.iommu: 	non-coherent table walk
+[    0.175159] arm-smmu 5040000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.175223] arm-smmu 5040000.iommu: 	stream matching with 3 register groups
+[    0.175302] arm-smmu 5040000.iommu: 	5 context banks (0 stage-2 only)
+[    0.175386] arm-smmu 5040000.iommu: 	Supported page sizes: 0x61311000
+[    0.175453] arm-smmu 5040000.iommu: 	Stage-1: 48-bit VA -> 36-bit IPA
+[    0.175583] arm-smmu 5040000.iommu: 	preserved 0 boot mappings
+[    0.178224] arm-smmu 5100000.iommu: probing hardware configuration...
+[    0.178295] arm-smmu 5100000.iommu: SMMUv2 with:
+[    0.178361] arm-smmu 5100000.iommu: 	stage 1 translation
+[    0.178421] arm-smmu 5100000.iommu: 	address translation ops
+[    0.178475] arm-smmu 5100000.iommu: 	non-coherent table walk
+[    0.178528] arm-smmu 5100000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.178591] arm-smmu 5100000.iommu: 	stream matching with 13 register groups
+[    0.178673] arm-smmu 5100000.iommu: 	13 context banks (0 stage-2 only)
+[    0.178957] arm-smmu 5100000.iommu: 	Supported page sizes: 0x63315000
+[    0.179025] arm-smmu 5100000.iommu: 	Stage-1: 36-bit VA -> 36-bit IPA
+[    0.179143] arm-smmu 5100000.iommu: 	preserved 0 boot mappings
+[    0.182084] arm-smmu cd00000.iommu: probing hardware configuration...
+[    0.182176] arm-smmu cd00000.iommu: SMMUv2 with:
+[    0.182245] arm-smmu cd00000.iommu: 	stage 1 translation
+[    0.182304] arm-smmu cd00000.iommu: 	address translation ops
+[    0.182359] arm-smmu cd00000.iommu: 	non-coherent table walk
+[    0.182412] arm-smmu cd00000.iommu: 	(IDR0.CTTW overridden by FW configuration)
+[    0.182475] arm-smmu cd00000.iommu: 	stream matching with 52 register groups
+[    0.182568] arm-smmu cd00000.iommu: 	17 context banks (0 stage-2 only)
+[    0.183462] arm-smmu cd00000.iommu: 	Supported page sizes: 0x63315000
+[    0.183530] arm-smmu cd00000.iommu: 	Stage-1: 32-bit VA -> 36-bit IPA
+[    0.183655] arm-smmu cd00000.iommu: 	preserved 0 boot mappings
+[    0.186944] ANTIGRAVITY: drm_core_init enter
+[    0.187052] ANTIGRAVITY: drm_core_init SUCCESS!
+[    0.187113] ANTIGRAVITY: msm_drm_register STARTED (modeset=1)
+[    0.187616] ANTIGRAVITY: msm_mdss probe ENTER for c900000.display-subsystem (is_mdp5=1)
+[    0.187796] ANTIGRAVITY: msm_mdss_init FAILED ret=-517
+[    0.188100] ANTIGRAVITY: msm_mdss_register platform_driver_register returned 0
+[    0.190448] ANTIGRAVITY: msm_drm_register complete
+[    0.192285] zram: Added device: zram0
+[    0.192523] spmi_pmic_arb 800f000.spmi: PMIC arbiter version v3 (0x30000000)
+[    0.196327] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=800f000.spmi:pmic@0:gpio@c000: dev=gpiochip1, size=-22, parent_size=-22
+[    0.196436] ANTIGRAVITY: of_gpiochip_add start
+[    0.196488] ANTIGRAVITY: of_gpiochip_add returned 0
+[    0.196535] ANTIGRAVITY: gpiochip_add_pin_ranges start
+[    0.196582] ANTIGRAVITY: gpiochip_add_pin_ranges returned 0
+[    0.196631] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start
+[    0.196682] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned 0
+[    0.196736] ANTIGRAVITY: gpiochip_irqchip_init_hw start
+[    0.196782] ANTIGRAVITY: gpiochip_irqchip_init_hw returned 0
+[    0.196832] ANTIGRAVITY: gpiochip_add_irqchip start
+[    0.196892] ANTIGRAVITY: gpiochip_add_irqchip returned 0
+[    0.196942] ANTIGRAVITY: gpiochip_add_data_with_key entry
+[    0.200211] ANTIGRAVITY: gpiochip_count_reserved_ranges for label=800f000.spmi:pmic@2:gpio@c000: dev=gpiochip2, size=-22, parent_size=-22
+[    0.200327] ANTIGRAVITY: of_gpiochip_add start
+[    0.200380] ANTIGRAVITY: of_gpiochip_add returned 0
+[    0.200426] ANTIGRAVITY: gpiochip_add_pin_ranges start
+[    0.200473] ANTIGRAVITY: gpiochip_add_pin_ranges returned 0
+[    0.200523] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask start
+[    0.200574] ANTIGRAVITY: gpiochip_irqchip_init_valid_mask returned 0
+[    0.200627] ANTIGRAVITY: gpiochip_irqchip_init_hw start
+[    0.200673] ANTIGRAVITY: gpiochip_irqchip_init_hw returned 0
+[    0.200721] ANTIGRAVITY: gpiochip_add_irqchip start
+[    0.200781] ANTIGRAVITY: gpiochip_add_irqchip returned 0
+[    0.200832] ANTIGRAVITY: gpiochip_add_data_with_key entry
+[    0.202658] spmi spmi-0: cleanup_irq apid=52 sid=0x3 per=0xd8 irq=1
+[    0.202724] irq 99, desc: (____ptrval____), depth: 0, count: 0, unhandled: 0
+[    0.202774] ->handle_irq():  (____ptrval____), pmic_arb_chained_irq+0x0/0x2f4
+[    0.202834] ->irq_data.chip(): (____ptrval____), gic_chip+0x0/0x118
+[    0.202886] ->action(): (____ptrval____)
+[    0.202917] ->action->handler(): (____ptrval____), bad_chained_irq+0x0/0x50
+[    0.202970]      IRQ_LEVEL set
+[    0.202997]    IRQ_NOPROBE set
+[    0.203023]  IRQ_NOREQUEST set
+[    0.203050]   IRQ_NOTHREAD set
+[    0.214274] printk: legacy console [ttyGS0] enabled
+[    0.215412] g_serial gadget.0: Gadget Serial v2.4
+[    0.215469] g_serial gadget.0: g_serial ready
+[    0.218547] Bluetooth: HCI UART driver ver 2.3
+[    0.218607] Bluetooth: HCI UART protocol H4 registered
+[    0.218703] Bluetooth: HCI UART protocol QCA registered
+[    0.219642] clocksource: arch_mmio_counter: mask: 0xffffffffffffff max_cycles: 0x46d987e47, max_idle_ns: 440795202767 ns
+[    0.219749] arch-timer-mmio 17920000.timer: mmio timer running at 19.20MHz (virt)
+[    0.219899] Bluetooth: hci0: setting up wcn399x
+[    0.220240] usbcore: registered new interface driver usbhid
+[    0.220307] usbhid: USB HID core driver
+[    0.221551] remoteproc remoteproc0: releasing 4080000.remoteproc
+[    0.223943] NET: Registered PF_INET6 protocol family
+[    0.224856] Segment Routing with IPv6
+[    0.228078] In-situ OAM (IOAM) with IPv6
+[    0.231342] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.269646] ANTIGRAVITY: msm_mdss probe ENTER for c900000.display-subsystem (is_mdp5=1)
+[    0.273024] ANTIGRAVITY: msm_mdss_init FAILED ret=-517
+[    0.278309] remoteproc remoteproc0: 4080000.remoteproc is available
+[    0.294372] ANTIGRAVITY: msm_mdss probe ENTER for c900000.display-subsystem (is_mdp5=1)
+[    0.298336] platform c901000.display-controller: Adding to iommu group 0
+[    0.301906] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d84a700, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.302108] /soc@0/display-subsystem@c900000/display-controller@c901000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.304518] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.313954] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.316643] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d72ea00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.319309] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.321957] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.324651] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9dbc2800, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.327337] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.330035] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.332766] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d6df300, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.335500] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.338227] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.340973] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9db91600, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.343707] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.346423] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.349164] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d6b8200, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.351889] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.354602] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.357356] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9db67e00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.360095] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.362817] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.365593] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9d693600, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.368334] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.371054] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.373832] arm-smmu cd00000.iommu: Unhandled context fault: fsr=0x402, iova=0x9db48a00, fsynr=0x21, cbfrsynra=0x0, cb=0
+[    0.373880] Bluetooth: hci0: QCA Product ID   :0x0000000a
+[    0.376577] arm-smmu cd00000.iommu: FSR    = 00000402 [Format=2 TF], SID=0x0
+[    0.376586] arm-smmu cd00000.iommu: FSYNR0 = 00000021 [S1CBNDX=0 PNU PLVL=1]
+[    0.379336] Bluetooth: hci0: QCA SOC Version  :0x40020140
+[    0.387657] Bluetooth: hci0: QCA ROM Version  :0x00000201
+[    0.390434] Bluetooth: hci0: QCA Patch Version:0x00000001
+[    0.397398] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.405161] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.412358] Bluetooth: hci0: QCA controller version 0x01400201
+[    0.415556] Bluetooth: hci0: QCA Downloading qca/crbtfw21.tlv
+[    0.462453] ANTIGRAVITY [DSI-PHY]: Starting dsi_phy_driver_probe for c994400.phy...
+[    0.467113] ANTIGRAVITY: msm_mdss probe DONE for c900000.display-subsystem
+[    0.476628] mmc1: CQHCI version 5.10
+[    0.498629] ANTIGRAVITY [DSI-CTRL]: Starting dsi_init for c994000.dsi...
+[    0.503350] /soc@0/display-subsystem@c900000/dsi@c994000: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000/panel@0
+[    0.511269] /soc@0/display-subsystem@c900000/dsi@c994000/panel@0: Fixed dependency cycle(s) with /soc@0/display-subsystem@c900000/dsi@c994000
+[    0.513520] mmc1: SDHCI controller on c0c4000.mmc [c0c4000.mmc] using ADMA 64-bit
+[    0.519421] panel-orisetech-otm1911a c994000.dsi.0: ANTIGRAVITY: otm1911a_probe starting...
+[    0.523274] sdhci_msm c0c4000.mmc: mmc1: CQE init: success
+[    0.527827] msm_dpu c901000.display-controller: bound c994000.dsi (ops dsi_ops)
+[    0.535819] Console: switching to colour dummy device 80x25
+[    0.538149] ------------[ cut here ]------------
+[    0.538179] mdp_clk_src: rcg didn't update its configuration.
+[    0.538216] WARNING: drivers/clk/qcom/clk-rcg2.c:136 at update_config+0xd4/0xe4, CPU#4: kworker/u34:3/83
+[    0.538287] CPU: 4 UID: 0 PID: 83 Comm: kworker/u34:3 Not tainted 7.1.0 #1 PREEMPT 
+[    0.538322] Hardware name: Nokia 6.1 Plus (DT)
+[    0.538346] Workqueue: events_unbound deferred_probe_work_func
+[    0.538386] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.538417] pc : update_config+0xd4/0xe4
+[    0.538445] lr : update_config+0xd4/0xe4
+[    0.538472] sp : ffffffc080a13300
+[    0.538493] x29: ffffffc080a13310 x28: 0000000000000000 x27: ffffff8080cc74c0
+[    0.538535] x26: ffffffeb1b56ff18 x25: 00000000ffffffff x24: ffffffc080a13508
+[    0.538577] x23: ffffff80803b6e00 x22: 0000000011e1a300 x21: ffffffeb1b1e0b68
+[    0.538617] x20: ffffffeb1b54c0b8 x19: 0000000000000000 x18: fffffffffffe0000
+[    0.538655] x17: 0000000000000100 x16: 28f5c28f5c28f5c3 x15: ffffffc080a12c70
+[    0.538693] x14: 00000000ffffffea x13: ffffffc080a13058 x12: ffffffeb1b528c68
+[    0.538730] x11: ffffffeb1b510c80 x10: 0000000000017fe8 x9 : 0000000000000001
+[    0.538767] x8 : ffffffffffffefff x7 : ffffffffffffffff x6 : 0000000000057fa8
+[    0.538805] x5 : ffffffeb1b510c28 x4 : 0000000000000000 x3 : 0000000000000000
+[    0.538841] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff80819b2580
+[    0.538879] Call trace:
+[    0.538898]  update_config+0xd4/0xe4 (P)
+[    0.538930]  clk_rcg2_configure+0xb8/0xc0
+[    0.538960]  clk_rcg2_set_rate_and_parent+0x2c/0x44
+[    0.538991]  clk_change_rate+0x7c/0x2b4
+[    0.539019]  clk_core_set_rate_nolock+0x16c/0x278
+[    0.539046]  clk_set_rate+0x38/0x14c
+[    0.539073]  _opp_config_clk_single+0x30/0xa8
+[    0.539107]  _set_opp+0x120/0x508
+[    0.539132]  dev_pm_opp_set_rate+0x198/0x2bc
+[    0.539158]  dpu_kms_init+0x74/0x15c
+[    0.539185]  msm_drm_kms_init+0x80/0x3d8
+[    0.539216]  msm_drm_init+0x124/0x300
+[    0.539245]  msm_drm_bind+0x30/0x3c
+[    0.539274]  try_to_bring_up_aggregate_device+0x164/0x1d0
+[    0.539308]  __component_add+0xac/0x178
+[    0.539337]  component_add+0x14/0x20
+[    0.539366]  dsi_dev_attach+0x20/0x2c
+[    0.539393]  dsi_host_attach+0x70/0x108
+[    0.539418]  mipi_dsi_attach+0x30/0x54
+[    0.539448]  otm1911a_probe+0x100/0x1d0
+[    0.539479]  mipi_dsi_drv_probe+0x20/0x2c
+[    0.539507]  really_probe+0xbc/0x298
+[    0.539537]  __driver_probe_device+0x80/0x160
+[    0.539567]  driver_probe_device+0xd4/0x164
+[    0.539596]  __device_attach_driver+0xd8/0x170
+[    0.539627]  bus_for_each_drv+0x88/0xe8
+[    0.539657]  __device_attach+0xa0/0x190
+[    0.539685]  device_initial_probe+0x50/0x54
+[    0.539715]  bus_probe_device+0x38/0xa4
+[    0.539743]  device_add+0x594/0x780
+[    0.539770]  mipi_dsi_device_register_full+0xf4/0x1cc
+[    0.539801]  mipi_dsi_host_register+0x9c/0x19c
+[    0.539830]  msm_dsi_host_register+0x40/0x60
+[    0.539856]  msm_dsi_manager_register+0x15c/0x218
+[    0.539885]  dsi_dev_probe+0x198/0x214
+[    0.539911]  platform_probe+0x5c/0x9c
+[    0.539937]  really_probe+0xbc/0x298
+[    0.539966]  __driver_probe_device+0x80/0x160
+[    0.539996]  driver_probe_device+0xd4/0x164
+[    0.540025]  __device_attach_driver+0xd8/0x170
+[    0.540055]  bus_for_each_drv+0x88/0xe8
+[    0.540083]  __device_attach+0xa0/0x190
+[    0.540112]  device_initial_probe+0x50/0x54
+[    0.540141]  bus_probe_device+0x38/0xa4
+[    0.540169]  deferred_probe_work_func+0x88/0xc0
+[    0.540199]  process_one_work+0x174/0x2c8
+[    0.540227]  worker_thread+0x18c/0x308
+[    0.540252]  kthread+0x11c/0x128
+[    0.540282]  ret_from_fork+0x10/0x20
+[    0.540313] ---[ end trace 0000000000000000 ]---
+[    0.541019] [drm:dpu_kms_hw_init:1197] dpu hardware revision:0x30020000
+[    0.544019] [drm] Initialized msm-kms 1.13.0 for c901000.display-controller on minor 0
+[    0.544093] msm_dpu c901000.display-controller: no GPU device was found
+[    0.568487] ------------[ cut here ]------------
+[    0.568499] pclk0_clk_src: rcg didn't update its configuration.
+[    0.568533] WARNING: drivers/clk/qcom/clk-rcg2.c:136 at update_config+0xd4/0xe4, CPU#4: kworker/u34:3/83
+[    0.568570] CPU: 4 UID: 0 PID: 83 Comm: kworker/u34:3 Tainted: G        W           7.1.0 #1 PREEMPT 
+[    0.568587] Tainted: [W]=WARN
+[    0.568593] Hardware name: Nokia 6.1 Plus (DT)
+[    0.568600] Workqueue: events_unbound deferred_probe_work_func
+[    0.568623] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.568634] pc : update_config+0xd4/0xe4
+[    0.568646] lr : update_config+0xd4/0xe4
+[    0.568657] sp : ffffffc080a129b0
+[    0.568662] x29: ffffffc080a129c0 x28: ffffff8080a75c80 x27: 0000000000000000
+[    0.568680] x26: ffffff8080a75c80 x25: 0000000000000000 x24: 000000001e3834c0
+[    0.568695] x23: ffffffeb1b54c040 x22: 000000001e3834c0 x21: ffffffeb1b1e0b58
+[    0.568710] x20: ffffffeb1b54c028 x19: 0000000000000000 x18: fffffffffffe0000
+[    0.568724] x17: 0000000000000025 x16: ffffffc080aa571c x15: ffffff80819b2600
+[    0.568739] x14: fffffffffffc8a00 x13: 2e6e6f6974617275 x12: 6769666e6f632073
+[    0.568752] x11: 7469206574616470 x10: 752074276e646964 x9 : 72756769666e6f63
+[    0.568767] x8 : 2073746920657461 x7 : ffffffeb1b4b8c00 x6 : ffffffc080a12760
+[    0.568780] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 00000000ffffffff
+[    0.568793] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff80819b2580
+[    0.568808] Call trace:
+[    0.568813]  update_config+0xd4/0xe4 (P)
+[    0.568828]  clk_rcg2_configure+0xb8/0xc0
+[    0.568841]  clk_pixel_set_rate+0x138/0x180
+[    0.568853]  clk_change_rate+0x144/0x2b4
+[    0.568866]  clk_change_rate+0xec/0x2b4
+[    0.568875]  clk_change_rate+0xec/0x2b4
+[    0.568885]  clk_change_rate+0xec/0x2b4
+[    0.568894]  clk_change_rate+0xec/0x2b4
+[    0.568904]  clk_core_set_rate_nolock+0x16c/0x278
+[    0.568914]  clk_set_rate+0x38/0x14c
+[    0.568924]  _opp_config_clk_single+0x30/0xa8
+[    0.568941]  _set_opp+0x14c/0x508
+[    0.568951]  dev_pm_opp_set_rate+0x198/0x2bc
+[    0.568963]  dsi_link_clk_set_rate_6g+0x44/0x12c
+[    0.568975]  msm_dsi_host_power_on+0xc0/0x990
+[    0.568987]  dsi_mgr_bridge_pre_enable+0x184/0x2ec
+[    0.568998]  drm_atomic_bridge_call_pre_enable+0x40/0x4c
+[    0.569014]  drm_atomic_bridge_chain_pre_enable+0xc0/0x134
+[    0.569026]  drm_atomic_helper_commit_encoder_bridge_pre_enable+0xb8/0xf4
+[    0.569042]  drm_atomic_helper_commit_modeset_enables+0x28/0x50
+[    0.569055]  msm_atomic_commit_tail+0x1ac/0x554
+[    0.569070]  commit_tail+0xa4/0x18c
+[    0.569083]  drm_atomic_helper_commit+0x164/0x178
+[    0.569094]  drm_atomic_commit+0x8c/0xcc
+[    0.569105]  drm_client_modeset_commit_atomic+0x218/0x278
+[    0.569122]  drm_client_modeset_commit_locked+0x5c/0x18c
+[    0.569135]  drm_client_modeset_commit+0x30/0x58
+[    0.569148]  __drm_fb_helper_restore_fbdev_mode_unlocked.part.0+0x90/0x98
+[    0.569165]  drm_fb_helper_set_par+0x70/0x8c
+[    0.569177]  fbcon_init+0x4ec/0x510
+[    0.569188]  visual_init+0x90/0xdc
+[    0.569202]  do_bind_con_driver.isra.0+0x15c/0x350
+[    0.569214]  do_take_over_console+0x11c/0x194
+[    0.569226]  do_fbcon_takeover+0x70/0xe8
+[    0.569237]  fbcon_fb_registered+0x1e0/0x1e8
+[    0.569249]  do_register_framebuffer+0x14c/0x254
+[    0.569265]  register_framebuffer+0x2c/0x50
+[    0.569278]  __drm_fb_helper_initial_config_and_unlock+0x38c/0x76c
+[    0.569292]  drm_fb_helper_initial_config+0x44/0x54
+[    0.569304]  drm_fbdev_client_hotplug+0xa8/0x178
+[    0.569321]  drm_client_register+0x78/0x148
+[    0.569334]  drm_fbdev_client_setup+0xc4/0x278
+[    0.569349]  drm_client_setup+0xf8/0x1a4
+[    0.569363]  msm_drm_kms_post_init+0x3c/0xac
+[    0.569377]  msm_drm_init+0x1cc/0x300
+[    0.569392]  msm_drm_bind+0x30/0x3c
+[    0.569404]  try_to_bring_up_aggregate_device+0x164/0x1d0
+[    0.569421]  __component_add+0xac/0x178
+[    0.569435]  component_add+0x14/0x20
+[    0.569448]  dsi_dev_attach+0x20/0x2c
+[    0.569457]  dsi_host_attach+0x70/0x108
+[    0.569467]  mipi_dsi_attach+0x30/0x54
+[    0.569479]  otm1911a_probe+0x100/0x1d0
+[    0.569493]  mipi_dsi_drv_probe+0x20/0x2c
+[    0.569505]  really_probe+0xbc/0x298
+[    0.569520]  __driver_probe_device+0x80/0x160
+[    0.569534]  driver_probe_device+0xd4/0x164
+[    0.569546]  __device_attach_driver+0xd8/0x170
+[    0.569560]  bus_for_each_drv+0x88/0xe8
+[    0.569573]  __device_attach+0xa0/0x190
+[    0.569587]  device_initial_probe+0x50/0x54
+[    0.569601]  bus_probe_device+0x38/0xa4
+[    0.569613]  device_add+0x594/0x780
+[    0.569625]  mipi_dsi_device_register_full+0xf4/0x1cc
+[    0.569639]  mipi_dsi_host_register+0x9c/0x19c
+[    0.569651]  msm_dsi_host_register+0x40/0x60
+[    0.569662]  msm_dsi_manager_register+0x15c/0x218
+[    0.569673]  dsi_dev_probe+0x198/0x214
+[    0.569682]  platform_probe+0x5c/0x9c
+[    0.569692]  really_probe+0xbc/0x298
+[    0.569705]  __driver_probe_device+0x80/0x160
+[    0.569718]  driver_probe_device+0xd4/0x164
+[    0.569731]  __device_attach_driver+0xd8/0x170
+[    0.569744]  bus_for_each_drv+0x88/0xe8
+[    0.569757]  __device_attach+0xa0/0x190
+[    0.569770]  device_initial_probe+0x50/0x54
+[    0.569783]  bus_probe_device+0x38/0xa4
+[    0.569796]  deferred_probe_work_func+0x88/0xc0
+[    0.569809]  process_one_work+0x174/0x2c8
+[    0.569821]  worker_thread+0x18c/0x308
+[    0.569830]  kthread+0x11c/0x128
+[    0.569845]  ret_from_fork+0x10/0x20
+[    0.569860] ---[ end trace 0000000000000000 ]---
+[    0.570869] ------------[ cut here ]------------
+[    0.570874] pclk0_clk_src: rcg didn't update its configuration.
+[    0.570904] WARNING: drivers/clk/qcom/clk-rcg2.c:136 at update_config+0xd4/0xe4, CPU#4: kworker/u34:3/83
+[    0.570928] CPU: 4 UID: 0 PID: 83 Comm: kworker/u34:3 Tainted: G        W           7.1.0 #1 PREEMPT 
+[    0.570942] Tainted: [W]=WARN
+[    0.570946] Hardware name: Nokia 6.1 Plus (DT)
+[    0.570951] Workqueue: events_unbound deferred_probe_work_func
+[    0.570967] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.570977] pc : update_config+0xd4/0xe4
+[    0.570988] lr : update_config+0xd4/0xe4
+[    0.570997] sp : ffffffc080a12b70
+[    0.571001] x29: ffffffc080a12b80 x28: ffffff8080a75c80 x27: 0000000000000000
+[    0.571016] x26: ffffff8080a75c80 x25: 0000000000000000 x24: 000000000a12bc40
+[    0.571030] x23: ffffffeb1b54c040 x22: 000000000a12bc40 x21: ffffffeb1b1e0b58
+[    0.571045] x20: ffffffeb1b54c028 x19: 0000000000000000 x18: fffffffffffe0000
+[    0.571059] x17: 0000000000000025 x16: ffffffc080aa571c x15: ffffff80819b2600
+[    0.571072] x14: fffffffffffc9e90 x13: 2e6e6f6974617275 x12: 6769666e6f632073
+[    0.571086] x11: 7469206574616470 x10: 752074276e646964 x9 : 72756769666e6f63
+[    0.571100] x8 : 2073746920657461 x7 : ffffffeb1b4b8c00 x6 : ffffffc080a12920
+[    0.571113] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 00000000ffffffff
+[    0.571126] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff80819b2580
+[    0.571139] Call trace:
+[    0.571143]  update_config+0xd4/0xe4 (P)
+[    0.571154]  clk_rcg2_configure+0xb8/0xc0
+[    0.571166]  clk_pixel_set_rate+0x138/0x180
+[    0.571178]  clk_change_rate+0x144/0x2b4
+[    0.571188]  clk_change_rate+0xec/0x2b4
+[    0.571197]  clk_core_set_rate_nolock+0x16c/0x278
+[    0.571208]  clk_set_rate+0x38/0x14c
+[    0.571218]  dsi_link_clk_set_rate_6g+0x68/0x12c
+[    0.571229]  msm_dsi_host_power_on+0xc0/0x990
+[    0.571239]  dsi_mgr_bridge_pre_enable+0x184/0x2ec
+[    0.571251]  drm_atomic_bridge_call_pre_enable+0x40/0x4c
+[    0.571264]  drm_atomic_bridge_chain_pre_enable+0xc0/0x134
+[    0.571276]  drm_atomic_helper_commit_encoder_bridge_pre_enable+0xb8/0xf4
+[    0.571290]  drm_atomic_helper_commit_modeset_enables+0x28/0x50
+[    0.571303]  msm_atomic_commit_tail+0x1ac/0x554
+[    0.571317]  commit_tail+0xa4/0x18c
+[    0.571329]  drm_atomic_helper_commit+0x164/0x178
+[    0.571341]  drm_atomic_commit+0x8c/0xcc
+[    0.571351]  drm_client_modeset_commit_atomic+0x218/0x278
+[    0.571366]  drm_client_modeset_commit_locked+0x5c/0x18c
+[    0.571379]  drm_client_modeset_commit+0x30/0x58
+[    0.571392]  __drm_fb_helper_restore_fbdev_mode_unlocked.part.0+0x90/0x98
+[    0.571407]  drm_fb_helper_set_par+0x70/0x8c
+[    0.571419]  fbcon_init+0x4ec/0x510
+[    0.571429]  visual_init+0x90/0xdc
+[    0.571442]  do_bind_con_driver.isra.0+0x15c/0x350
+[    0.571453]  do_take_over_console+0x11c/0x194
+[    0.571465]  do_fbcon_takeover+0x70/0xe8
+[    0.571475]  fbcon_fb_registered+0x1e0/0x1e8
+[    0.571486]  do_register_framebuffer+0x14c/0x254
+[    0.571502]  register_framebuffer+0x2c/0x50
+[    0.571514]  __drm_fb_helper_initial_config_and_unlock+0x38c/0x76c
+[    0.571527]  drm_fb_helper_initial_config+0x44/0x54
+[    0.571539]  drm_fbdev_client_hotplug+0xa8/0x178
+[    0.571555]  drm_client_register+0x78/0x148
+[    0.571568]  drm_fbdev_client_setup+0xc4/0x278
+[    0.571582]  drm_client_setup+0xf8/0x1a4
+[    0.571596]  msm_drm_kms_post_init+0x3c/0xac
+[    0.571610]  msm_drm_init+0x1cc/0x300
+[    0.571623]  msm_drm_bind+0x30/0x3c
+[    0.571635]  try_to_bring_up_aggregate_device+0x164/0x1d0
+[    0.571651]  __component_add+0xac/0x178
+[    0.571665]  component_add+0x14/0x20
+[    0.571679]  dsi_dev_attach+0x20/0x2c
+[    0.571688]  dsi_host_attach+0x70/0x108
+[    0.571697]  mipi_dsi_attach+0x30/0x54
+[    0.571710]  otm1911a_probe+0x100/0x1d0
+[    0.571723]  mipi_dsi_drv_probe+0x20/0x2c
+[    0.571735]  really_probe+0xbc/0x298
+[    0.571750]  __driver_probe_device+0x80/0x160
+[    0.571765]  driver_probe_device+0xd4/0x164
+[    0.571778]  __device_attach_driver+0xd8/0x170
+[    0.571793]  bus_for_each_drv+0x88/0xe8
+[    0.571807]  __device_attach+0xa0/0x190
+[    0.571820]  device_initial_probe+0x50/0x54
+[    0.571834]  bus_probe_device+0x38/0xa4
+[    0.571847]  device_add+0x594/0x780
+[    0.571857]  mipi_dsi_device_register_full+0xf4/0x1cc
+[    0.571871]  mipi_dsi_host_register+0x9c/0x19c
+[    0.571884]  msm_dsi_host_register+0x40/0x60
+[    0.571894]  msm_dsi_manager_register+0x15c/0x218
+[    0.571906]  dsi_dev_probe+0x198/0x214
+[    0.571915]  platform_probe+0x5c/0x9c
+[    0.571925]  really_probe+0xbc/0x298
+[    0.571938]  __driver_probe_device+0x80/0x160
+[    0.571951]  driver_probe_device+0xd4/0x164
+[    0.571964]  __device_attach_driver+0xd8/0x170
+[    0.571978]  bus_for_each_drv+0x88/0xe8
+[    0.571990]  __device_attach+0xa0/0x190
+[    0.572003]  device_initial_probe+0x50/0x54
+[    0.572016]  bus_probe_device+0x38/0xa4
+[    0.572029]  deferred_probe_work_func+0x88/0xc0
+[    0.572042]  process_one_work+0x174/0x2c8
+[    0.572053]  worker_thread+0x18c/0x308
+[    0.572062]  kthread+0x11c/0x128
+[    0.572075]  ret_from_fork+0x10/0x20
+[    0.572087] ---[ end trace 0000000000000000 ]---
+[    0.606591] mmc1: Command Queue Engine enabled
+[    0.606615] mmc1: new HS400 Enhanced strobe MMC card at address 0001
+[    0.607284] mmcblk1: mmc1:0001 DA4064 58.2 GiB
+[    0.621601]  mmcblk1: p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26 p27 p28 p29 p30 p31 p32 p33 p34 p35 p36 p37 p38 p39 p40 p41 p42 p43 p44 p45 p46 p47 p48 p49 p50 p51 p52 p53 p54 p55 p56 p57 p58 p59 p60 p61 p62 p63 p64 p65 p66 p67 p68 p69 p70 p71 p72 p73 p74 p75 p76 p77 p78 p79 p80 p81 p82 p83 p84 p85
+[    0.632436] mmcblk1boot0: mmc1:0001 DA4064 4.00 MiB
+[    0.636593] mmcblk1boot1: mmc1:0001 DA4064 4.00 MiB
+[    0.640341] mmcblk1rpmb: mmc1:0001 DA4064 16.0 MiB, chardev (244:0)
+[    0.709995] Freeing initrd memory: 1152K
+[    0.926240] [drm:programmable_fetch_get_num_lines:194] low vbp+vfp may lead to perf issues in some cases
+[    0.926517] fb0: sys_fillrect: framebuffer is not in virtual address space.
+[    0.926564] fb0: sys_imageblit: framebuffer is not in virtual address space.
+[    0.938180] ------------[ cut here ]------------
+[    0.938188] Unbalanced enable for IRQ 101
+[    0.938203] WARNING: kernel/irq/manage.c:774 at __enable_irq+0x4c/0x7c, CPU#0: kworker/0:3/75
+[    0.938228] CPU: 0 UID: 0 PID: 75 Comm: kworker/0:3 Tainted: G        W           7.1.0 #1 PREEMPT 
+[    0.938237] Tainted: [W]=WARN
+[    0.938240] Hardware name: Nokia 6.1 Plus (DT)
+[    0.938246] Workqueue: events wled_ovp_work
+[    0.938262] pstate: 600000c5 (nZCv daIF -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    0.938270] pc : __enable_irq+0x4c/0x7c
+[    0.938277] lr : __enable_irq+0x4c/0x7c
+[    0.938285] sp : ffffffc08089bd40
+[    0.938288] x29: ffffffc08089bd40 x28: 0000000000000000 x27: 0000000000000000
+[    0.938299] x26: ffffffeb1b5a9cf0 x25: 0000000000000000 x24: ffffff8080845780
+[    0.938309] x23: ffffff808004e605 x22: 0000000000000001 x21: 0000000000000000
+[    0.938319] x20: 0000000000000065 x19: ffffff8081b16c00 x18: 00000000ffffffff
+[    0.938329] x17: 026b829400980724 x16: 00d10c28a8980de1 x15: ffffffc08089b8e0
+[    0.938339] x14: 00000000ffffffea x13: ffffffc08089b9a8 x12: ffffffeb1b528c68
+[    0.938350] x11: ffffffeb1b510c80 x10: 0000000000017fe8 x9 : 0000000000000001
+[    0.938360] x8 : ffffffffffffefff x7 : ffffffffffffffff x6 : 0000000000057fa8
+[    0.938370] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 00000000ffffffff
+[    0.938380] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffffff8080845780
+[    0.938392] Call trace:
+[    0.938396]  __enable_irq+0x4c/0x7c (P)
+[    0.938407]  enable_irq+0x6c/0xd8
+[    0.938415]  wled_ovp_work+0x14/0x20
+[    0.938424]  process_one_work+0x174/0x2c8
+[    0.938433]  worker_thread+0x18c/0x308
+[    0.938441]  kthread+0x11c/0x128
+[    0.938451]  ret_from_fork+0x10/0x20
+[    0.938463] ---[ end trace 0000000000000000 ]---
+[    0.965904] Console: switching to colour frame buffer device 135x142
+[    1.300879] Bluetooth: hci0: QCA Downloading qca/crnv21.bin
+[    1.303670] msm_dpu c901000.display-controller: [drm] fb0: msm-kmsdrmfb frame buffer device
+[    1.440498] Bluetooth: hci0: QCA setup on UART is completed
+[    1.442003] gcc-sdm660 100000.clock-controller: sync_state() pending due to 793000.rng
+[    1.459407] gcc-sdm660 100000.clock-controller: sync_state() pending due to c144000.dma-controller
+[    1.462746] gcc-sdm660 100000.clock-controller: sync_state() pending due to c184000.dma-controller
+[    1.466219] clk: Disabling unused clocks
+[    1.469964] PM: genpd: Disabling unused power domains
+[    1.476941] Freeing unused kernel memory: 2176K
+[    1.480405] Run /init as init process
+[    1.483717]   with arguments:
+[    1.483724]     /init
+[    1.483732]   with environment:
+[    1.483740]     HOME=/
+[    1.483747]     TERM=linux
+[    1.483755]     earlycon=msm_serial_dm,0xc170000
+[    1.483762]     buildvariant=userdebug
+[    1.483770]     dm=system none ro,0 1 android-verity /dev/mmcblk0p82
+[    1.483778]     download_mode=0
+[    2.126135] EXT4-fs (mmcblk1p73): warning: maximal mount count reached, running e2fsck is recommended
+[    2.130590] EXT4-fs (mmcblk1p73): recovery complete
+[    2.134903] EXT4-fs (mmcblk1p73): mounted filesystem 57f8f4bc-abf4-655f-bf67-946fc0f9f25b r/w with ordered data mode. Quota mode: disabled.
+[    2.896950] remoteproc remoteproc0: powering up 4080000.remoteproc
+[    2.913787] remoteproc remoteproc0: Booting fw image qcom/sdm636/mba.mbn, size 238256
+[    3.002160] qcom-q6v5-mss 4080000.remoteproc: MBA booted without debug policy, loading mpss
+[    4.907262] qcom-q6v5-mss 4080000.remoteproc: q6v5_handover_interrupt (handover_issued=0)
+[    4.909383] qcom-q6v5-mss 4080000.remoteproc: qcom_msa_handover called - retaining proxy clocks and power domains
+[    4.911431] qcom-q6v5-mss 4080000.remoteproc: q6v5_ready_interrupt received
+[    4.913468] qcom-q6v5-mss 4080000.remoteproc: q6v5_handover_interrupt (handover_issued=1)
+[    4.918202] remoteproc remoteproc0: remote processor 4080000.remoteproc is now up
+[    5.098637] qcom-q6v5-mss 4080000.remoteproc: fatal error interrupt asserted (configured crash_reason=421)
+[    5.100828] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 421 lookup error: -2
+[    5.103262] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 402: length=2328
+[    5.105325] q6v5-diag: 00000000: a8 e0 a5 9d e2 c4 9e af 02 00 00 00 00 00 00 00  ................
+[    5.107411] q6v5-diag: 00000010: 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.109498] q6v5-diag: 00000020: 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.111584] q6v5-diag: 00000030: 00 00 00 80 00 00 00 00 01 00 00 00 0e 00 00 00  ................
+[    5.113652] q6v5-diag: 00000040: 00 00 00 00 01 00 00 00 08 00 00 00 00 00 00 00  ................
+[    5.115721] q6v5-diag: 00000050: 10 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.117779] q6v5-diag: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.119837] q6v5-diag: 00000070: 00 00 00 00 01 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.121888] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 402: length=2328
+[    5.123952] q6v5-diag-host: 00000000: a8 e0 a5 9d e2 c4 9e af 02 00 00 00 00 00 00 00  ................
+[    5.126036] q6v5-diag-host: 00000010: 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.128132] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.130217] q6v5-diag-host: 00000030: 00 00 00 80 00 00 00 00 01 00 00 00 0e 00 00 00  ................
+[    5.132284] q6v5-diag-host: 00000040: 00 00 00 00 01 00 00 00 08 00 00 00 00 00 00 00  ................
+[    5.134356] q6v5-diag-host: 00000050: 10 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.136420] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.138485] q6v5-diag-host: 00000070: 00 00 00 00 01 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.140545] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 402: length=2328
+[    5.142618] q6v5-diag-host: 00000000: a8 e0 a5 9d e2 c4 9e af 02 00 00 00 00 00 00 00  ................
+[    5.144704] q6v5-diag-host: 00000010: 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.146805] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.148886] q6v5-diag-host: 00000030: 00 00 00 80 00 00 00 00 01 00 00 00 0e 00 00 00  ................
+[    5.150967] q6v5-diag-host: 00000040: 00 00 00 00 01 00 00 00 08 00 00 00 00 00 00 00  ................
+[    5.153031] q6v5-diag-host: 00000050: 10 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.155104] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.157162] q6v5-diag-host: 00000070: 00 00 00 00 01 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.159224] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 402: length=2328
+[    5.161287] q6v5-diag-host: 00000000: a8 e0 a5 9d e2 c4 9e af 02 00 00 00 00 00 00 00  ................
+[    5.163379] q6v5-diag-host: 00000010: 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.165470] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.167567] q6v5-diag-host: 00000030: 00 00 00 80 00 00 00 00 01 00 00 00 0e 00 00 00  ................
+[    5.169649] q6v5-diag-host: 00000040: 00 00 00 00 01 00 00 00 08 00 00 00 00 00 00 00  ................
+[    5.171733] q6v5-diag-host: 00000050: 10 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.173808] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.175886] q6v5-diag-host: 00000070: 00 00 00 00 01 00 00 00 00 00 00 80 00 00 00 00  ................
+[    5.177956] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 403: length=16
+[    5.180046] q6v5-diag: 00000000: 11 00 00 00 80 02 00 80 00 00 00 00 00 00 00 00  ................
+[    5.182167] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 403: length=16
+[    5.184279] q6v5-diag-host: 00000000: 11 00 00 00 80 02 00 80 00 00 00 00 00 00 00 00  ................
+[    5.186432] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 403: length=16
+[    5.188585] q6v5-diag-host: 00000000: 11 00 00 00 80 02 00 80 00 00 00 00 00 00 00 00  ................
+[    5.190764] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 403: length=16
+[    5.192942] q6v5-diag-host: 00000000: 11 00 00 00 80 02 00 80 00 00 00 00 00 00 00 00  ................
+[    5.195152] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 404: length=8192
+[    5.197366] q6v5-diag: 00000000: a0 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.199606] q6v5-diag: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.201834] q6v5-diag: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.204073] q6v5-diag: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.206296] q6v5-diag: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.208503] q6v5-diag: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.210710] q6v5-diag: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.212905] q6v5-diag: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.215102] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 404: length=8192
+[    5.217301] q6v5-diag-host: 00000000: a0 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.219531] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.221749] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.223968] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.226178] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.228374] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.230576] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.232759] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.234949] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 404: length=8192
+[    5.237137] q6v5-diag-host: 00000000: a0 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.239361] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.241565] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.243772] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.245966] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.248157] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.250341] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.252507] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.254671] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 404: length=8192
+[    5.256806] q6v5-diag-host: 00000000: a0 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.258939] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.261033] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.263113] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.265186] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.267254] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.269300] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.271327] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.273914] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 417: length=4
+[    5.275924] q6v5-diag: 00000000: 00 00 00 00                                      ....
+[    5.277934] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 417: length=4
+[    5.279958] q6v5-diag-host: 00000000: 00 00 00 00                                      ....
+[    5.281985] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 417: length=4
+[    5.284007] q6v5-diag-host: 00000000: 00 00 00 00                                      ....
+[    5.286028] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 417: length=4
+[    5.288056] q6v5-diag-host: 00000000: 00 00 00 00                                      ....
+[    5.290558] qcom-q6v5-mss 4080000.remoteproc: smem host 1 item 428: length=340
+[    5.292598] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 00 00 01 00 10 00 01 00  $SMP............
+[    5.294659] q6v5-diag-host: 00000010: 00 00 00 00 6d 61 73 74 65 72 2d 6b 65 72 6e 65  ....master-kerne
+[    5.296733] q6v5-diag-host: 00000020: 6c 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  l...............
+[    5.298829] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.300914] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.302999] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.305058] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.307111] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.309188] qcom-q6v5-mss 4080000.remoteproc: smem host 2 item 429: length=340
+[    5.311231] q6v5-diag-host: 00000000: 24 53 4d 50 02 01 00 00 00 00 02 00 10 00 01 00  $SMP............
+[    5.313281] q6v5-diag-host: 00000010: 00 00 00 00 6d 61 73 74 65 72 2d 6b 65 72 6e 65  ....master-kerne
+[    5.315353] q6v5-diag-host: 00000020: 6c 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  l...............
+[    5.317420] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.319491] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.321538] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.323586] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.325621] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.327944] qcom-q6v5-mss 4080000.remoteproc: smem host 1 item 435: length=340
+[    5.329986] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 00 00 10 00 02 00  $SMP............
+[    5.332061] q6v5-diag-host: 00000010: 00 00 00 00 73 6d 70 32 70 00 00 00 00 00 00 00  ....smp2p.......
+[    5.334145] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 73 6c 61 76 65 2d 6b 65  ........slave-ke
+[    5.336231] q6v5-diag-host: 00000030: 72 6e 65 6c 00 00 00 00 07 00 00 00 00 00 00 00  rnel............
+[    5.338330] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.340418] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.342505] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.344558] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.346722] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 438: length=340
+[    5.348752] q6v5-diag: 00000000: 24 53 4d 50 01 01 00 00 01 00 03 00 10 00 00 00  $SMP............
+[    5.350809] q6v5-diag: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.352868] q6v5-diag: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.354914] q6v5-diag: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.356942] q6v5-diag: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.358969] q6v5-diag: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.360979] q6v5-diag: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.362975] q6v5-diag: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.364949] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 438: length=340
+[    5.366916] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 03 00 10 00 00 00  $SMP............
+[    5.368870] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.370826] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.372762] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.374686] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.376588] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.378484] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.380352] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.382231] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 438: length=340
+[    5.384089] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 03 00 10 00 00 00  $SMP............
+[    5.385952] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.387820] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.389675] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.391516] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.393339] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.395171] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.396989] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.398818] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 438: length=340
+[    5.400654] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 03 00 10 00 00 00  $SMP............
+[    5.402525] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.404390] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.406240] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.408058] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.409867] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.411685] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.413488] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.415303] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 439: length=340
+[    5.417115] q6v5-diag: 00000000: 24 53 4d 50 01 01 00 00 01 00 04 00 10 00 00 00  $SMP............
+[    5.418961] q6v5-diag: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.420805] q6v5-diag: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.422636] q6v5-diag: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.424441] q6v5-diag: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.426250] q6v5-diag: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.428047] q6v5-diag: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.429841] q6v5-diag: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.431647] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 439: length=340
+[    5.433375] UDC core: g1: couldn't find an available UDC or it's busy
+[    5.433454] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 04 00 10 00 00 00  $SMP............
+[    5.437124] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.438999] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.440801] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.442608] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.444397] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.446191] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.447971] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.491131] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 439: length=340
+[    5.492966] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 04 00 10 00 00 00  $SMP............
+[    5.494819] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.496642] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.498455] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.500235] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.501997] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.503747] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.505451] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.507150] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 439: length=340
+[    5.508816] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 04 00 10 00 00 00  $SMP............
+[    5.510516] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.512185] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.513852] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.515529] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.557763] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.559439] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.561102] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.562875] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 442: length=340
+[    5.564550] q6v5-diag: 00000000: 24 53 4d 50 01 01 00 00 01 00 07 00 10 00 00 00  $SMP............
+[    5.566235] q6v5-diag: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.567899] q6v5-diag: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.569562] q6v5-diag: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.571232] q6v5-diag: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.572893] q6v5-diag: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.574563] q6v5-diag: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.576224] q6v5-diag: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.577891] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 442: length=340
+[    5.579577] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 07 00 10 00 00 00  $SMP............
+[    5.581261] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.582940] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.584609] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.586287] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.587956] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.589625] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.591303] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.592985] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 442: length=340
+[    5.594681] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 07 00 10 00 00 00  $SMP............
+[    5.596375] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.598054] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.599740] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.601418] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.603106] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.604782] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.606470] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.608154] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 442: length=340
+[    5.609848] q6v5-diag-host: 00000000: 24 53 4d 50 01 01 00 00 01 00 07 00 10 00 00 00  $SMP............
+[    5.611563] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.613254] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.614937] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.616592] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.618236] q6v5-diag-host: 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.619852] q6v5-diag-host: 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.621464] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.624410] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 469: length=4096
+[    5.625986] q6v5-diag: 00000000: 30 30 3a 42 4f 4f 54 2e 58 46 2e 31 2e 34 2d 30  00:BOOT.XF.1.4-0
+[    5.627574] q6v5-diag: 00000010: 30 32 35 36 2d 53 36 36 30 4c 5a 42 2d 31 00 00  0256-S660LZB-1..
+[    5.629149] q6v5-diag: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.630733] q6v5-diag: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.632308] q6v5-diag: 00000040: 00 00 00 00 00 00 00 00 00 00 00 53 64 6d 36 36  ...........Sdm66
+[    5.633887] q6v5-diag: 00000050: 30 4c 41 00 00 00 00 00 00 00 00 00 00 00 00 3a  0LA............:
+[    5.635488] q6v5-diag: 00000060: 53 42 32 00 00 00 00 00 00 00 00 00 00 00 00 00  SB2.............
+[    5.637087] q6v5-diag: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.638697] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 469: length=4096
+[    5.640294] q6v5-diag-host: 00000000: 30 30 3a 42 4f 4f 54 2e 58 46 2e 31 2e 34 2d 30  00:BOOT.XF.1.4-0
+[    5.641898] q6v5-diag-host: 00000010: 30 32 35 36 2d 53 36 36 30 4c 5a 42 2d 31 00 00  0256-S660LZB-1..
+[    5.643509] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.645111] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.646720] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 53 64 6d 36 36  ...........Sdm66
+[    5.648328] q6v5-diag-host: 00000050: 30 4c 41 00 00 00 00 00 00 00 00 00 00 00 00 3a  0LA............:
+[    5.649946] q6v5-diag-host: 00000060: 53 42 32 00 00 00 00 00 00 00 00 00 00 00 00 00  SB2.............
+[    5.651580] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.653211] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 469: length=4096
+[    5.654849] q6v5-diag-host: 00000000: 30 30 3a 42 4f 4f 54 2e 58 46 2e 31 2e 34 2d 30  00:BOOT.XF.1.4-0
+[    5.656485] q6v5-diag-host: 00000010: 30 32 35 36 2d 53 36 36 30 4c 5a 42 2d 31 00 00  0256-S660LZB-1..
+[    5.658132] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.659770] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.661389] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 53 64 6d 36 36  ...........Sdm66
+[    5.663021] q6v5-diag-host: 00000050: 30 4c 41 00 00 00 00 00 00 00 00 00 00 00 00 3a  0LA............:
+[    5.664652] q6v5-diag-host: 00000060: 53 42 32 00 00 00 00 00 00 00 00 00 00 00 00 00  SB2.............
+[    5.666299] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.667938] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 469: length=4096
+[    5.669574] q6v5-diag-host: 00000000: 30 30 3a 42 4f 4f 54 2e 58 46 2e 31 2e 34 2d 30  00:BOOT.XF.1.4-0
+[    5.671228] q6v5-diag-host: 00000010: 30 32 35 36 2d 53 36 36 30 4c 5a 42 2d 31 00 00  0256-S660LZB-1..
+[    5.672882] q6v5-diag-host: 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.674570] q6v5-diag-host: 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.676249] q6v5-diag-host: 00000040: 00 00 00 00 00 00 00 00 00 00 00 53 64 6d 36 36  ...........Sdm66
+[    5.677933] q6v5-diag-host: 00000050: 30 4c 41 00 00 00 00 00 00 00 00 00 00 00 00 3a  0LA............:
+[    5.679638] q6v5-diag-host: 00000060: 53 42 32 00 00 00 00 00 00 00 00 00 00 00 00 00  SB2.............
+[    5.681335] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.683191] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 473: length=1536
+[    5.684888] q6v5-diag: 00000000: 02 02 bc 03 00 06 51 02 01 01 00 00 02 00 00 00  ......Q.........
+[    5.686597] q6v5-diag: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.688296] q6v5-diag: 00000020: 00 00 06 03 00 00 00 02 00 00 00 00 00 06 00 01  ................
+[    5.689999] q6v5-diag: 00000030: 00 06 00 00 00 4c 01 00 00 07 00 00 00 3a 01 00  .....L.......:..
+[    5.691722] q6v5-diag: 00000040: 00 08 00 00 00 e9 01 00 00 09 00 00 00 d6 01 00  ................
+[    5.693443] q6v5-diag: 00000050: 00 0a 00 00 00 f1 01 00 00 0b 00 00 00 e9 01 00  ................
+[    5.695175] q6v5-diag: 00000060: 00 00 00 00 00 a0 50 0a 00 00 c4 09 00 a0 50 0a  ......P.......P.
+[    5.696911] q6v5-diag: 00000070: 00 a0 50 0a 00 00 00 00 00 00 00 00 00 00 00 26  ..P............&
+[    5.698669] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 473: length=1536
+[    5.700411] q6v5-diag-host: 00000000: 02 02 bc 03 00 06 51 02 01 01 00 00 02 00 00 00  ......Q.........
+[    5.702168] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.703916] q6v5-diag-host: 00000020: 00 00 06 03 00 00 00 02 00 00 00 00 00 06 00 01  ................
+[    5.705667] q6v5-diag-host: 00000030: 00 06 00 00 00 4c 01 00 00 07 00 00 00 3a 01 00  .....L.......:..
+[    5.707440] q6v5-diag-host: 00000040: 00 08 00 00 00 e9 01 00 00 09 00 00 00 d6 01 00  ................
+[    5.709208] q6v5-diag-host: 00000050: 00 0a 00 00 00 f1 01 00 00 0b 00 00 00 e9 01 00  ................
+[    5.710990] q6v5-diag-host: 00000060: 00 00 00 00 00 a0 50 0a 00 00 c4 09 00 a0 50 0a  ......P.......P.
+[    5.712776] q6v5-diag-host: 00000070: 00 a0 50 0a 00 00 00 00 00 00 00 00 00 00 00 26  ..P............&
+[    5.714585] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 473: length=1536
+[    5.716384] q6v5-diag-host: 00000000: 02 02 bc 03 00 06 51 02 01 01 00 00 02 00 00 00  ......Q.........
+[    5.718190] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.719986] q6v5-diag-host: 00000020: 00 00 06 03 00 00 00 02 00 00 00 00 00 06 00 01  ................
+[    5.721787] q6v5-diag-host: 00000030: 00 06 00 00 00 4c 01 00 00 07 00 00 00 3a 01 00  .....L.......:..
+[    5.723610] q6v5-diag-host: 00000040: 00 08 00 00 00 e9 01 00 00 09 00 00 00 d6 01 00  ................
+[    5.725429] q6v5-diag-host: 00000050: 00 0a 00 00 00 f1 01 00 00 0b 00 00 00 e9 01 00  ................
+[    5.727263] q6v5-diag-host: 00000060: 00 00 00 00 00 a0 50 0a 00 00 c4 09 00 a0 50 0a  ......P.......P.
+[    5.729098] q6v5-diag-host: 00000070: 00 a0 50 0a 00 00 00 00 00 00 00 00 00 00 00 26  ..P............&
+[    5.730952] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 473: length=1536
+[    5.732795] q6v5-diag-host: 00000000: 02 02 bc 03 00 06 51 02 01 01 00 00 02 00 00 00  ......Q.........
+[    5.734654] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.736505] q6v5-diag-host: 00000020: 00 00 06 03 00 00 00 02 00 00 00 00 00 06 00 01  ................
+[    5.738369] q6v5-diag-host: 00000030: 00 06 00 00 00 4c 01 00 00 07 00 00 00 3a 01 00  .....L.......:..
+[    5.740235] q6v5-diag-host: 00000040: 00 08 00 00 00 e9 01 00 00 09 00 00 00 d6 01 00  ................
+[    5.742106] q6v5-diag-host: 00000050: 00 0a 00 00 00 f1 01 00 00 0b 00 00 00 e9 01 00  ................
+[    5.743990] q6v5-diag-host: 00000060: 00 00 00 00 00 a0 50 0a 00 00 c4 09 00 a0 50 0a  ......P.......P.
+[    5.745876] q6v5-diag-host: 00000070: 00 a0 50 0a 00 00 00 00 00 00 00 00 00 00 00 26  ..P............&
+[    5.747786] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 474: length=588
+[    5.749679] q6v5-diag: 00000000: 03 00 02 17 02 09 09 00 0c 00 00 00 24 00 04 00  ............$...
+[    5.751593] q6v5-diag: 00000010: 1c 00 00 00 20 00 0d 01 ac 00 00 00 04 00 00 00  .... ...........
+[    5.753485] q6v5-diag: 00000020: 01 00 00 00 01 01 2b 00 00 00 00 00 00 00 00 00  ......+.........
+[    5.755387] q6v5-diag: 00000030: 02 00 00 00 01 00 00 00 00 a8 35 31 00 00 00 00  ..........51....
+[    5.757286] q6v5-diag: 00000040: 04 00 00 00 01 00 00 00 01 01 21 00 00 00 00 00  ..........!.....
+[    5.759204] q6v5-diag: 00000050: 00 00 00 00 02 00 00 00 01 00 00 00 00 f8 c3 25  ...............%
+[    5.761120] q6v5-diag: 00000060: 00 00 00 00 04 00 00 00 01 00 00 00 01 01 4c 00  ..............L.
+[    5.763052] q6v5-diag: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00  ................
+[    5.764979] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 474: length=588
+[    5.766932] q6v5-diag-host: 00000000: 03 00 02 17 02 09 09 00 0c 00 00 00 24 00 04 00  ............$...
+[    5.768883] q6v5-diag-host: 00000010: 1c 00 00 00 20 00 0d 01 ac 00 00 00 04 00 00 00  .... ...........
+[    5.770830] q6v5-diag-host: 00000020: 01 00 00 00 01 01 2b 00 00 00 00 00 00 00 00 00  ......+.........
+[    5.772767] q6v5-diag-host: 00000030: 02 00 00 00 01 00 00 00 00 a8 35 31 00 00 00 00  ..........51....
+[    5.774725] q6v5-diag-host: 00000040: 04 00 00 00 01 00 00 00 01 01 21 00 00 00 00 00  ..........!.....
+[    5.776675] q6v5-diag-host: 00000050: 00 00 00 00 02 00 00 00 01 00 00 00 00 f8 c3 25  ...............%
+[    5.778645] q6v5-diag-host: 00000060: 00 00 00 00 04 00 00 00 01 00 00 00 01 01 4c 00  ..............L.
+[    5.780610] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00  ................
+[    5.782594] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 474: length=588
+[    5.784582] q6v5-diag-host: 00000000: 03 00 02 17 02 09 09 00 0c 00 00 00 24 00 04 00  ............$...
+[    5.786594] q6v5-diag-host: 00000010: 1c 00 00 00 20 00 0d 01 ac 00 00 00 04 00 00 00  .... ...........
+[    5.788584] q6v5-diag-host: 00000020: 01 00 00 00 01 01 2b 00 00 00 00 00 00 00 00 00  ......+.........
+[    5.790575] q6v5-diag-host: 00000030: 02 00 00 00 01 00 00 00 00 a8 35 31 00 00 00 00  ..........51....
+[    5.792563] q6v5-diag-host: 00000040: 04 00 00 00 01 00 00 00 01 01 21 00 00 00 00 00  ..........!.....
+[    5.794567] q6v5-diag-host: 00000050: 00 00 00 00 02 00 00 00 01 00 00 00 00 f8 c3 25  ...............%
+[    5.796571] q6v5-diag-host: 00000060: 00 00 00 00 04 00 00 00 01 00 00 00 01 01 4c 00  ..............L.
+[    5.798591] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00  ................
+[    5.800609] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 474: length=588
+[    5.802657] q6v5-diag-host: 00000000: 03 00 02 17 02 09 09 00 0c 00 00 00 24 00 04 00  ............$...
+[    5.804700] q6v5-diag-host: 00000010: 1c 00 00 00 20 00 0d 01 ac 00 00 00 04 00 00 00  .... ...........
+[    5.806744] q6v5-diag-host: 00000020: 01 00 00 00 01 01 2b 00 00 00 00 00 00 00 00 00  ......+.........
+[    5.808775] q6v5-diag-host: 00000030: 02 00 00 00 01 00 00 00 00 a8 35 31 00 00 00 00  ..........51....
+[    5.810824] q6v5-diag-host: 00000040: 04 00 00 00 01 00 00 00 01 01 21 00 00 00 00 00  ..........!.....
+[    5.812870] q6v5-diag-host: 00000050: 00 00 00 00 02 00 00 00 01 00 00 00 00 f8 c3 25  ...............%
+[    5.814933] q6v5-diag-host: 00000060: 00 00 00 00 04 00 00 00 01 00 00 00 01 01 4c 00  ..............L.
+[    5.816994] q6v5-diag-host: 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00  ................
+[    5.819236] qcom-q6v5-mss 4080000.remoteproc: smem host 1 item 478: length=32
+[    5.821328] q6v5-diag-host: 00000000: 60 06 00 00 60 06 00 00 d8 09 00 00 d8 09 00 00  `...`...........
+[    5.823438] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.825560] qcom-q6v5-mss 4080000.remoteproc: smem host 1 item 479: length=16384
+[    5.827653] q6v5-diag-host: 00000000: 00 00 01 00 01 00 00 00 01 00 01 00 01 00 00 00  ................
+[    5.829764] q6v5-diag-host: 00000010: 04 00 01 00 00 00 00 00 02 00 01 00 0a 00 00 00  ................
+[    5.831889] q6v5-diag-host: 00000020: 67 6c 69 6e 6b 5f 73 73 72 00 00 00 00 00 00 00  glink_ssr.......
+[    5.834020] q6v5-diag-host: 00000030: 05 00 01 00 01 00 00 00 00 04 00 00 01 00 00 00  ................
+[    5.836174] q6v5-diag-host: 00000040: 05 00 01 00 01 00 00 00 00 04 00 00 02 00 00 00  ................
+[    5.838329] q6v5-diag-host: 00000050: 05 00 01 00 01 00 00 00 00 04 00 00 03 00 00 00  ................
+[    5.840475] q6v5-diag-host: 00000060: 05 00 01 00 01 00 00 00 00 04 00 00 04 00 00 00  ................
+[    5.842608] q6v5-diag-host: 00000070: 05 00 01 00 01 00 00 00 00 04 00 00 05 00 00 00  ................
+[    5.844754] qcom-q6v5-mss 4080000.remoteproc: smem host 1 item 480: length=16384
+[    5.846880] q6v5-diag-host: 00000000: 00 00 01 00 07 00 00 00 01 00 01 00 01 00 00 00  ................
+[    5.849027] q6v5-diag-host: 00000010: 02 00 01 00 0a 00 00 00 67 6c 69 6e 6b 5f 73 73  ........glink_ss
+[    5.851195] q6v5-diag-host: 00000020: 72 00 00 00 00 00 00 00 02 00 02 00 07 00 00 00  r...............
+[    5.853360] q6v5-diag-host: 00000030: 49 50 43 52 54 52 00 00 04 00 01 00 00 00 00 00  IPCRTR..........
+[    5.855545] q6v5-diag-host: 00000040: 04 00 02 00 00 00 00 00 05 00 02 00 01 00 00 00  ................
+[    5.857731] q6v5-diag-host: 00000050: 80 00 00 00 00 00 00 00 05 00 02 00 01 00 00 00  ................
+[    5.859929] q6v5-diag-host: 00000060: 80 00 00 00 01 00 00 00 05 00 02 00 01 00 00 00  ................
+[    5.862094] q6v5-diag-host: 00000070: 80 00 00 00 02 00 00 00 05 00 02 00 01 00 00 00  ................
+[    5.870167] qcom-q6v5-mss 4080000.remoteproc: smem HOST_ANY item 602: length=10240
+[    5.872319] q6v5-diag: 00000000: 01 00 00 00 00 28 00 00 a0 00 00 00 00 00 00 00  .....(..........
+[    5.874505] q6v5-diag: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.876687] q6v5-diag: 00000020: 54 5a 5f 49 4d 45 4d 00 00 00 00 00 00 00 00 00  TZ_IMEM.........
+[    5.878886] q6v5-diag: 00000030: 00 00 68 14 00 00 00 00 00 60 01 00 00 00 00 00  ..h......`......
+[    5.881089] q6v5-diag: 00000040: 54 5a 5f 50 49 4d 45 4d 00 00 00 00 00 00 00 00  TZ_PIMEM........
+[    5.883328] q6v5-diag: 00000050: 00 00 00 1c 00 00 00 00 00 00 20 00 00 00 00 00  .......... .....
+[    5.885570] q6v5-diag: 00000060: 48 59 50 5f 44 49 41 47 00 00 00 00 00 00 00 00  HYP_DIAG........
+[    5.887808] q6v5-diag: 00000070: 00 80 99 85 00 00 00 00 00 20 00 00 00 00 00 00  ......... ......
+[    5.890018] qcom-q6v5-mss 4080000.remoteproc: smem host 0 item 602: length=10240
+[    5.892238] q6v5-diag-host: 00000000: 01 00 00 00 00 28 00 00 a0 00 00 00 00 00 00 00  .....(..........
+[    5.894469] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.896694] q6v5-diag-host: 00000020: 54 5a 5f 49 4d 45 4d 00 00 00 00 00 00 00 00 00  TZ_IMEM.........
+[    5.898930] q6v5-diag-host: 00000030: 00 00 68 14 00 00 00 00 00 60 01 00 00 00 00 00  ..h......`......
+[    5.901157] q6v5-diag-host: 00000040: 54 5a 5f 50 49 4d 45 4d 00 00 00 00 00 00 00 00  TZ_PIMEM........
+[    5.903402] q6v5-diag-host: 00000050: 00 00 00 1c 00 00 00 00 00 00 20 00 00 00 00 00  .......... .....
+[    5.905646] q6v5-diag-host: 00000060: 48 59 50 5f 44 49 41 47 00 00 00 00 00 00 00 00  HYP_DIAG........
+[    5.907890] q6v5-diag-host: 00000070: 00 80 99 85 00 00 00 00 00 20 00 00 00 00 00 00  ......... ......
+[    5.910114] qcom-q6v5-mss 4080000.remoteproc: smem host 3 item 602: length=10240
+[    5.912345] q6v5-diag-host: 00000000: 01 00 00 00 00 28 00 00 a0 00 00 00 00 00 00 00  .....(..........
+[    5.914587] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.916821] q6v5-diag-host: 00000020: 54 5a 5f 49 4d 45 4d 00 00 00 00 00 00 00 00 00  TZ_IMEM.........
+[    5.919067] q6v5-diag-host: 00000030: 00 00 68 14 00 00 00 00 00 60 01 00 00 00 00 00  ..h......`......
+[    5.921304] q6v5-diag-host: 00000040: 54 5a 5f 50 49 4d 45 4d 00 00 00 00 00 00 00 00  TZ_PIMEM........
+[    5.923559] q6v5-diag-host: 00000050: 00 00 00 1c 00 00 00 00 00 00 20 00 00 00 00 00  .......... .....
+[    5.925811] q6v5-diag-host: 00000060: 48 59 50 5f 44 49 41 47 00 00 00 00 00 00 00 00  HYP_DIAG........
+[    5.928067] q6v5-diag-host: 00000070: 00 80 99 85 00 00 00 00 00 20 00 00 00 00 00 00  ......... ......
+[    5.930309] qcom-q6v5-mss 4080000.remoteproc: smem host 4 item 602: length=10240
+[    5.932541] q6v5-diag-host: 00000000: 01 00 00 00 00 28 00 00 a0 00 00 00 00 00 00 00  .....(..........
+[    5.934790] q6v5-diag-host: 00000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+[    5.937035] q6v5-diag-host: 00000020: 54 5a 5f 49 4d 45 4d 00 00 00 00 00 00 00 00 00  TZ_IMEM.........
+[    5.939292] q6v5-diag-host: 00000030: 00 00 68 14 00 00 00 00 00 60 01 00 00 00 00 00  ..h......`......
+[    5.941541] q6v5-diag-host: 00000040: 54 5a 5f 50 49 4d 45 4d 00 00 00 00 00 00 00 00  TZ_PIMEM........
+[    5.943806] q6v5-diag-host: 00000050: 00 00 00 1c 00 00 00 00 00 00 20 00 00 00 00 00  .......... .....
+[    5.946070] q6v5-diag-host: 00000060: 48 59 50 5f 44 49 41 47 00 00 00 00 00 00 00 00  HYP_DIAG........
+[    5.948334] q6v5-diag-host: 00000070: 00 80 99 85 00 00 00 00 00 20 00 00 00 00 00 00  ......... ......
+[    5.950593] remoteproc remoteproc0: crash detected in 4080000.remoteproc: type fatal error
+[    5.952855] qcom-q6v5-mss 4080000.remoteproc: q6v5_ready_interrupt received
+[    5.952861] remoteproc remoteproc0: handling crash #1 in 4080000.remoteproc
+[    5.955097] qcom-q6v5-mss 4080000.remoteproc: q6v5_handover_interrupt (handover_issued=1)
+[    7.506146] random: crng init done
+/ # [6n
+=====================
