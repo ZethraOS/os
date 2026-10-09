@@ -318,6 +318,18 @@ if [ -f "$REPO_ROOT/scratch/fsc_active_gen1.img" ]; then
   success "Staged fsc_active_gen1.img -> /etc/fsc_candidate.img"
 fi
 
+# Stage modemst1 Gen 17 surgical sector update (Phase 5R)
+if [ -f "$REPO_ROOT/scratch/modemst1_gen17_sector1.img" ]; then
+  cp "$REPO_ROOT/scratch/modemst1_gen17_sector1.img" "$WORK_DIR/etc/modemst1_gen17_sector1.img"
+  chmod 0644 "$WORK_DIR/etc/modemst1_gen17_sector1.img"
+  success "Staged modemst1_gen17_sector1.img -> /etc/modemst1_gen17_sector1.img (Gen 17 + IMGEFS1)"
+fi
+if [ -f "$REPO_ROOT/tools/efs/update_modemst1_gen17.py" ]; then
+  cp "$REPO_ROOT/tools/efs/update_modemst1_gen17.py" "$WORK_DIR/etc/update_modemst1_gen17.py"
+  chmod 0755 "$WORK_DIR/etc/update_modemst1_gen17.py"
+  success "Staged update_modemst1_gen17.py -> /etc/update_modemst1_gen17.py"
+fi
+
 cat > "$WORK_DIR/usr/bin/restore_fsc_cookie" << 'EOF'
 #!/bin/sh
 if [ -f /etc/fsc_clean_sector0.img ]; then
@@ -498,11 +510,16 @@ fi
 export PATH=/usr/bin:/bin:/sbin:/usr/sbin
 
 # Ensure EFS partition symlinks exist for rmtfs
-# modemst2 is Gen 17 (active), modemst1 is Gen 16 (stale)
-# Hexagon always mounts modem_fs1, so point it to Gen 17
-ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
-ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst1 /dev/disk/by-partlabel/modem_fs1 2>/dev/null || true
+ln -sf /dev/disk/by-partlabel/modemst2 /dev/disk/by-partlabel/modem_fs2 2>/dev/null || true
 ln -sf /dev/disk/by-partlabel/fsc /dev/disk/by-partlabel/modem_fsc 2>/dev/null || true
+
+# Update modemst1 to Gen 17 while preserving IMGEFS1 magic
+if [ -f /etc/modemst1_gen17_sector1.img ] && [ -b /dev/disk/by-partlabel/modemst1 ]; then
+  echo "[minit] Updating modemst1 to Gen 17 (surgical sector write)..."
+  dd if=/etc/modemst1_gen17_sector1.img of=/dev/disk/by-partlabel/modemst1 bs=512 count=1 conv=fsync
+  echo "[minit] modemst1 updated to Gen 17 (IMGEFS1 magic preserved)"
+fi
 
 # Write clean FSC cookie (CRC bytes 508-511 = 00 00 00 00)
 if [ -f /etc/fsc_clean_sector0.img ] && [ -b /dev/disk/by-partlabel/fsc ]; then
