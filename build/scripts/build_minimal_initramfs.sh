@@ -81,7 +81,6 @@ fi
 EXPECTED_CRBTFW21_SHA256="49c9358d5488d4836626b8e0e49a31fea01b4e80394d40528253d19afba52ca8"
 EXPECTED_CRNV21_SHA256="2bd75139a0dccb75470a453c299fd1861bc34ceb9502ea419557a9ebe405b016"
 
-BT_FIRMWARE_DIR="${BT_FIRMWARE_DIR:-$REPO_ROOT/scratch/bt_firmware}"
 if [[ -z "${BT_FIRMWARE_DIR:-}" ]]; then
   err "BT_FIRMWARE_DIR is not set. Set it to the absolute path containing crbtfw21.tlv and crnv21.bin."
 fi
