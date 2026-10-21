@@ -47,5 +47,7 @@ Move from minimal initramfs to booting the full operating system.
 ## Phase 5: Peripherals & Connectivity
 - [ ] **Touchscreen**: Enable I2C input driver for the touchscreen and verify `/dev/input/event*`.
 - [ ] **Wi-Fi**: Enable `wcn36xx` driver and configure wireless interface.
-- [ ] **Bluetooth**: Configure Bluetooth UART interfaces.
+- [ ] **Bluetooth**: WCN3990 controller bring-up verified on Nokia 6.1 Plus via `blsp2_uart1`/serdev; `crbtfw21.tlv` and `crnv21.bin` loaded successfully (`scratch/dmesg_boot_b.log`, PRs #38/#40/#42).
+  - Maintainer-confirmed but not evidenced in-repo: BDADDR setup, HCI powered state, BLE enable, connectable/discoverable configuration, HCI counters/UART integrity, and live OTA discovery.
+  - Not verified: pairing/bonding, Bluetooth audio, file transfer, and long-term stability.
 - [ ] **Audio**: Set up the WCD9335 audio codec and verify ALSA outputs.
