@@ -3,7 +3,7 @@
 **Status: cellular is NOT functional on the Nokia 6.1 Plus.**
 **Root cause of the modem crash: UNKNOWN.**
 
-**Based on**: repository evidence at commit `5924d2f` (refreshed to the actual commit SHA immediately before committing), 2026-10-21, plus the local-only logs marked † below.
+**Based on**: Status as of 21 October 2026, reflecting investigation through dev at the time of writing, plus the local-only logs marked † below.
 **Device**: Nokia 6.1 Plus (TA-1103, SDM636), Linux 7.1.0-zethraos, slot B.
 
 This document records what the available evidence supports. It makes no claim
