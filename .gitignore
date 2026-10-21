@@ -23,3 +23,18 @@ build/scripts/__pycache__/
 
 # Proprietary firmware must be supplied locally via BT_FIRMWARE_DIR
 /scratch/bt_firmware/
+
+# Local modem bring-up artifacts (archive offline; do not commit)
+scratch/__pycache__/
+tools/efs/__pycache__/
+scratch/modemst1_gen17_sector1.img
+scratch/*_hexdump.txt
+scratch/*_dmesg*.txt
+scratch/*_qrtr.txt
+scratch/*_rmtfs.log
+scratch/*_remoteproc_state.txt
+scratch/*_symlinks.txt
+scratch/*_fih_skuid.log
+scratch/*_tqftpserv.log
+scratch/scan_diag_v3
+scratch/scan_diag_v4
