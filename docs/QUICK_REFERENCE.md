@@ -11,6 +11,8 @@ evidence strength and re-test requirements.
 
 ## Build Sequence
 
+When building with `build_minimal_initramfs.sh`, Bluetooth firmware is not stored in the repository. Set `BT_FIRMWARE_DIR` to a local directory containing `crbtfw21.tlv` and `crnv21.bin`, e.g. `BT_FIRMWARE_DIR=~/zethra-firmware/bt`.
+
 ```bash
 bash build/scripts/quick_reproducibility_check.sh && \
 bash build/scripts/build_kernel.sh && \
