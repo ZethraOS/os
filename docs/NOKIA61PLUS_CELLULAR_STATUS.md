@@ -95,7 +95,7 @@ interrupt in that phase's dmesg. † = evidence exists only as uncommitted local
 | 5O | FSC aligned to "Generation 17" | Crash at about +176 ms†; no write-up |
 | 5P | modem_fs1/fs2 symlinks swapped | Crash at about +43 ms†; no write-up |
 | 5Q | modemst2 copied to modemst1 (dual-bank sync) | Crash at about +49 ms†; no write-up |
-| 5R | Surgical Gen 17 write to modemst1 | Crash at about +53 ms†; no write-up. The boot-time modemst1 write was reverted on local branch `feat/phase5r-modem-gen17-revision`, commit `3ef2929` at time of writing (unpushed; not in the public repository). The 5R branch also undid the 5P modem_fs1/modem_fs2 symlink swap; that change was not retained in the proposed cleanup (the 5P swap remains on `dev`), and its effect on modem startup remains unverified. The underlying modem crash remains unresolved. |
+| 5R | Surgical Gen 17 write to modemst1 | Crash at about +53 ms†; no write-up. The boot-time modemst1 write was reverted on local branch `feat/phase5r-modem-gen17-revision`, commit `3ef2929` at time of writing (unpushed; not in the public repository). That commit and the Phase 5Q/5R branch tips were archived offline in a local Git bundle on 2026-10-21, as were the local-only logs marked †. PRs #49 and #51 were closed without merging. The 5R branch also undid the 5P modem_fs1/modem_fs2 symlink swap; that change was not retained in the proposed cleanup (the 5P swap remains on `dev`), and its effect on modem startup remains unverified. The underlying modem crash remains unresolved. |
 
 No phase changed the outcome.
 
