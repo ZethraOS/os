@@ -162,6 +162,17 @@ tail -f kernel_build_verbose.log  # Watch in real-time
 
 ## Initramfs Build Failures
 
+### Issue: `BT_FIRMWARE_DIR is not set` (`build_minimal_initramfs.sh`)
+
+**Cause**: The WCN3990 Bluetooth firmware is proprietary and is not stored in the repository.
+
+**Fix**: Point `BT_FIRMWARE_DIR` at a directory outside the repo containing `crbtfw21.tlv` and `crnv21.bin` (SHA-256 hashes are verified by the script):
+```bash
+BT_FIRMWARE_DIR=~/zethra-firmware/bt bash build/scripts/build_minimal_initramfs.sh
+```
+
+---
+
 ### Issue: `Docker: not running or not accessible` (macOS)
 
 **Cause**: Docker daemon not running; builds require Docker on macOS for cross-compilation.

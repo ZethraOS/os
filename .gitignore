@@ -20,3 +20,6 @@ tools/test_key.pem
 build/scripts/__pycache__/
 
 /devices/*/*.zip
+
+# Proprietary firmware must be supplied locally via BT_FIRMWARE_DIR
+/scratch/bt_firmware/
